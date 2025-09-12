@@ -1,0 +1,15 @@
+{
+  "email": "Email",
+  "password": "Password",
+  "name": "Name",
+  "confirmPassword": "Confirm Password",
+  "signIn": "Sign In",
+  "signUp": "Sign Up",
+  "signOut": "Sign Out",
+  "forgotPassword": "Forgot Password?",
+  "loginFailed": "Login failed, please try again",
+  "registerFailed": "Registration failed, please try again",
+  "registerSuccess": "Registration successful! Please check your email to verify your account.",
+  "passwordMismatch": "Passwords do not match",
+  "passwordTooShort": "Password must be at least 6 characters"
+}

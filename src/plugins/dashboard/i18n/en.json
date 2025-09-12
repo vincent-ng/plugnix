@@ -1,0 +1,18 @@
+{
+  "title": "Plugin System",
+  "menu": {
+    "title": "Dashboard"
+  },
+  "welcome": {
+    "title": "Welcome",
+    "description": "This is a modular plug-in front-end framework"
+  },
+  "plugin_system": {
+    "title": "Plugin System",
+    "description": "Support dynamic loading and management of plugins"
+  },
+  "theme_switching": {
+    "title": "Theme Switching",
+    "description": "Support light and dark theme switching"
+  }
+}

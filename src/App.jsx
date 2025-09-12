@@ -1,0 +1,135 @@
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+
+// 框架核心
+import { AuthProvider } from './framework/contexts/AuthContext';
+import { ThemeProvider } from './framework/contexts/ThemeContext';
+import AdminLayout from './framework/layouts/AdminLayout';
+import PublicLayout from './framework/layouts/PublicLayout';
+import i18n from './framework/i18n';
+import { registry } from './framework/api';
+
+
+// 错误边界组件
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('应用错误:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">应用出现错误</h1>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {this.state.error?.message || '未知错误'}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              重新加载
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+// 动态路由组件
+const DynamicRoutes = () => {
+  const allRoutes = registry.getRoutes();
+  const publicRoutes = allRoutes.filter(route => !route.path.startsWith('/admin'));
+  const adminRoutes = allRoutes.filter(route => route.path.startsWith('/admin'));
+
+  return (
+    <Routes>
+      {/* 公共路由 */}
+      <Route path="/" element={<PublicLayout />}>
+        {publicRoutes.map((route) => {
+          const Element = route.component;
+          return (
+            <Route
+              key={route.path}
+              path={route.path === '/' ? '' : route.path.substring(1)}
+              element={<Element />}
+              index={route.path === '/'}
+            />
+          );
+        })}
+      </Route>
+
+      {/* 管理后台路由 */}
+      <Route path="/admin" element={<AdminLayout />}>
+        {/* 动态插件路由 */}
+        {adminRoutes.map((route) => {
+          const Element = route.component;
+          return (
+            <Route
+              key={route.path}
+              path={route.path.substring('/admin/'.length)}
+              element={<Element />}
+            />
+          );
+        })}
+      </Route>
+
+      {/* 404 页面 */}
+      <Route 
+        path="*" 
+        element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">页面未找到</p>
+              <a 
+                href="/" 
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+              >
+                返回首页
+              </a>
+            </div>
+          </div>
+        } 
+      />
+    </Routes>
+  );
+};
+
+// 主应用组件
+function App() {
+
+
+
+  return (
+    <ErrorBoundary>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider>
+          <AuthProvider>
+            <Router>
+              <div className="App">
+                <DynamicRoutes />
+              </div>
+            </Router>
+          </AuthProvider>
+        </ThemeProvider>
+      </I18nextProvider>
+    </ErrorBoundary>
+  );
+}
+
+export default App;

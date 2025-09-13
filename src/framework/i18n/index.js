@@ -33,7 +33,14 @@ const frameworkTranslations = {
       language: 'Language',
       switchLanguage: 'Switch Language',
       english: 'English',
-      chinese: '中文'
+      chinese: '中文',
+      appDescription: 'A modern, extensible web application framework built with React and powered by plugins. Create scalable applications with ease.',
+      quickLinks: 'Quick Links',
+      connect: 'Connect',
+      socialLinks: 'Social Links',
+      copyright: '© 2024 Plugin Framework. All rights reserved.',
+      privacyPolicy: 'Privacy Policy',
+      termsOfService: 'Terms of Service'
     },
     navigation: {
       dashboard: 'Dashboard',
@@ -70,7 +77,14 @@ const frameworkTranslations = {
       language: '语言',
       switchLanguage: '切换语言',
       english: 'English',
-      chinese: '中文'
+      chinese: '中文',
+      appDescription: '基于 React 构建的现代化、可扩展的 Web 应用框架，由插件驱动。轻松创建可扩展的应用程序。',
+      quickLinks: '快速链接',
+      connect: '联系我们',
+      socialLinks: '社交链接',
+      copyright: '© 2024 插件框架。保留所有权利。',
+      privacyPolicy: '隐私政策',
+      termsOfService: '服务条款'
     },
     navigation: {
       dashboard: '仪表板',

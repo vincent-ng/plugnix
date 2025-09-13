@@ -195,7 +195,7 @@ const PublicLayout = () => {
                     {/* 移动端底部操作 */}
                     <div className="border-t border-border pt-6">
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-sm font-medium text-foreground">Social Links</span>
+                        <span className="text-sm font-medium text-foreground">{t('socialLinks')}</span>
                         <SocialLinks />
                       </div>
                       <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
@@ -236,8 +236,7 @@ const PublicLayout = () => {
                   />
                 </div>
                 <p className="text-sm text-muted-foreground max-w-md">
-                  A modern, extensible web application framework built with React and powered by plugins. 
-                  Create scalable applications with ease.
+                  {t('appDescription')}
                 </p>
               </CardContent>
             </Card>
@@ -245,7 +244,7 @@ const PublicLayout = () => {
             {/* 快速链接 */}
             <Card className="border-0 shadow-none bg-transparent">
               <CardContent className="p-0">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Quick Links</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-4">{t('quickLinks')}</h3>
                 <ul className="space-y-2">
                   {menuItems.slice(0, 4).map((item) => (
                     <li key={item.key}>
@@ -264,7 +263,7 @@ const PublicLayout = () => {
             {/* 社交媒体 */}
             <Card className="border-0 shadow-none bg-transparent">
               <CardContent className="p-0">
-                <h3 className="text-sm font-semibold text-foreground mb-4">Connect</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-4">{t('connect')}</h3>
                 <SocialLinks className="justify-start" />
               </CardContent>
             </Card>
@@ -275,14 +274,14 @@ const PublicLayout = () => {
           {/* 版权信息 */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 Plugin Framework. All rights reserved.
+              {t('copyright')}
             </p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <Link to="/privacy" className="hover:text-foreground transition-colors">
-                Privacy Policy
+                {t('privacyPolicy')}
               </Link>
               <Link to="/terms" className="hover:text-foreground transition-colors">
-                Terms of Service
+                {t('termsOfService')}
               </Link>
             </div>
           </div>

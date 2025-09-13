@@ -28,7 +28,8 @@
   },
   "common": {
     "loading": "加载中...",
-    "backToHome": "返回首页"
+    "backToHome": "返回首页",
+    "signOut": "退出登录"
   },
   "errors": {
     "loginFailed": "登录失败，请重试",

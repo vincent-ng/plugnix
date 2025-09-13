@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useTheme } from '../contexts/ThemeContext.jsx';
+import { TabProvider, useTabs } from '../contexts/TabContext.jsx';
 import { registry } from '../api';
 import {
   DropdownMenu,
@@ -38,16 +39,17 @@ import {
   Moon,
   Sun,
   Globe,
-  LogOut,
   ChevronDown
 } from 'lucide-react';
 import Logo from '../components/Logo.jsx';
+import TabBar from '../components/TabBar.jsx';
 
 
-const AdminLayout = () => {
+const AdminLayoutContent = () => {
   const { t, i18n } = useTranslation('common');
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { tabs, activeTab, openTab, switchTab } = useTabs();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -55,10 +57,7 @@ const AdminLayout = () => {
     i18n.changeLanguage(lng);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-  };
+
 
   const menuItems = registry.getAdminMenuItems();
   const userMenuItems = registry.getUserMenuItems();
@@ -66,6 +65,13 @@ const AdminLayout = () => {
   const isActiveRoute = (path) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
+
+  // 当路由变化时，同步更新activeTab
+  React.useEffect(() => {
+    if (tabs.some(tab => tab.path === location.pathname)) {
+      switchTab(location.pathname);
+    }
+  }, [location.pathname, tabs, switchTab]);
 
   // 应用侧边栏组件
   const AppSidebar = () => (
@@ -89,16 +95,20 @@ const AdminLayout = () => {
                 const isActive = isActiveRoute(item.path);
                 return (
                   <SidebarMenuItem key={item.key}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link to={item.path}>
-                        <Home className="w-4 h-4" />
-                        <span>{t(item.label)}</span>
-                        {isActive && (
-                          <Badge variant="secondary" className="ml-auto text-xs">
-                            Active
-                          </Badge>
-                        )}
-                      </Link>
+                    <SidebarMenuButton 
+                       isActive={isActive}
+                       onClick={() => {
+                        openTab({ path: item.path, label: t(item.label) });
+                        navigate(item.path);
+                      }}
+                     >
+                      <Home className="w-4 h-4" />
+                      <span>{t(item.label)}</span>
+                      {isActive && (
+                        <Badge variant="secondary" className="ml-auto text-xs">
+                          Active
+                        </Badge>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
@@ -131,29 +141,32 @@ const AdminLayout = () => {
             <DropdownMenuLabel>{t('myAccount')}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {/* 动态渲染插件注册的用户菜单项 */}
-            {userMenuItems.map((item, index) => (
-              <DropdownMenuItem 
-                key={item.key || index} 
-                onClick={() => {
-                  if (item.onClick) {
-                    item.onClick();
-                  } else if (item.path) {
-                    navigate(item.path);
-                  }
-                }}
-                className={item.className}
-              >
-                {item.icon && <item.icon className="w-4 h-4 mr-2" />}
-                {t(item.label)}
-              </DropdownMenuItem>
-            ))}
-            {/* 如果有用户菜单项，添加分隔符 */}
-            {userMenuItems.length > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-              <LogOut className="w-4 h-4 mr-2" />
-              {t('signOut')}
-            </DropdownMenuItem>
+            {userMenuItems.map((item, index) => {
+              // 如果是组件类型，直接渲染组件
+              if (item.component) {
+                const Component = item.component;
+                return <Component key={item.key || index} />;
+              }
+              
+              // 否则渲染传统的菜单项
+              return (
+                <DropdownMenuItem 
+                  key={item.key || index} 
+                  onClick={() => {
+                    if (item.onClick) {
+                      item.onClick();
+                    } else if (item.path) {
+                      navigate(item.path);
+                    }
+                  }}
+                  className={item.className}
+                >
+                  {item.icon && <item.icon className="w-4 h-4 mr-2" />}
+                  {t(item.label)}
+                </DropdownMenuItem>
+              );
+            })}
+
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>
@@ -227,13 +240,50 @@ const AdminLayout = () => {
             </div>
           </header>
 
+          {/* Tab栏 */}
+          <TabBar />
+          
           {/* 页面内容 */}
           <main className="flex-1 overflow-auto p-6">
-            <Outlet />
+            {/* 渲染所有Tab内容，使用CSS控制显示隐藏以保持状态 */}
+            {tabs.map(tab => {
+              const Component = tab.component;
+              return (
+                <div
+                  key={tab.path}
+                  className="tab-content"
+                  style={{ 
+                    display: tab.path === activeTab ? 'block' : 'none',
+                    height: '100%'
+                  }}
+                >
+                  <Component />
+                </div>
+              );
+            })}
+            
+            {/* 如果没有打开的Tab，显示默认内容 */}
+            {tabs.length === 0 && (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold mb-2">{t('tabs:noTabsOpen')}</h2>
+                  <p>{t('tabs:welcome')}</p>
+                </div>
+              </div>
+            )}
           </main>
         </div>
       </div>
     </SidebarProvider>
+  );
+};
+
+// 使用TabProvider包装AdminLayoutContent
+const AdminLayout = () => {
+  return (
+    <TabProvider>
+      <AdminLayoutContent />
+    </TabProvider>
   );
 };
 

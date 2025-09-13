@@ -15,10 +15,10 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e) => {
+  const handleChange = (fieldName, value) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [fieldName]: value
     });
   };
 

@@ -103,7 +103,8 @@ export const AuthProvider = ({ children }) => {
     login,
     signIn: login, // 添加 signIn 别名
     register,
-    logout
+    logout,
+    signOut: logout // 添加 signOut 别名
   };
 
   return (

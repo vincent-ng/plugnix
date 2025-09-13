@@ -28,7 +28,8 @@
   },
   "common": {
     "loading": "Loading...",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "signOut": "Sign Out"
   },
   "errors": {
     "loginFailed": "Login failed, please try again",

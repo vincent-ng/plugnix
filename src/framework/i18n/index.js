@@ -32,6 +32,7 @@ const frameworkTranslations = {
       backToHome: 'Back to Home',
       language: 'Language',
       switchLanguage: 'Switch Language',
+      myAccount: 'My Account',
       english: 'English',
       chinese: '中文',
       appDescription: 'A modern, extensible web application framework built with React and powered by plugins. Create scalable applications with ease.',
@@ -46,6 +47,10 @@ const frameworkTranslations = {
       dashboard: 'Dashboard',
       settings: 'Settings',
       profile: 'Profile'
+    },
+    tabs: {
+      welcome: 'Welcome to the admin panel. Please select a menu item to get started.',
+      noTabsOpen: 'No tabs are currently open'
     },
   },
   zh: {
@@ -76,6 +81,7 @@ const frameworkTranslations = {
       backToHome: '← 返回首页',
       language: '语言',
       switchLanguage: '切换语言',
+      myAccount: '我的账户',
       english: 'English',
       chinese: '中文',
       appDescription: '基于 React 构建的现代化、可扩展的 Web 应用框架，由插件驱动。轻松创建可扩展的应用程序。',
@@ -90,6 +96,10 @@ const frameworkTranslations = {
       dashboard: '仪表板',
       settings: '设置',
       profile: '个人资料'
+    },
+    tabs: {
+      welcome: '欢迎使用管理面板。请选择菜单项开始使用。',
+      noTabsOpen: '当前没有打开的标签页'
     },
   }
 };

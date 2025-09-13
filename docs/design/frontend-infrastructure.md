@@ -118,6 +118,17 @@
     *   **参数**: `menuItemObject` (对象) - 结构与 `registerAdminMenuItem` 相同。
     *   **示例**: `registerPublicMenuItem({ label: 'About Us', path: '/about', order: 50 });`
 
+*   **`registerUserMenuItem(menuItemObject)`**
+    *   **功能**: 在用户下拉菜单中注册一个新菜单项。支持两种注册方式：
+        1. **传统方式**: 提供 `label`、`path`、`icon` 等属性
+        2. **组件方式**: 直接提供 `component` 属性，框架将渲染该组件
+    *   **参数**: `menuItemObject` (对象) - 菜单项配置对象
+        *   传统方式: `{ key, label, path, icon, className, onClick, order }`
+        *   组件方式: `{ key, component, order }`
+    *   **示例**: 
+        *   传统方式: `registerUserMenuItem({ key: 'profile', label: 'Profile', path: '/profile', order: 10 });`
+        *   组件方式: `registerUserMenuItem({ key: 'signOut', component: SignOutMenuItem, order: 999 });`
+
 *   **`registerI18nNamespace(pluginName, translations)`**
     *   **功能**: 为插件注册国际化（i18n）翻译资源。
     *   **参数**:

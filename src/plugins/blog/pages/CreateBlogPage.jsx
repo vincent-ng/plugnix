@@ -65,12 +65,12 @@ const CreateBlogPage = () => {
     <div className="space-y-6">
       {/* 页面标题和导航 */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           {t('create')}
         </h1>
         <Link
           to="/admin/blog"
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm"
+          className="text-primary hover:text-primary/80 text-sm"
         >
           ← 返回博客列表
         </Link>
@@ -83,11 +83,11 @@ const CreateBlogPage = () => {
       )}
 
       {/* 创建表单 */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* 标题 */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
               标题 *
             </label>
             <input
@@ -95,7 +95,7 @@ const CreateBlogPage = () => {
               id="title"
               name="title"
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="请输入博客标题"
               value={formData.title}
               onChange={handleChange}
@@ -104,14 +104,14 @@ const CreateBlogPage = () => {
 
           {/* 摘要 */}
           <div>
-            <label htmlFor="summary" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="summary" className="block text-sm font-medium text-foreground mb-2">
               {t('summary')}
             </label>
             <textarea
               id="summary"
               name="summary"
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="请输入博客摘要"
               value={formData.summary}
               onChange={handleChange}
@@ -121,13 +121,13 @@ const CreateBlogPage = () => {
           {/* 分类和状态 */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="category" className="block text-sm font-medium text-foreground mb-2">
                 {t('category')}
               </label>
               <select
                 id="category"
                 name="category"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                 value={formData.category}
                 onChange={handleChange}
               >
@@ -141,13 +141,13 @@ const CreateBlogPage = () => {
             </div>
 
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="status" className="block text-sm font-medium text-foreground mb-2">
                 状态
               </label>
               <select
                 id="status"
                 name="status"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                 value={formData.status}
                 onChange={handleChange}
               >
@@ -159,26 +159,26 @@ const CreateBlogPage = () => {
 
           {/* 标签 */}
           <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="tags" className="block text-sm font-medium text-foreground mb-2">
               {t('tags')}
             </label>
             <input
               type="text"
               id="tags"
               name="tags"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="请输入标签，用逗号分隔"
               value={formData.tags}
               onChange={handleChange}
             />
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               多个标签请用逗号分隔，例如：React, 前端, 架构
             </p>
           </div>
 
           {/* 内容 */}
           <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="content" className="block text-sm font-medium text-foreground mb-2">
               {t('content')} *
             </label>
             <textarea
@@ -186,7 +186,7 @@ const CreateBlogPage = () => {
               name="content"
               rows={12}
               required
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="请输入博客内容"
               value={formData.content}
               onChange={handleChange}
@@ -197,14 +197,14 @@ const CreateBlogPage = () => {
           <div className="flex justify-end space-x-4">
             <Link
               to="/admin/blog"
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-muted"
             >
               {t('common:cancel')}
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t('common:loading') : t('common:save')}
             </button>

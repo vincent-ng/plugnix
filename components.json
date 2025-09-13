@@ -11,6 +11,7 @@
   },
   "aliases": {
     "components": "@/framework/components",
-    "utils": "@/framework/lib/utils"
+    "utils": "@/framework/components/lib/utils",
+    "hooks": "@/framework/components/hooks"
   }
 }

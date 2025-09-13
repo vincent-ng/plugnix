@@ -41,17 +41,17 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             {t('signIn')}
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-center text-sm text-muted-foreground">
             {t('common:or')}{' '}
             <Link
               to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              className="font-medium text-primary hover:text-primary/80"
             >
               {t('common:createAccount')}
             </Link>
@@ -69,7 +69,7 @@ const LoginPage = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-input placeholder-muted-foreground text-foreground bg-background rounded-t-md focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                 placeholder={t('email')}
                 value={formData.email}
                 onChange={handleChange}
@@ -85,7 +85,7 @@ const LoginPage = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-800 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-input placeholder-muted-foreground text-foreground bg-background rounded-b-md focus:outline-none focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                 placeholder={t('password')}
                 value={formData.password}
                 onChange={handleChange}
@@ -94,7 +94,7 @@ const LoginPage = () => {
           </div>
 
           {error && (
-            <div className="text-red-600 dark:text-red-400 text-sm text-center">
+            <div className="text-destructive text-sm text-center">
               {error}
             </div>
           )}
@@ -103,7 +103,7 @@ const LoginPage = () => {
             <div className="text-sm">
               <a
                 href="#"
-                className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                className="font-medium text-primary hover:text-primary/80"
               >
                 {t('forgotPassword')}
               </a>
@@ -114,7 +114,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t('common:loading') : t('signIn')}
             </button>
@@ -123,7 +123,7 @@ const LoginPage = () => {
           <div className="text-center">
             <Link
               to="/"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              className="font-medium text-primary hover:text-primary/80"
             >
               {t('common:backToHome')}
             </Link>

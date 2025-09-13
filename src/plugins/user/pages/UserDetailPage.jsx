@@ -92,7 +92,7 @@ const UserDetailPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">
+        <div className="text-lg text-muted-foreground">
           {t('common:loading')}
         </div>
       </div>
@@ -102,12 +102,12 @@ const UserDetailPage = () => {
   if (error || !user) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-600 dark:text-red-400 mb-4">
+        <div className="text-destructive mb-4">
           {error || '用户不存在'}
         </div>
         <Link
           to="/admin/users"
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+          className="text-primary hover:text-primary/80"
         >
           返回用户列表
         </Link>
@@ -121,7 +121,7 @@ const UserDetailPage = () => {
       <div className="flex justify-between items-center">
         <Link
           to="/admin/users"
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm"
+          className="text-primary hover:text-primary/80 text-sm"
         >
           ← 返回用户列表
         </Link>
@@ -130,7 +130,7 @@ const UserDetailPage = () => {
             <>
               <button
                 onClick={() => setEditing(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 {t('edit')}
               </button>
@@ -146,7 +146,7 @@ const UserDetailPage = () => {
               </button>
               <button
                 onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground px-4 py-2 rounded-md text-sm font-medium"
               >
                 {t('delete')}
               </button>
@@ -161,7 +161,7 @@ const UserDetailPage = () => {
               </button>
               <button
                 onClick={handleCancel}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-md text-sm font-medium"
               >
                 {t('common:cancel')}
               </button>
@@ -171,14 +171,14 @@ const UserDetailPage = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
           {error}
         </div>
       )}
 
       {/* 用户信息 */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card text-card-foreground shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-border">
           <div className="flex items-center">
             <div className="flex-shrink-0 h-16 w-16">
               <div className="h-16 w-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
@@ -186,10 +186,10 @@ const UserDetailPage = () => {
               </div>
             </div>
             <div className="ml-6">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl font-bold text-foreground">
                 {user.name}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground">
                 {user.email}
               </p>
               <div className="mt-2 flex items-center space-x-4">
@@ -216,12 +216,12 @@ const UserDetailPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 基本信息 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              <h3 className="text-lg font-medium text-foreground">
                 基本信息
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   {t('name')}
                 </label>
                 {editing ? (
@@ -230,15 +230,15 @@ const UserDetailPage = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.name}</p>
+                  <p className="text-foreground">{user.name}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   {t('email')}
                 </label>
                 {editing ? (
@@ -247,15 +247,15 @@ const UserDetailPage = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.email}</p>
+                  <p className="text-foreground">{user.email}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   电话
                 </label>
                 {editing ? (
@@ -264,15 +264,15 @@ const UserDetailPage = () => {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.phone}</p>
+                  <p className="text-foreground">{user.phone}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   部门
                 </label>
                 {editing ? (
@@ -281,22 +281,22 @@ const UserDetailPage = () => {
                     name="department"
                     value={formData.department}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.department}</p>
+                  <p className="text-foreground">{user.department}</p>
                 )}
               </div>
             </div>
 
             {/* 系统信息 */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+              <h3 className="text-lg font-medium text-foreground">
                 系统信息
               </h3>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   {t('role')}
                 </label>
                 {editing ? (
@@ -304,34 +304,34 @@ const UserDetailPage = () => {
                     name="role"
                     value={formData.role}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
                   >
                     <option value="user">{t('userRole')}</option>
                     <option value="admin">{t('admin')}</option>
                   </select>
                 ) : (
-                  <p className="text-gray-900 dark:text-white">
+                  <p className="text-foreground">
                     {user.role === 'admin' ? t('admin') : t('userRole')}
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   {t('createdAt')}
                 </label>
-                <p className="text-gray-900 dark:text-white">{user.createdAt}</p>
+                <p className="text-foreground">{user.createdAt}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   {t('lastLogin')}
                 </label>
-                <p className="text-gray-900 dark:text-white">{user.lastLogin}</p>
+                <p className="text-foreground">{user.lastLogin}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   个人简介
                 </label>
                 {editing ? (
@@ -340,10 +340,10 @@ const UserDetailPage = () => {
                     rows={3}
                     value={formData.bio}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
                   />
                 ) : (
-                  <p className="text-gray-900 dark:text-white">{user.bio}</p>
+                  <p className="text-foreground">{user.bio}</p>
                 )}
               </div>
             </div>

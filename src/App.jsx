@@ -29,15 +29,15 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen flex items-center justify-center bg-background">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">应用出现错误</h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <h1 className="text-2xl font-bold text-destructive mb-4">应用出现错误</h1>
+            <p className="text-muted-foreground mb-4">
               {this.state.error?.message || '未知错误'}
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
             >
               重新加载
             </button>
@@ -92,13 +92,13 @@ const DynamicRoutes = () => {
       <Route 
         path="*" 
         element={
-          <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">404</h1>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">页面未找到</p>
+              <h1 className="text-4xl font-bold text-foreground mb-4">404</h1>
+              <p className="text-muted-foreground mb-4">页面未找到</p>
               <a 
                 href="/" 
-                className="text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                className="text-primary hover:text-primary/80"
               >
                 返回首页
               </a>

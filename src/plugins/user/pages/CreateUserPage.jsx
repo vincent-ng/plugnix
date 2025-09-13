@@ -85,34 +85,34 @@ const CreateUserPage = () => {
     <div className="space-y-6">
       {/* 页面标题和导航 */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           {t('create')}
         </h1>
         <Link
           to="/admin/users"
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 text-sm"
+          className="text-primary hover:text-primary/80 text-sm"
         >
           ← 返回用户列表
         </Link>
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded">
+        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
           {error}
         </div>
       )}
 
       {/* 创建表单 */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div className="bg-card text-card-foreground shadow rounded-lg">
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* 基本信息 */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-medium text-foreground mb-4">
               基本信息
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
                   {t('name')} *
                 </label>
                 <input
@@ -120,7 +120,7 @@ const CreateUserPage = () => {
                   id="name"
                   name="name"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="请输入用户姓名"
                   value={formData.name}
                   onChange={handleChange}
@@ -128,7 +128,7 @@ const CreateUserPage = () => {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
                   {t('email')} *
                 </label>
                 <input
@@ -136,7 +136,7 @@ const CreateUserPage = () => {
                   id="email"
                   name="email"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="请输入邮箱地址"
                   value={formData.email}
                   onChange={handleChange}
@@ -144,14 +144,14 @@ const CreateUserPage = () => {
               </div>
 
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">
                   电话
                 </label>
                 <input
                   type="text"
                   id="phone"
                   name="phone"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="请输入电话号码"
                   value={formData.phone}
                   onChange={handleChange}
@@ -159,14 +159,14 @@ const CreateUserPage = () => {
               </div>
 
               <div>
-                <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="department" className="block text-sm font-medium text-foreground mb-2">
                   部门
                 </label>
                 <input
                   type="text"
                   id="department"
                   name="department"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="请输入所属部门"
                   value={formData.department}
                   onChange={handleChange}
@@ -177,12 +177,12 @@ const CreateUserPage = () => {
 
           {/* 密码设置 */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-medium text-foreground mb-4">
               密码设置
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
                   密码 *
                 </label>
                 <input
@@ -190,7 +190,7 @@ const CreateUserPage = () => {
                   id="password"
                   name="password"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="请输入密码（至少6位）"
                   value={formData.password}
                   onChange={handleChange}
@@ -198,7 +198,7 @@ const CreateUserPage = () => {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
                   确认密码 *
                 </label>
                 <input
@@ -206,7 +206,7 @@ const CreateUserPage = () => {
                   id="confirmPassword"
                   name="confirmPassword"
                   required
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   placeholder="请再次输入密码"
                   value={formData.confirmPassword}
                   onChange={handleChange}
@@ -217,18 +217,18 @@ const CreateUserPage = () => {
 
           {/* 权限设置 */}
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+            <h3 className="text-lg font-medium text-foreground mb-4">
               权限设置
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="role" className="block text-sm font-medium text-foreground mb-2">
                   {t('role')}
                 </label>
                 <select
                   id="role"
                   name="role"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   value={formData.role}
                   onChange={handleChange}
                 >
@@ -238,13 +238,13 @@ const CreateUserPage = () => {
               </div>
 
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label htmlFor="status" className="block text-sm font-medium text-foreground mb-2">
                   {t('status')}
                 </label>
                 <select
                   id="status"
                   name="status"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
                   value={formData.status}
                   onChange={handleChange}
                 >
@@ -257,14 +257,14 @@ const CreateUserPage = () => {
 
           {/* 个人简介 */}
           <div>
-            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="bio" className="block text-sm font-medium text-foreground mb-2">
               个人简介
             </label>
             <textarea
               id="bio"
               name="bio"
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
               placeholder="请输入个人简介"
               value={formData.bio}
               onChange={handleChange}
@@ -275,14 +275,14 @@ const CreateUserPage = () => {
           <div className="flex justify-end space-x-4">
             <Link
               to="/admin/users"
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-4 py-2 border border-input rounded-md text-sm font-medium text-foreground hover:bg-secondary/80"
             >
               {t('common:cancel')}
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? t('common:loading') : t('create')}
             </button>

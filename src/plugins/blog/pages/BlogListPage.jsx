@@ -69,7 +69,7 @@ const BlogListPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">
+        <div className="text-lg text-muted-foreground">
           {t('common:loading')}
         </div>
       </div>
@@ -80,12 +80,12 @@ const BlogListPage = () => {
     <div className="space-y-6">
       {/* 页面标题和操作 */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           {t('list')}
         </h1>
         <Link
           to="/admin/blog/create"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md text-sm font-medium"
         >
           {t('create')}
         </Link>
@@ -98,8 +98,8 @@ const BlogListPage = () => {
       )}
 
       {/* 博客列表 */}
-      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+      <div className="bg-card text-card-foreground shadow overflow-hidden sm:rounded-md">
+        <ul className="divide-y divide-border">
           {blogs.map((blog) => (
             <li key={blog.id}>
               <div className="px-4 py-4 sm:px-6">
@@ -107,14 +107,14 @@ const BlogListPage = () => {
                   <div className="flex-1">
                     <Link
                       to={`/admin/blog/${blog.id}`}
-                      className="text-lg font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                      className="text-lg font-medium text-primary hover:text-primary/80"
                     >
                       {blog.title}
                     </Link>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {blog.summary}
                     </p>
-                    <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <div className="mt-2 flex items-center text-sm text-muted-foreground">
                       <span>{t('author')}: {blog.author}</span>
                       <span className="mx-2">•</span>
                       <span>{t('publishDate')}: {blog.publishDate}</span>
@@ -133,13 +133,13 @@ const BlogListPage = () => {
                   <div className="flex space-x-2">
                     <Link
                       to={`/admin/blog/${blog.id}`}
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                      className="text-primary hover:text-primary/80 text-sm"
                     >
                       {t('common:edit')}
                     </Link>
                     <button
                       onClick={() => handleDelete(blog.id)}
-                      className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm"
+                      className="text-destructive hover:text-destructive/80 text-sm"
                     >
                       {t('common:delete')}
                     </button>
@@ -153,12 +153,12 @@ const BlogListPage = () => {
 
       {blogs.length === 0 && !loading && (
         <div className="text-center py-12">
-          <div className="text-gray-500 dark:text-gray-400">
+          <div className="text-muted-foreground">
             {t('noBlogsFound')}
           </div>
           <Link
             to="/admin/blog/create"
-            className="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            className="mt-4 inline-block bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md text-sm font-medium"
           >
             {t('create')}
           </Link>

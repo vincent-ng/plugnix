@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 const frameworkTranslations = {
   en: {
     common: {
+      appPublicTitle: 'ModularHub',
+      appPublicSubtitle: 'Plugin-Driven Web Framework',
+      appAdminTitle: 'ModularHub Admin',
+      appAdminSubtitle: 'Plugin Management Console',
       loading: 'Loading...',
       error: 'Error',
       success: 'Success',
@@ -39,6 +43,10 @@ const frameworkTranslations = {
   },
   zh: {
     common: {
+      appPublicTitle: 'ModularHub',
+      appPublicSubtitle: '插件驱动的Web框架',
+      appAdminTitle: 'ModularHub后台',
+      appAdminSubtitle: '插件管理控制台',
       loading: '加载中...',
       error: '错误',
       success: '成功',

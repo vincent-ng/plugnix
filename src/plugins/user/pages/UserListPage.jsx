@@ -100,7 +100,7 @@ const UserListPage = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">
+        <div className="text-lg text-muted-foreground">
           {t('common:loading')}
         </div>
       </div>
@@ -111,12 +111,12 @@ const UserListPage = () => {
     <div className="space-y-6">
       {/* 页面标题和操作 */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           {t('list')}
         </h1>
         <Link
           to="/admin/users/create"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 text-sm font-medium"
         >
           {t('create')}
         </Link>
@@ -129,20 +129,20 @@ const UserListPage = () => {
       )}
 
       {/* 搜索和过滤 */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+      <div className="bg-card text-card-foreground p-4 rounded-lg shadow">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <input
               type="text"
               placeholder={t('search')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div>
             <select
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-ring focus:border-ring bg-background text-foreground"
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
             >
@@ -155,32 +155,32 @@ const UserListPage = () => {
       </div>
 
       {/* 用户列表 */}
-      <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+      <div className="bg-card text-card-foreground shadow overflow-hidden sm:rounded-md">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {t('name')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {t('email')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {t('role')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   {t('status')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('lastLogin')}
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('actions')}
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                   {t('lastLogin')}
+                 </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                   {t('actions')}
+                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody className="bg-card text-card-foreground divide-y divide-border">
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -191,13 +191,13 @@ const UserListPage = () => {
                         </div>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-foreground">
                           {user.name}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {user.email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -221,20 +221,20 @@ const UserListPage = () => {
                       {user.status === 'active' ? t('active') : t('inactive')}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {user.lastLogin}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end space-x-2">
                       <Link
                         to={`/admin/users/${user.id}`}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        className="text-primary hover:text-primary/80"
                       >
                         {t('common:view')}
                       </Link>
                       <button
                         onClick={() => handleDelete(user.id)}
-                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                        className="text-destructive hover:text-destructive/80"
                       >
                         {t('common:delete')}
                       </button>
@@ -249,13 +249,13 @@ const UserListPage = () => {
 
       {filteredUsers.length === 0 && !loading && (
         <div className="text-center py-12">
-          <div className="text-gray-500 dark:text-gray-400">
+          <div className="text-muted-foreground">
             {searchTerm || filterRole ? '没有找到匹配的用户' : '暂无用户'}
           </div>
           {!searchTerm && !filterRole && (
             <Link
               to="/admin/users/create"
-              className="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="mt-4 inline-block bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md text-sm font-medium"
             >
               {t('create')}
             </Link>

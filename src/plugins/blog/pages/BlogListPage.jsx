@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../../../lib/supabase.js';
 
 const BlogListPage = () => {
   const { t } = useTranslation(['blog', 'common']);

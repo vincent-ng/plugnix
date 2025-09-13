@@ -1,21 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase 配置
+// Supabase configuration
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// 创建 Supabase 客户端（仅在配置有效时）
+// Create Supabase client (only when configuration is valid)
 let supabase = null;
 
-if (supabaseUrl && supabaseAnonKey && supabaseUrl !== 'your-supabase-url') {
+if (supabaseUrl && supabaseAnonKey) {
   try {
     supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('Supabase 客户端初始化成功');
+    console.log('Supabase client initialized successfully');
   } catch (error) {
-    console.warn('Supabase 客户端初始化失败:', error.message);
+    console.warn('Supabase client initialization failed:', error.message);
   }
 } else {
-  console.warn('Supabase 配置未设置或无效，将使用模拟模式');
+  console.warn('Supabase configuration not set or invalid.');
 }
 
 window.supabase = supabase;

@@ -3,8 +3,8 @@ import en from './i18n/en.json';
 import zh from './i18n/zh.json';
 
 // 导入页面组件用于路由注册
-import LoginPage from './components/LoginPage';
-import RegisterPage from './components/RegisterPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 // 导出页面组件
 export { LoginPage, RegisterPage };

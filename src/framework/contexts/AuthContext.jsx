@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       
       setUser(data.user);
+      console.log('登录成功:', data.user);
       return { error: null }; // 登录成功，无错误
     } catch (error) {
       console.error('登录失败:', error.message);

@@ -9,6 +9,8 @@ import AdminLayout from './framework/layouts/AdminLayout';
 import PublicLayout from './framework/layouts/PublicLayout';
 import i18n from './framework/i18n';
 import { registry } from './framework/api';
+import RoleBasedGuard from './framework/components/auth/RoleBasedGuard';
+import { Toaster } from '@/framework/components/ui/sonner';
 
 
 // 错误边界组件
@@ -74,7 +76,14 @@ const DynamicRoutes = () => {
       </Route>
 
       {/* 管理后台路由 */}
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route 
+        path="/admin"
+        element={
+          <RoleBasedGuard roles={['admin', 'authenticated']}>
+            <AdminLayout />
+          </RoleBasedGuard>
+        }
+      >
         {/* 动态插件路由 */}
         {adminRoutes.map((route) => {
           const Element = route.component;
@@ -126,6 +135,7 @@ function App() {
               </div>
             </Router>
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </I18nextProvider>
     </ErrorBoundary>

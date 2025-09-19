@@ -28,7 +28,13 @@ const translations = {
     confirmDelete: 'Are you sure you want to delete this user?',
     deleteSuccess: 'User deleted successfully',
     deleteFailed: 'Failed to delete user',
-    fetchFailed: 'Failed to fetch user list'
+    fetchFailed: 'Failed to fetch user list',
+    createSuccess: 'User created successfully',
+    createFailed: 'Failed to create user',
+    updateSuccess: 'User updated successfully',
+    updateFailed: 'Failed to update user',
+    apiError: 'API request failed',
+    networkError: 'Network connection error'
   },
   zh: {
     title: '用户管理',
@@ -54,7 +60,13 @@ const translations = {
     confirmDelete: '确定要删除这个用户吗？',
     deleteSuccess: '用户删除成功',
     deleteFailed: '删除用户失败',
-    fetchFailed: '获取用户列表失败'
+    fetchFailed: '获取用户列表失败',
+    createSuccess: '用户创建成功',
+    createFailed: '创建用户失败',
+    updateSuccess: '用户更新成功',
+    updateFailed: '更新用户失败',
+    apiError: 'API请求失败',
+    networkError: '网络连接错误'
   }
 };
 

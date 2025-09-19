@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { userAdminApi } from '../api/adminApi';
 
 const UserDetailPage = () => {
   const { t } = useTranslation(['user', 'common']);
@@ -13,37 +14,51 @@ const UserDetailPage = () => {
   const [formData, setFormData] = useState({});
 
   useEffect(() => {
-    fetchUser();
-  }, [id]);
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await userAdminApi.getUserById(id);
 
-  const fetchUser = async () => {
-    try {
-      setLoading(true);
-      // 模拟数据，实际项目中应该从 Supabase 获取
-      const mockUser = {
-        id: parseInt(id),
-        name: id === '1' ? '张三' : id === '2' ? '李四' : id === '3' ? '王五' : 'John Doe',
-        email: id === '1' ? 'zhangsan@example.com' : 
-               id === '2' ? 'lisi@example.com' : 
-               id === '3' ? 'wangwu@example.com' : 'john@example.com',
-        role: id === '1' || id === '4' ? 'admin' : 'user',
-        status: id === '3' ? 'inactive' : 'active',
-        createdAt: '2024-01-10',
-        lastLogin: '2024-01-15 10:30',
-        phone: '+86 138-0013-8000',
-        department: id === '1' || id === '4' ? '技术部' : '产品部',
-        bio: '这是用户的个人简介信息。'
-      };
-      
-      setUser(mockUser);
-      setFormData(mockUser);
-    } catch (err) {
-      setError('获取用户详情失败');
-      console.error('Error fetching user:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (error) {
+          throw error;
+        }
+
+        if (data) {
+          const formattedUser = {
+            id: data.id,
+            name: data.user_metadata?.name || data.email.split('@')[0],
+            email: data.email,
+            role: data.user_metadata?.role || 'user',
+            status: data.email_confirmed_at ? 'active' : 'inactive',
+            createdAt: new Date(data.created_at).toLocaleDateString(),
+            lastLogin: data.last_sign_in_at ? new Date(data.last_sign_in_at).toLocaleString() : 'N/A',
+            phone: data.user_metadata?.phone || '',
+            department: data.user_metadata?.department || '',
+            bio: data.user_metadata?.bio || '',
+            ...data.user_metadata,
+          };
+          setUser(formattedUser);
+          setFormData({
+            name: formattedUser.name,
+            email: formattedUser.email,
+            role: formattedUser.role,
+            phone: formattedUser.phone,
+            department: formattedUser.department,
+            bio: formattedUser.bio,
+          });
+        } else {
+          setError(t('fetchFailed'));
+        }
+      } catch (err) {
+        setError(t('fetchFailed'));
+        console.error('Error fetching user:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [id, t]);
 
   const handleChange = (e) => {
     setFormData({
@@ -54,26 +69,43 @@ const UserDetailPage = () => {
 
   const handleSave = async () => {
     try {
-      // 实际项目中应该调用 Supabase API
-      setUser(formData);
-      setEditing(false);
+      const { data, error } = await userAdminApi.updateUserMetadata(id, {
+        name: formData.name,
+        role: formData.role,
+        phone: formData.phone,
+        department: formData.department,
+        bio: formData.bio,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        const updatedUser = {
+          ...user,
+          ...formData,
+        };
+        setUser(updatedUser);
+        setEditing(false);
+      }
     } catch (err) {
-      setError('更新用户信息失败');
+      setError(t('updateFailed'));
+      console.error('Error updating user:', err);
     }
   };
 
-  const handleCancel = () => {
-    setFormData(user);
-    setEditing(false);
-  };
-
   const handleDelete = async () => {
-    if (window.confirm('确定要删除这个用户吗？')) {
+    if (window.confirm(t('confirmDelete'))) {
       try {
-        // 实际项目中应该调用 Supabase API
+        const { error } = await userAdminApi.deleteUser(id);
+        if (error) {
+          throw error;
+        }
         navigate('/admin/users');
       } catch (err) {
-        setError('删除用户失败');
+        setError(t('deleteFailed'));
+        console.error('Error deleting user:', err);
       }
     }
   };
@@ -81,11 +113,19 @@ const UserDetailPage = () => {
   const handleStatusToggle = async () => {
     try {
       const newStatus = user.status === 'active' ? 'inactive' : 'active';
-      const updatedUser = { ...user, status: newStatus };
-      setUser(updatedUser);
-      setFormData(updatedUser);
+      // This is a simplified example. In a real app, you might need to
+      // call a server-side function to handle user status updates.
+      const { data, error } = await userAdminApi.updateUserMetadata(
+        id,
+        { status: newStatus }
+      );
+
+      if (error) throw error;
+
+      setUser({ ...user, status: newStatus });
     } catch (err) {
-      setError('更新用户状态失败');
+      setError(t('statusUpdateFailed'));
+      console.error('Error updating user status:', err);
     }
   };
 
@@ -160,7 +200,7 @@ const UserDetailPage = () => {
                 {t('common:save')}
               </button>
               <button
-                onClick={handleCancel}
+                onClick={() => setEditing(false)}
                 className="bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-md text-sm font-medium"
               >
                 {t('common:cancel')}

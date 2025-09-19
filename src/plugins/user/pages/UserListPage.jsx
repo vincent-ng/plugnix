@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { userAdminApi } from '../api/adminApi';
 
 const UserListPage = () => {
   const { t } = useTranslation(['user']);
@@ -17,47 +18,23 @@ const UserListPage = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      // 这里使用模拟数据，实际项目中应该从 Supabase 获取
-      const mockUsers = [
-        {
-          id: 1,
-          name: '张三',
-          email: 'zhangsan@example.com',
-          role: 'admin',
-          status: 'active',
-          createdAt: '2024-01-10',
-          lastLogin: '2024-01-15 10:30'
-        },
-        {
-          id: 2,
-          name: '李四',
-          email: 'lisi@example.com',
-          role: 'user',
-          status: 'active',
-          createdAt: '2024-01-12',
-          lastLogin: '2024-01-14 15:20'
-        },
-        {
-          id: 3,
-          name: '王五',
-          email: 'wangwu@example.com',
-          role: 'user',
-          status: 'inactive',
-          createdAt: '2024-01-08',
-          lastLogin: '2024-01-10 09:15'
-        },
-        {
-          id: 4,
-          name: 'John Doe',
-          email: 'john@example.com',
-          role: 'admin',
-          status: 'active',
-          createdAt: '2024-01-05',
-          lastLogin: '2024-01-15 14:45'
-        }
-      ];
+      const { data: fetchedUsers, error } = await userAdminApi.listUsers();
+
+      if (error) {
+        throw error;
+      }
+
+      const formattedUsers = fetchedUsers.map(user => ({
+        id: user.id,
+        name: user.user_metadata?.name || user.email.split('@')[0],
+        email: user.email,
+        role: user.user_metadata?.role || 'user',
+        status: user.email_confirmed_at ? 'active' : 'inactive',
+        createdAt: new Date(user.created_at).toLocaleDateString(),
+        lastLogin: user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A',
+      }));
       
-      setUsers(mockUsers);
+      setUsers(formattedUsers);
     } catch (err) {
       setError(t('fetchFailed'));
       console.error('Error fetching users:', err);
@@ -69,22 +46,31 @@ const UserListPage = () => {
   const handleStatusToggle = async (userId, currentStatus) => {
     try {
       const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-      // 实际项目中应该调用 Supabase API
+      const { data, error } = await userAdminApi.updateUserMetadata(
+        userId,
+        { status: newStatus }
+      );
+
+      if (error) throw error;
+
       setUsers(users.map(user => 
         user.id === userId ? { ...user, status: newStatus } : user
       ));
     } catch (err) {
       setError('更新用户状态失败');
+      console.error('Error updating user status:', err);
     }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm(t('confirmDelete'))) {
       try {
-        // 实际项目中应该调用 Supabase API
+        const { error } = await userAdminApi.deleteUser(id);
+        if (error) throw error;
         setUsers(users.filter(user => user.id !== id));
       } catch (err) {
         setError(t('deleteFailed'));
+        console.error('Error deleting user:', err);
       }
     }
   };

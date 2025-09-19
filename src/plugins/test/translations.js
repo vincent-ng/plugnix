@@ -59,7 +59,8 @@ export default {
     tabs: {
       basic: 'Basic Tests',
       state: 'State Tests',
-      animation: 'Animation Tests'
+      animation: 'Animation Tests',
+      permission: 'Permission Tests'
     },
     stateTest: {
       title: 'Tab State Persistence Test',
@@ -75,6 +76,18 @@ export default {
       currentValue: 'Current value',
       empty: '(empty)',
       instruction: 'How to test: Fill out the inputs above, change the counter, then switch to another tab and come back. All values should be preserved.'
+    },
+    permission: {
+      title: 'Permission System Demo',
+      description: 'Demonstrate basic features of the permission system',
+      uiPermission: 'UI Permission Control',
+      specialFeature: 'Special Feature',
+      specialFeatureDesc: 'This content is only visible to users with the ui.test.show-special-feature permission',
+      dbPermission: 'Database Permission Control',
+      createPost: 'Create Post (requires db.posts.create permission)',
+      fallbackContent: 'Fallback Content When No Permission',
+      noPermissionMessage: 'You do not have permission to access this feature',
+      adminFunction: 'Admin Function'
     }
   },
   zh: {
@@ -136,7 +149,8 @@ export default {
     tabs: {
       basic: '基础测试',
       state: '状态测试',
-      animation: '动画测试'
+      animation: '动画测试',
+      permission: '权限测试'
     },
     stateTest: {
       title: 'Tab状态保持测试',
@@ -152,6 +166,18 @@ export default {
       currentValue: '当前值',
       empty: '(空)',
       instruction: '测试方法：填写上面的输入框，改变计数器，然后切换到其他标签页再回来。所有数值都应该被保留。'
+    },
+    permission: {
+      title: '权限系统演示',
+      description: '演示权限系统的基本功能',
+      uiPermission: 'UI权限控制',
+      specialFeature: '特殊功能',
+      specialFeatureDesc: '这个内容只有拥有 ui.test.show-special-feature 权限的用户才能看到',
+      dbPermission: '数据库权限控制',
+      createPost: '创建文章 (需要 db.posts.create 权限)',
+      fallbackContent: '无权限时的回退内容',
+      noPermissionMessage: '您没有访问此功能的权限',
+      adminFunction: '管理员功能'
     }
   }
 };

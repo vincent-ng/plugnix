@@ -42,6 +42,12 @@ export const createPluginAPI = () => {
       // 可以在这里添加组件验证逻辑
       return registry.registerComponent(name, component);
     },
+
+    // 权限注册
+    registerPermission: (permissionObject) => {
+      // 可以在这里添加权限验证逻辑
+      return registry.registerPermission(permissionObject);
+    },
     
   };
 };

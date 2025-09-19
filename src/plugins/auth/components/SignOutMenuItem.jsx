@@ -1,15 +1,15 @@
-import { useAuth } from '../../../framework/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LogOut } from 'lucide-react';
-import { DropdownMenuItem } from '../../../framework/components/ui/dropdown-menu';
+import { useAuthentication } from '@/framework/contexts/AuthenticationContext';
+import { DropdownMenuItem } from '@/framework/components/ui/dropdown-menu';
 
 /**
  * 登出菜单项组件
  * 这个组件封装了登出逻辑，避免在框架层面硬编码
  */
 const SignOutMenuItem = () => {
-  const { signOut } = useAuth();
+  const { signOut } = useAuthentication();
   const navigate = useNavigate();
   const { t } = useTranslation('auth');
 

@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 
 // 框架核心
-import { AuthProvider } from './framework/contexts/AuthContext';
-import { ThemeProvider } from './framework/contexts/ThemeContext';
-import AdminLayout from './framework/layouts/AdminLayout';
-import PublicLayout from './framework/layouts/PublicLayout';
-import i18n from './framework/i18n';
-import { registry } from './framework/api';
-import RoleBasedGuard from './framework/components/auth/RoleBasedGuard';
+import { AuthenticationProvider } from '@/framework/contexts/AuthenticationContext';
+import { PermissionProvider } from '@/framework/permissions';
+import { ThemeProvider } from '@/framework/contexts/ThemeContext';
+import AdminLayout from '@/framework/layouts/AdminLayout';
+import PublicLayout from '@/framework/layouts/PublicLayout';
+import { Authorized } from '@/framework/permissions';
+import i18n from '@/framework/i18n';
+import { registry } from '@/framework/api';
+import RoleBasedGuard from '@/framework/components/auth/RoleBasedGuard';
 import { Toaster } from '@/framework/components/ui/sonner';
 
 
@@ -64,11 +66,16 @@ const DynamicRoutes = () => {
       <Route path="/" element={<PublicLayout />}>
         {publicRoutes.map((route) => {
           const Element = route.component;
+          
           return (
             <Route
               key={route.path}
               path={route.path === '/' ? '' : route.path.substring(1)}
-              element={<Element />}
+              element={
+                <Authorized permissions={route.permissions}>
+                  <Element />
+                </Authorized>
+              }
               index={route.path === '/'}
             />
           );
@@ -91,7 +98,11 @@ const DynamicRoutes = () => {
             <Route
               key={route.path}
               path={route.path.substring('/admin/'.length)}
-              element={<Element />}
+              element={
+                <Authorized permissions={route.permissions}>
+                  <Element />
+                </Authorized>
+              }
             />
           );
         })}
@@ -128,13 +139,15 @@ function App() {
     <ErrorBoundary>
       <I18nextProvider i18n={i18n}>
         <ThemeProvider>
-          <AuthProvider>
-            <Router>
-              <div className="App">
-                <DynamicRoutes />
-              </div>
-            </Router>
-          </AuthProvider>
+          <AuthenticationProvider>
+            <PermissionProvider>
+              <Router>
+                <div className="App">
+                  <DynamicRoutes />
+                </div>
+              </Router>
+            </PermissionProvider>
+          </AuthenticationProvider>
           <Toaster />
         </ThemeProvider>
       </I18nextProvider>

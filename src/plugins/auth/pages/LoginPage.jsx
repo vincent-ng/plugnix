@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from "@/framework/contexts/AuthContext.jsx";
+import { useAuthentication } from "@/framework/contexts/AuthenticationContext.jsx";
 import { LoginForm } from '../components/login-form';
 
 const LoginPage = () => {
   const { t } = useTranslation('auth');
-  const { signIn } = useAuth();
+  const { signIn } = useAuthentication();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',

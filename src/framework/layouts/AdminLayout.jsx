@@ -1,10 +1,11 @@
 import React from 'react';
-import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext.jsx';
-import { useTheme } from '../contexts/ThemeContext.jsx';
-import { TabProvider, useTabs } from '../contexts/TabContext.jsx';
-import { registry } from '../api';
+import { useAuthentication } from '@/framework/contexts/AuthenticationContext.jsx';
+import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
+import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';
+import { registry } from '@/framework/api';
+import { Authorized } from '@/framework/permissions';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +17,6 @@ import {
 import { Button } from '@components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import { Badge } from '@components/ui/badge';
-import { Separator } from '@components/ui/separator';
 import {
   Sidebar,
   SidebarContent,
@@ -33,7 +33,6 @@ import {
 } from '@components/ui/sidebar';
 import { 
   Home, 
-  Settings, 
   Bell, 
   Search,
   Moon,
@@ -47,7 +46,7 @@ import TabBar from '../components/TabBar.jsx';
 
 const AdminLayoutContent = () => {
   const { t, i18n } = useTranslation('common');
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useAuthentication();
   const { theme, toggleTheme } = useTheme();
   const { tabs, activeTab, openTab, switchTab } = useTabs();
   const navigate = useNavigate();
@@ -93,23 +92,31 @@ const AdminLayoutContent = () => {
             <SidebarMenu>
               {menuItems.map((item) => {
                 const isActive = isActiveRoute(item.path);
+                
+                // 如果菜单项有权限要求，使用Authorized组件包装
+                const menuButton = (
+                  <SidebarMenuButton 
+                     isActive={isActive}
+                     onClick={() => {
+                      openTab({ path: item.path, label: t(item.label) });
+                      navigate(item.path);
+                    }}
+                   >
+                    <Home className="w-4 h-4" />
+                    <span>{t(item.label)}</span>
+                    {isActive && (
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        Active
+                      </Badge>
+                    )}
+                  </SidebarMenuButton>
+                );
+
                 return (
                   <SidebarMenuItem key={item.key}>
-                    <SidebarMenuButton 
-                       isActive={isActive}
-                       onClick={() => {
-                        openTab({ path: item.path, label: t(item.label) });
-                        navigate(item.path);
-                      }}
-                     >
-                      <Home className="w-4 h-4" />
-                      <span>{t(item.label)}</span>
-                      {isActive && (
-                        <Badge variant="secondary" className="ml-auto text-xs">
-                          Active
-                        </Badge>
-                      )}
-                    </SidebarMenuButton>
+                    <Authorized permissions={item.permissions}>
+                      {menuButton}
+                    </Authorized>
                   </SidebarMenuItem>
                 );
               })}

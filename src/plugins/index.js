@@ -1,7 +1,7 @@
 // 插件集成入口文件 - 自动扫描版本
 // 动态导入所有插件的函数
 const importAllPlugins = async () => {
-  const pluginModules = import.meta.glob('./*/index.js');
+  const pluginModules = import.meta.glob('./*/index.{js,jsx}');
   const plugins = [];
   
   for (const path in pluginModules) {

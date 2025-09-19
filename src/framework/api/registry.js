@@ -7,6 +7,7 @@ class Registry {
     this.userMenuItems = []; // 新增：用户菜单项
     this.i18nNamespaces = new Map();
     this.components = new Map();
+    this.permissions = new Map(); // 新增：权限注册
   }
 
   // 注册路由
@@ -51,6 +52,22 @@ class Registry {
     console.log(`I18n namespace registered: ${pluginName}`);
   }
 
+  // 注册权限
+  registerPermission(permissionObject) {
+    if (!permissionObject.name) {
+      throw new Error('Permission must have a name');
+    }
+    
+    const permission = {
+      name: permissionObject.name,
+      description: permissionObject.description || '',
+      ...permissionObject
+    };
+    
+    this.permissions.set(permission.name, permission);
+    console.log(`Permission registered: ${permission.name}`);
+  }
+
   // 获取所有注册的路由
   getRoutes() {
     return this.routes;
@@ -84,6 +101,17 @@ class Registry {
   getComponent(name) {
     return this.components.get(name);
   }
+
+  // 获取所有注册的权限
+  getPermissions() {
+    return this.permissions;
+  }
+
+  // 获取特定权限
+  getPermission(name) {
+    return this.permissions.get(name);
+  }
+
 }
 
 function insertSorted(array, item) {

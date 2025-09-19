@@ -5,6 +5,7 @@ import { Input } from '@/framework/components/ui/input';
 import { Textarea } from '@/framework/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/framework/components/ui/tabs';
+import { Authorized } from '@/framework/permissions';
 
 const TestPage = () => {
   const { t } = useTranslation('test');
@@ -21,10 +22,11 @@ const TestPage = () => {
         </h1>
         
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic">{t('tabs.basic')}</TabsTrigger>
             <TabsTrigger value="state">{t('tabs.state')}</TabsTrigger>
             <TabsTrigger value="animation">{t('tabs.animation')}</TabsTrigger>
+            <TabsTrigger value="permission">{t('tabs.permission')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="basic" className="mt-6">
@@ -230,6 +232,58 @@ const TestPage = () => {
                 </div>
               </div>
             </div>
+          </TabsContent>
+          
+          <TabsContent value="permission" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('permission.title')}</CardTitle>
+                <CardDescription>
+                  {t('permission.description')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* UI权限控制 */}
+                <div className="space-y-2">
+                  <h4 className="font-medium">{t('permission.uiPermission')}</h4>
+                  <Authorized permissions="ui.test.show-special-feature">
+                    <div className="p-3 border rounded-lg bg-blue-50 dark:bg-blue-950">
+                      <h3 className="font-medium">{t('permission.specialFeature')}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {t('permission.specialFeatureDesc')}
+                      </p>
+                    </div>
+                  </Authorized>
+                </div>
+
+                {/* 数据库权限控制 */}
+                <div className="space-y-2">
+                  <h4 className="font-medium">{t('permission.dbPermission')}</h4>
+                  <Authorized permissions="db.posts.create">
+                    <Button variant="default">
+                      {t('permission.createPost')}
+                    </Button>
+                  </Authorized>
+                </div>
+
+                {/* 无权限时的回退内容 */}
+                <div className="space-y-2">
+                  <h4 className="font-medium">{t('permission.fallbackContent')}</h4>
+                  <Authorized 
+                    permissions="db.admin.system"
+                    fallback={
+                      <div className="p-3 border border-dashed rounded-lg text-center text-muted-foreground">
+                        {t('permission.noPermissionMessage')}
+                      </div>
+                    }
+                  >
+                    <Button variant="destructive">
+                      {t('permission.adminFunction')}
+                    </Button>
+                  </Authorized>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
         </div>

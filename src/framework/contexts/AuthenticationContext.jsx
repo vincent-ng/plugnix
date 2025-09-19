@@ -1,17 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/framework/lib/supabase.js';
 
-const AuthContext = createContext({});
+const AuthenticationContext = createContext({});
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
+export const useAuthentication = () => {
+  const context = useContext(AuthenticationContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuthentication must be used within an AuthenticationProvider');
   }
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
+export const AuthenticationProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -109,10 +109,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthenticationContext.Provider value={value}>
       {children}
-    </AuthContext.Provider>
+    </AuthenticationContext.Provider>
   );
 };
 
-export default AuthContext;
+export default AuthenticationContext;

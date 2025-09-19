@@ -1,10 +1,10 @@
 import React from 'react';
-import { useAuth } from '@/framework/contexts/AuthContext';
+import { useAuthentication } from '@/framework/contexts/AuthenticationContext';
 import { Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const RoleBasedGuard = ({ children, roles }) => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuthentication();
   const { t } = useTranslation(['common']);
 
   if (loading) {

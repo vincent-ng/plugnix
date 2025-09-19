@@ -212,13 +212,13 @@ export default function registerYourPlugin({ registerRoute, registerAdminMenuIte
   registerAdminMenuItem({
     label: 'Your Plugin',
     path: '/admin/your-plugin',
-    permission: 'ui.your-plugin.view' // <-- 使用UI权限控制菜单可见性
+    permissions: 'ui.your-plugin.view' // <-- 使用UI权限控制菜单可见性
   });
 
   registerRoute({
     path: '/admin/your-plugin',
     component: YourPluginPage,
-    permission: 'ui.your-plugin.view' // <-- 使用UI权限控制路由访问
+    permissions: 'ui.your-plugin.view' // <-- 使用UI权限控制路由访问
   });
 }
 ```
@@ -229,7 +229,7 @@ export default function registerYourPlugin({ registerRoute, registerAdminMenuIte
 
 ```jsx
 // src/plugins/your-plugin/YourPluginPage.jsx
-import { Authorized } from '@/framework/components/Authorized';
+import { Authorized } from '@/framework/permissions';
 import { Button } from '@/framework/components/ui/button';
 
 export default function YourPluginPage() {
@@ -238,14 +238,14 @@ export default function YourPluginPage() {
       <h2>Your Plugin</h2>
       
       {/* 示例1: 这个按钮的显示与否，取决于用户是否有创建文章的后端权限 */}
-      <Authorized permission="db.posts.create">
+      <Authorized permissions="db.posts.create">
         <Button>Create New Post</Button>
       </Authorized>
 
       <br />
 
       {/* 示例2: 这个区域只有拥有特定UI权限的用户才能看到 */}
-      <Authorized permission="ui.your-plugin.show-special-feature">
+      <Authorized permissions="ui.your-plugin.show-special-feature">
         <div style={{ border: '1px solid grey', padding: '1rem', marginTop: '1rem' }}>
           <h3>Special Feature</h3>
           <p>This content is only visible to users with the 'ui.your-plugin.show-special-feature' permission.</p>
@@ -257,6 +257,122 @@ export default function YourPluginPage() {
 ```
 
 ---
-#### **4. 总结**
+#### **4. 前端权限系统详细使用指南**
+
+##### **4.1 权限获取机制**
+
+PermissionProvider 会自动按以下优先级获取用户权限：
+
+1. **用户元数据权限** - 从 `user.user_metadata.permissions` 获取
+2. **数据库权限** - 从 Supabase 数据库查询用户角色和权限
+3. **模拟权限** - 当数据库查询失败时的降级方案
+
+##### **4.2 基本使用**
+
+```jsx
+import { PermissionProvider } from '@/framework/permissions';
+
+function App() {
+  return (
+    <PermissionProvider>
+      <YourApp />
+    </PermissionProvider>
+  );
+}
+```
+
+PermissionProvider 会自动：
+- 监听用户登录状态变化
+- 从数据库或用户元数据获取权限
+- 提供权限检查方法给子组件
+
+##### **4.3 权限检查**
+
+```jsx
+import { usePermission } from '@/framework/permissions';
+
+function MyComponent() {
+  const { hasPermission, hasAnyPermission, hasAllPermissions } = usePermission();
+  
+  // 单个权限检查
+  const canRead = hasPermission('user.read');
+  
+  // 任一权限检查
+  const canReadOrWrite = hasAnyPermission(['user.read', 'user.write']);
+  
+  // 全部权限检查
+  const canManage = hasAllPermissions(['user.read', 'user.write', 'user.delete']);
+  
+  return (
+    <div>
+      {canRead && <p>可以查看用户</p>}
+      {canReadOrWrite && <p>可以读取或写入</p>}
+      {canManage && <p>可以完全管理用户</p>}
+    </div>
+  );
+}
+```
+
+##### **4.4 组件级权限控制**
+
+```jsx
+import { Authorized } from '@/framework/permissions';
+
+function MyComponent() {
+  return (
+    <div>
+      <Authorized permissions="user.read">
+        <p>只有有读取权限的用户才能看到这个内容</p>
+      </Authorized>
+      
+      <Authorized permissions={['admin.manage', 'user.write']} mode="any">
+        <p>有管理权限或写入权限的用户都能看到</p>
+      </Authorized>
+      
+      <Authorized permissions={['user.read', 'user.write']} mode="all">
+        <p>必须同时有读取和写入权限才能看到</p>
+      </Authorized>
+    </div>
+  );
+}
+```
+
+##### **4.5 权限数据结构**
+
+权限对象应包含以下字段：
+
+```javascript
+{
+  id: string,           // 权限唯一标识
+  name: string,         // 权限名称（用于检查）
+  resource: string,     // 资源类型
+  action: string,       // 操作类型
+  description?: string  // 权限描述（可选）
+}
+```
+
+##### **4.6 最佳实践**
+
+1. **权限命名约定**：
+   - UI 权限：`ui.<plugin>.<action>`
+   - 数据库权限：`db.<table>.<action>`
+   - 系统权限：`system.<action>`
+
+2. **外部权限传入**：
+   - 如果将来需要测试场景，可以考虑重新添加此功能
+   - 目前统一使用自动权限获取，保持简洁
+
+3. **错误处理**：
+   - 系统会自动降级到模拟权限
+   - 生产环境建议监控权限获取失败的情况
+   - 可以通过日志查看权限系统的运行状态
+
+4. **性能优化**：
+   - 权限数据会在用户登录后缓存
+   - 避免在渲染循环中频繁调用权限检查
+   - 考虑使用 React.memo 优化权限相关组件
+
+---
+#### **5. 总结**
 
 通过遵循以上步骤，你可以轻松地为你的插件集成强大而灵活的权限控制。这不仅提升了应用的安全性，也改善了不同用户角色的使用体验。

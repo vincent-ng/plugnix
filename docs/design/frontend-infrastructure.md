@@ -92,7 +92,7 @@
 
   * **上下文管理 (Contexts) - `src/framework/contexts/`**
 
-      * **`AuthContext.jsx`**: 认证状态管理
+      * **`AuthenticationContext.jsx`**: 认证状态管理
       * **`ThemeContext.jsx`**: 主题状态管理
 
   * **国际化 (i18n) - `src/framework/i18n/`**
@@ -143,20 +143,28 @@
         *   `component` (React组件) - 要注册的React组件。
     *   **示例**: `registerComponent('SharedButton', MySharedButton);`
 
+*   **`registerPermission(permissionObject)`**
+    *   **功能**: 为插件注册权限定义，用于声明插件所需的权限。
+    *   **参数**: `permissionObject` (对象) - 包含权限信息的对象
+        *   `name` (字符串，必需) - 权限名称，用于权限检查
+        *   `description` (字符串，可选) - 权限描述
+        *   其他字段会被保留在权限对象中
+    *   **示例**: `registerPermission({ name: 'ui.blog.create', description: '创建博客文章' });`
+
 #### **7. 插件契约 (`src/plugins/*`)**
 
 每个插件都必须遵循一套统一的规范。
 
-  * **入口文件 (`index.js`)**
+  * **入口文件 (`index.js` 或 `index.jsx`)**
 
-      * 每个插件目录必须包含一个 `index.js` 文件。
+      * 每个插件目录必须包含一个 `index.js` 或 `index.jsx` 文件作为插件入口。
       * 该文件必须导出一个默认函数作为插件注册函数。此函数接收框架的注册API作为参数。
-      * **函数签名**: `export default function registerPluginName({ registerRoute, registerAdminMenuItem, registerPublicMenuItem, registerI18nNamespace, registerComponent }) { /* ... */ }`
+      * **函数签名**: `export default function registerPluginName({ registerRoute, registerAdminMenuItem, registerPublicMenuItem, registerI18nNamespace, registerComponent, registerPermission }) { /* ... */ }`
 
   * **插件内部结构**
 
       * 插件的内部目录结构是**完全灵活**的。开发者可以根据插件的复杂度和个人偏好自由组织代码，例如将组件、页面、样式、国际化文件等放在不同的子目录中，或者将所有文件直接放在插件根目录下。
-      * 唯一的要求是 `index.js` 文件必须能够正确导出注册函数，并处理其内部依赖。
+      * 唯一的要求是 `index.js` 或 `index.jsx` 文件必须能够正确导出注册函数，并处理其内部依赖。
 
 #### **8. 插件开发与集成**
 
@@ -172,18 +180,24 @@
     mkdir src/plugins/your-plugin-name
     ```
 
-2.  **创建插件入口文件 (`index.js`)**
+2.  **创建插件入口文件 (`index.js` 或 `index.jsx`)**
 
-    在插件目录中创建 `index.js` 文件。这是插件的唯一必需文件。它必须导出一个默认的注册函数。
+    在插件目录中创建 `index.js` 或 `index.jsx` 文件。这是插件的唯一必需文件。它必须导出一个默认的注册函数。
 
     ```javascript
-    // src/plugins/your-plugin-name/index.js
+    // src/plugins/your-plugin-name/index.js 或 index.jsx
 
     // 导入该插件所需的任何组件、页面或资源
     import YourMainPage from './YourMainPage'; // 这是一个示例
 
     // 插件注册函数
-    export default function registerYourPlugin({ registerRoute, registerPublicMenuItem }) {
+    export default function registerYourPlugin({ registerRoute, registerPublicMenuItem, registerPermission }) {
+      // 注册权限（如果需要）
+      registerPermission({
+        name: 'ui.your-plugin.view',
+        description: '查看你的插件'
+      });
+
       // 在这里调用框架API来注册功能
       registerRoute({
         path: '/your-path',
@@ -207,7 +221,7 @@
     ```
     src/plugins/your-plugin-name/
     ├── YourMainPage.jsx
-    └── index.js
+    └── index.js (或 index.jsx)
     ```
 
     **复杂插件示例:**
@@ -221,7 +235,7 @@
     ├── i18n/
     │   ├── en.json
     │   └── zh.json
-    └── index.js
+    └── index.js (或 index.jsx)
     ```
 
 ##### **7.2 集成插件到主应用**
@@ -230,14 +244,14 @@
 
 1.  **自动发现机制**
 
-    框架会自动扫描 `src/plugins/` 目录下的所有子目录，寻找包含 `index.js` 文件的插件。只要插件目录结构正确，就会被自动发现和加载。
+    框架会自动扫描 `src/plugins/` 目录下的所有子目录，寻找包含 `index.js` 或 `index.jsx` 文件的插件。只要插件目录结构正确，就会被自动发现和加载。
 
     ```javascript
     // src/plugins/index.js - 自动扫描版本
     
     // 动态导入所有插件的函数
     const importAllPlugins = async () => {
-      const pluginModules = import.meta.glob('./*/index.js');
+      const pluginModules = import.meta.glob('./*/index.{js,jsx}');
       const plugins = [];
       
       for (const path in pluginModules) {
@@ -289,7 +303,7 @@
 
     现在开发新插件只需要：
     - 在 `src/plugins/` 下创建插件目录
-    - 创建 `index.js` 入口文件并导出注册函数
+    - 创建 `index.js` 或 `index.jsx` 入口文件并导出注册函数
     - 插件会被自动发现和加载，无需任何额外配置
 
 ##### **7.3 最佳实践**
@@ -297,6 +311,7 @@
 *   **保持自包含**: 插件应避免直接依赖其他插件。
 *   **命名规范**: 插件目录使用小写和连字符，组件使用 `PascalCase`。
 *   **国际化**: 所有面向用户的文本都应通过 `registerI18nNamespace` API 进行国际化。
+*   **权限管理**: 如果插件需要权限控制，应通过 `registerPermission` API 声明所需权限。
 
 ##### **7.4 插件示例参考**
 

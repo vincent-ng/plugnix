@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../contexts/ThemeContext.jsx';
-import { registry } from '../api';
+import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
+import { registry } from '@/framework/api';
 import { Button } from '@components/ui/button';
 import { Badge } from '@components/ui/badge';
 import { Card, CardContent } from '@components/ui/card';
@@ -10,11 +10,9 @@ import { Separator } from '@components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from '@components/ui/navigation-menu';
 import {

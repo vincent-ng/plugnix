@@ -8,6 +8,7 @@
 - 🎨 **主题切换**: 内置明暗主题切换功能
 - 🌍 **国际化**: 完整的 i18n 支持
 - 🔐 **认证系统**: 集成 Supabase 认证
+- 🛡️ **权限控制**: 基于 RBAC 的统一权限管理系统
 - 📱 **响应式设计**: 基于 Tailwind CSS 的现代化 UI
 - ⚡ **高性能**: Vite 构建工具，快速开发和构建
 - 🛠️ **TypeScript**: 完整的类型支持
@@ -89,29 +90,37 @@ web-plugin-framework/
 ### 创建新插件
 
 1. 在 `src/plugins/` 目录下创建插件文件夹
-2. 创建插件入口文件 `index.js`：
+2. 创建插件入口文件 `index.js` 或 `index.jsx`：
 
 ```javascript
 // src/plugins/my-plugin/index.js
 import MyPage from './pages/MyPage';
 
-const registerMyPlugin = (api) => {
+const registerMyPlugin = ({ registerRoute, registerMenuItem, registerI18nNamespace, registerPermission }) => {
+  // 注册权限
+  registerPermission({
+    name: 'ui.my-plugin.view',
+    description: '查看我的插件'
+  });
+  
   // 注册路由
-  api.registerRoute({
+  registerRoute({
     path: 'my-feature',
-    component: <MyPage />
+    component: <MyPage />,
+    permissions: 'ui.my-plugin.view'
   });
   
   // 注册菜单项
-  api.registerMenuItem({
+  registerMenuItem({
     key: 'my-feature',
     label: 'My Feature',
     path: '/admin/my-feature',
-    icon: '🚀'
+    icon: '🚀',
+    permissions: 'ui.my-plugin.view'
   });
   
   // 注册国际化
-  api.registerI18nNamespace('my-plugin', {
+  registerI18nNamespace('my-plugin', {
     en: { title: 'My Plugin' },
     zh: { title: '我的插件' }
   });
@@ -139,6 +148,7 @@ const plugins = [
 - `registerMenuItem(menuItem)` - 注册菜单项
 - `registerComponent(name, component)` - 注册组件
 - `registerI18nNamespace(namespace, translations)` - 注册国际化资源
+- `registerPermission(permissionObject)` - 注册权限定义
 
 ## 🎨 主题系统
 
@@ -173,12 +183,36 @@ function MyComponent() {
 - 权限控制
 
 ```jsx
-import { useAuth } from '@/framework/contexts/AuthContext';
+import { useAuthentication } from '@/framework/contexts/AuthenticationContext';
 
 function MyComponent() {
-  const { user, login, logout } = useAuth();
+  const { user, login, logout } = useAuthentication();
   
   // 使用认证功能
+}
+```
+
+## 🛡️ 权限系统
+
+框架提供基于 RBAC 的权限管理系统：
+
+```jsx
+import { usePermission, Authorized } from '@/framework/permissions';
+
+function MyComponent() {
+  const { hasPermission } = usePermission();
+  
+  return (
+    <div>
+      {/* 条件渲染 */}
+      {hasPermission('ui.admin.view') && <AdminPanel />}
+      
+      {/* 组件包装 */}
+      <Authorized permissions="db.posts.create">
+        <CreatePostButton />
+      </Authorized>
+    </div>
+  );
 }
 ```
 
@@ -201,6 +235,7 @@ function MyComponent() {
 - **样式**: Tailwind CSS
 - **国际化**: react-i18next
 - **认证**: Supabase
+- **权限管理**: 基于 RBAC 的权限系统
 - **代码规范**: ESLint
 - **类型检查**: TypeScript
 
@@ -209,6 +244,7 @@ function MyComponent() {
 更多详细文档请查看 `docs/` 目录：
 
 - [架构设计](docs/design/frontend-infrastructure.md)
+- [权限系统设计](docs/design/permission-system-design.md)
 - [插件开发指南](docs/plugin-development.md)
 - [API 参考](docs/api-reference.md)
 

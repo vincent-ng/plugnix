@@ -29,158 +29,92 @@
 ---
 #### **3. 系统如何工作？**
 
-##### **第一步：数据库设置**
+##### **第一步：数据库设置与初始化**
 
-我们的权限模型依赖于Supabase中的四张核心表。你可以将下面的SQL脚本一次性复制到Supabase SQL Editor中执行，以完成所有表的创建和配置。
+我们所有的核心数据库对象，包括权限系统的四张核心表（`permissions`, `roles`, `role_permissions`, `user_roles`）、所有辅助函数以及初始的`admin`角色和权限数据，都已整合到一个统一的SQL脚本中。
 
-```sql
--- ==== 0. 创建一个可重用的触发器函数, 用于自动更新 updated_at 时间戳 ====
-CREATE OR REPLACE FUNCTION handle_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  -- 将新记录的 updated_at 字段设置为当前事务的时间戳
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+首先，我们需要一个包含所有权限定义、角色和辅助函数的基础环境。
 
+- [**数据库初始化脚本**](./database-initialization.sql)
 
--- ==== 1. `permissions` 表: 存储所有可用的权限 ====
-CREATE TABLE permissions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
+执行此脚本会创建 `permissions`, `roles`, `check_permission()` 等核心对象。
 
-COMMENT ON COLUMN permissions.id IS '权限的唯一标识符';
-COMMENT ON COLUMN permissions.name IS '权限的唯一名称 (例如, ''db.posts.create'', ''ui.dashboard.view'')';
-COMMENT ON COLUMN permissions.description IS '对该权限用途的友好描述';
-COMMENT ON COLUMN permissions.created_at IS '权限创建时的时间戳';
-COMMENT ON COLUMN permissions.updated_at IS '权限最后更新时的时间戳';
+##### **第二步：为普通用户强制执行数据访问策略 (RLS)**
 
--- RLS Policy: 允许公开读取权限
-ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access to permissions" ON permissions FOR SELECT USING (true);
+这是权限系统的核心应用场景：控制普通用户能看到和操作哪些数据。这是通过将 `check_permission()` 函数嵌入到表的RLS策略中实现的。
 
--- Trigger: 在每次更新前调用 handle_updated_at 函数
-CREATE TRIGGER on_permissions_update
-  BEFORE UPDATE ON permissions
-  FOR EACH ROW
-  EXECUTE FUNCTION handle_updated_at();
+**工作流程示例 (用户读取文章):**
 
+1.  **定义权限**: 首先，在 `permissions` 表中定义一个“读取文章”的权限。
+    ```sql
+    -- 在初始化脚本中已包含
+    INSERT INTO permissions (name, description) VALUES ('db.posts.select', 'Read posts');
+    ```
 
--- ==== 2. `roles` 表: 存储所有角色 ====
-CREATE TABLE roles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL UNIQUE,
-  description TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
+2.  **创建RLS策略**: 在 `posts` 表上，我们创建一个 `SELECT` 策略。这个策略的 `USING` 子句会调用 `check_permission()`。
+    ```sql
+    -- 为 posts 表启用 RLS
+    ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 
-COMMENT ON COLUMN roles.id IS '角色的唯一标识符';
-COMMENT ON COLUMN roles.name IS '角色的唯一名称 (例如, ''admin'', ''editor'')';
-COMMENT ON COLUMN roles.description IS '对该角色用途的友好描述';
-COMMENT ON COLUMN roles.created_at IS '角色创建时的时间戳';
-COMMENT ON COLUMN roles.updated_at IS '角色最后更新时的时间戳';
+    -- 创建一个策略，只有拥有 'db.posts.select' 权限的用户才能读取数据
+    CREATE POLICY "Allow users to read posts based on permission"
+      ON posts FOR SELECT
+      USING ( check_permission('db.posts.select') );
+    ```
 
--- RLS Policy: 允许公开读取角色
-ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access to roles" ON roles FOR SELECT USING (true);
+3.  **规则生效**: 设置完成后，任何用户（无论通过前端、API还是直接连接数据库）执行 `SELECT * FROM posts;` 时，PostgreSQL都会自动在后台执行 `check_permission('db.posts.select')`。只有当该函数返回 `true` 时，查询才会成功；否则，用户将收到一个空结果集，就好像这个表是空的一样。
 
--- Trigger: 在每次更新前调用 handle_updated_at 函数
-CREATE TRIGGER on_roles_update
-  BEFORE UPDATE ON roles
-  FOR EACH ROW
-  EXECUTE FUNCTION handle_updated_at();
+通过这种方式，我们将权限逻辑下沉到了数据库，实现了与具体应用代码无关的、统一且可靠的安全保障。
 
+##### **第三步：为管理员提供安全可控的管理操作 (RPC)**
 
--- ==== 3. `role_permissions` 表: 关联角色与权限 (多对多) ====
-CREATE TABLE role_permissions (
-  role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
-  PRIMARY KEY (role_id, permission_id)
-);
+对于一些高级的管理任务，例如“为一个表启用RLS”，我们不希望前端或普通用户能随意执行。这些操作被封装在安全的RPC函数中，并且只有特定的管理员角色才能调用。
 
-COMMENT ON COLUMN role_permissions.role_id IS '外键，引用 roles 表';
-COMMENT ON COLUMN role_permissions.permission_id IS '外键，引用 permissions 表';
+**工作流程示例 (管理员启用RLS):**
 
--- RLS Policy: 允许公开读取角色-权限关系
-ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow public read access to role_permissions" ON role_permissions FOR SELECT USING (true);
+1.  **前端调用RPC**: 管理员在后台管理界面点击一个按钮，前端调用 `enable_rls` 函数。
+    ```javascript
+    const { error } = await supabase.rpc('enable_rls', { p_table_name: 'posts' });
+    ```
 
+2.  **RPC内部鉴权**: `enable_rls` 函数的第一步，就是检查调用者是否拥有 `system.rpc.invoke` 这个特殊的管理权限。
+    ```sql
+    -- enable_rls 函数的实现摘录
+    CREATE OR REPLACE FUNCTION enable_rls(p_table_name TEXT)
+    RETURNS VOID AS $$
+    BEGIN
+      -- 关键：检查调用者是否是授权的管理员
+      IF NOT check_permission('system.rpc.invoke') THEN
+        RAISE EXCEPTION 'Authorization failed: Requires admin privileges.';
+      END IF;
 
--- ==== 4. `user_roles` 表: 关联用户与角色 (多对多) ====
-CREATE TABLE user_roles (
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
-  PRIMARY KEY (user_id, role_id)
-);
+      -- 鉴权通过后，才执行核心逻辑
+      EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', p_table_name);
+    END;
+    $$ LANGUAGE plpgsql;
+    ```
 
-COMMENT ON COLUMN user_roles.user_id IS '外键，引用 auth.users 表';
-COMMENT ON COLUMN user_roles.role_id IS '外键，引用 roles 表';
+这样，我们就清晰地分离了两种场景：
+- **普通用户**: 其数据访问权限由RLS策略在数据库层面自动强制执行。
+- **管理员**: 其系统管理能力由受保护的RPC函数提供，每次调用都需经过严格的权限校验。
 
--- RLS Policy: 允许用户读取自己的角色
-ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to read their own roles" ON user_roles FOR SELECT USING (auth.uid() = user_id);
+##### **第四步：前端UI的动态渲染**
+
+前端UI应根据用户拥有的权限动态展示或禁用相关操作。这可以通过 `get_user_permissions()` 函数实现，该函数会返回当前登录用户的所有权限列表。
+
+```javascript
+// 示例：获取当前用户的所有权限
+async function fetchUserPermissions() {
+  const { data, error } = await supabase.rpc('get_user_permissions');
+  if (error) {
+    console.error('Error fetching user permissions:', error);
+    return [];
+  }
+  return data; // e.g., ['db.posts.select', 'db.posts.insert']
+}
 ```
 
-##### **第二步：初始化系统权限 (重要！)**
-
-为了让系统能够启动，我们需要一个拥有最高权限的`admin`角色。这个角色需要能够管理所有与权限相关的表，以便后续在前端创建权限管理插件。
-
-请执行以下SQL语句来创建`admin`角色并授予其管理权限、角色和用户分配的初始权限：
-
-```sql
--- 1. 创建一个名为 'admin' 的角色
-INSERT INTO roles (name, description) VALUES ('admin', 'Super Administrator with all permissions');
-
--- 2. 定义管理权限系统所需的核心权限
-INSERT INTO permissions (name, description) VALUES
-  ('db.permissions.select', 'Read all permissions'),
-  ('db.permissions.insert', 'Create new permissions'),
-  ('db.permissions.update', 'Update existing permissions'),
-  ('db.permissions.delete', 'Delete permissions'),
-  ('db.roles.select', 'Read all roles'),
-  ('db.roles.insert', 'Create new roles'),
-  ('db.roles.update', 'Update existing roles'),
-  ('db.roles.delete', 'Delete roles'),
-  ('db.role_permissions.select', 'Read role-permission assignments'),
-  ('db.role_permissions.insert', 'Assign permissions to roles'),
-  ('db.role_permissions.delete', 'Remove permissions from roles'),
-  ('db.user_roles.select', 'Read user-role assignments'),
-  ('db.user_roles.insert', 'Assign roles to users'),
-  ('db.user_roles.delete', 'Remove roles from users');
-
--- 3. 将上述所有权限授予 'admin' 角色
-DO $$
-DECLARE
-  admin_role_id UUID;
-  perm_id UUID;
-BEGIN
-  -- 获取 admin 角色的 ID
-  SELECT id INTO admin_role_id FROM roles WHERE name = 'admin';
-
-  -- 遍历所有刚刚创建的权限并分配给 admin 角色
-  FOR perm_id IN (SELECT id FROM permissions WHERE name LIKE 'db.%')
-  LOOP
-    INSERT INTO role_permissions (role_id, permission_id) VALUES (admin_role_id, perm_id);
-  END LOOP;
-END $$;
-```
-
-**注意**: 上述SQL执行后，你还需要手动将`admin`角色分配给你的管理员用户。这可以通过在`user_roles`表中插入一条记录来完成，例如：
-`INSERT INTO user_roles (user_id, role_id) VALUES ('你的管理员用户ID', 'admin角色的ID');`
-
-##### **第三步：后端API授权**
-
-我们的通用Edge Function (`admin-api-proxy`) 会在每次接收到请求时，自动检查用户是否拥有执行操作所需的权限。它会根据请求的 `table` 和 `operation` 参数，自动在前面加上 `db.` 前缀来构建所需的权限字符串。
-
-例如，一个删除`posts`表的请求 (`{ operation: 'delete', table: 'posts' }`) 会被转换成检查用户是否拥有 `db.posts.delete` 权限。
-
-这个过程对插件开发者是透明的。你只需要确保你的操作有对应的权限定义，并且用户被授予了正确的角色。
+如果权限列表中包含 `db.posts.insert`，前端就可以渲染“创建新文章”的按钮。如果一个管理员的权限列表中包含 `system.rpc.invoke`，前端就可以渲染“数据库管理”的整个模块。
 
 ##### **第四步：前端UI控制**
 

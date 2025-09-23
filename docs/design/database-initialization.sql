@@ -17,6 +17,14 @@
 -- SECTION 1: CORE HELPER FUNCTIONS
 -- =====================================================================================
 
+-- Function to get the well-known ID of the 'System' group.
+CREATE OR REPLACE FUNCTION get_system_group_id()
+RETURNS UUID AS $$
+BEGIN
+  RETURN '00000000-0000-0000-0000-000000000001';
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 -- Function to automatically update the `updated_at` timestamp on row modification.
 CREATE OR REPLACE FUNCTION handle_updated_at()
 RETURNS TRIGGER AS $$
@@ -35,14 +43,11 @@ $$ LANGUAGE plpgsql;
 -- It checks if the user has the permission via the dedicated 'System' group.
 CREATE OR REPLACE FUNCTION check_permission(permission_name TEXT)
 RETURNS BOOLEAN AS $$
-DECLARE
-  -- The 'System' group has a fixed, well-known ID.
-  system_group_id UUID := '00000000-0000-0000-0000-000000000001';
 BEGIN
   -- Delegate the check to the group permission function for the System group.
   -- The `with_system_fallback=false` argument prevents it from recursively checking
   -- system permissions again, thus avoiding an infinite loop.
-  RETURN check_group_permission(system_group_id, permission_name, with_system_fallback := false);
+  RETURN check_group_permission(get_system_group_id(), permission_name, with_system_fallback := false);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -159,10 +164,8 @@ CREATE TABLE groups (
   name TEXT NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
-COMMENT ON COLUMN groups.user_id IS 'The user who created the group, for audit purposes.';
 ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
 -- Policies for `groups` table
 SELECT create_rls_policy('groups', 'SELECT', p_group_id_column := 'id');
@@ -258,6 +261,48 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
+-- Promotes a user to a system administrator.
+-- If p_user_id is NULL, it will promote the first user found in the system.
+CREATE OR REPLACE FUNCTION promote_user_to_admin(p_user_id UUID DEFAULT NULL)
+RETURNS VOID AS $$
+DECLARE
+  target_user_id UUID;
+  admin_role_id UUID;
+  system_group_id UUID := get_system_group_id();
+BEGIN
+  -- 1. Determine the target user ID.
+  IF p_user_id IS NULL THEN
+    SELECT id INTO target_user_id FROM auth.users ORDER BY created_at LIMIT 1;
+    IF target_user_id IS NULL THEN
+      RAISE EXCEPTION 'No users found in the system.';
+    END IF;
+  ELSE
+    target_user_id := p_user_id;
+  END IF;
+
+  -- 2. Get the Admin role ID from the System group.
+  -- It's the first role created for the system group.
+  SELECT id INTO admin_role_id
+  FROM public.roles
+  WHERE group_id = system_group_id
+  ORDER BY created_at
+  LIMIT 1;
+
+  IF admin_role_id IS NULL THEN
+    RAISE EXCEPTION 'Admin role not found for the System group. Initialization might be incomplete.';
+  END IF;
+
+  -- 3. Add the user to the System group with the Admin role.
+  -- Use ON CONFLICT to avoid errors if the user is already in the group.
+  INSERT INTO public.group_users (group_id, user_id, role_id)
+  VALUES (system_group_id, target_user_id, admin_role_id)
+  ON CONFLICT (group_id, user_id) DO UPDATE SET role_id = admin_role_id;
+
+  RAISE NOTICE 'User % has been promoted to system administrator.', target_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 -- =====================================================================================
 -- SECTION 6: GRANULAR TABLE MANAGEMENT FUNCTIONS (RPC)
 -- =====================================================================================
@@ -338,7 +383,7 @@ $$ LANGUAGE plpgsql;
 -- =====================================================================================
 
 -- Create the foundational 'System' group. This group is for managing admins and system-level permissions.
-INSERT INTO public.groups (id, name, description) VALUES ('00000000-0000-0000-0000-000000000001', 'System', 'Group for system-level administrators and permissions.');
+INSERT INTO public.groups (id, name, description) VALUES (get_system_group_id(), 'System', 'Group for system-level administrators and permissions.');
 
 -- Define the core permissions required for the system.
 -- Some are for admins (via the System group), others are for role-based assignment within user groups.
@@ -379,12 +424,12 @@ INSERT INTO public.roles (name, description) VALUES
 
 -- Create the 'Admin' role within the 'System' group.
 INSERT INTO public.roles (group_id, name, description)
-VALUES ('00000000-0000-0000-0000-000000000001', 'Admin', 'System Administrator with full permissions.');
+VALUES (get_system_group_id(), 'Admin', 'System Administrator with full permissions.');
 
 -- Assign all existing permissions to the 'Admin' role in the 'System' group.
 INSERT INTO public.role_permissions (role_id, permission_id)
 SELECT
-  (SELECT id FROM public.roles WHERE name = 'Admin' AND group_id = '00000000-0000-0000-0000-000000000001'),
+  (SELECT id FROM public.roles WHERE group_id = get_system_group_id()),
   p.id
 FROM public.permissions p;
 
@@ -435,6 +480,7 @@ BEGIN
   DROP FUNCTION IF EXISTS public.check_permission(text);
   DROP FUNCTION IF EXISTS public.check_group_permission(uuid, text, boolean);
   DROP FUNCTION IF EXISTS public.create_group(text);
+  DROP FUNCTION IF EXISTS public.promote_user_to_admin(uuid);
   DROP FUNCTION IF EXISTS public.add_updated_at_trigger(text);
   DROP FUNCTION IF EXISTS public.remove_updated_at_trigger(text);
   DROP FUNCTION IF EXISTS public.setup_rbac_rls(text);

@@ -92,54 +92,59 @@
 
 ## 首次部署：创建第一个管理员
 
-本框架的权限系统通过一个被授予了所有权限的“管理员”角色（`Admin` role）来识别系统管理员。要让第一个用户成为系统管理员，需要一个一次性的手动引导（Bootstrapping）过程，将其与这个角色关联起来。
+本框架的权限系统依赖一个特殊的“系统组”和“Admin”角色来识别管理员。要让第一个用户成为系统管理员，需要一个一次性的手动引导（Bootstrapping）过程。
 
 **前提：**
 
 1.  您已经将项目连接到 Supabase 后端。
-2.  您已经执行了 `docs/design/database-initialization.sql` 脚本。该脚本会创建 `Admin` 角色，并为其授予所有系统级权限。同时，它会创建一个用于分配此角色的特殊用户组。
+2.  您已经在 Supabase 的 SQL Editor 中执行了 `docs/design/database-initialization.sql` 脚本。
 
 **操作步骤：**
 
 1.  **获取您的用户ID (User ID)**
-    *   登录您的应用，触发 Supabase 的用户认证。
+    *   通过您的应用注册并登录，以在 Supabase 中创建用户记录。
     *   访问 Supabase 后台的 **Authentication** > **Users** 页面。
     *   找到您的用户记录，并复制其 `ID`（一个UUID格式的字符串）。
 
-2.  **为用户赋予“Admin”角色**
-    *   在 Supabase 后台，导航到 **Table Editor**。
-    *   打开 `group_users` 表。这是将用户、组和角色关联起来的表。
-    *   点击 **+ Insert row** 创建一条新记录，将您的用户ID与系统预设的管理员角色关联起来。
-        *   `user_id`: 粘贴您在上一步复制的用户ID。
-        *   `group_id`: 填入用于系统管理的特殊组的ID。
-        *   `role_id`: 填入 `Admin` 角色的ID。
-    *   保存该记录。
+2. **创建第一个管理员**
 
-*（注意：具体的 `group_id` 和 `role_id` 的值是在 `database-initialization.sql` 脚本中定义的。通常情况下，您无需关心这些固定的UUID值。）*
+   框架初始化后，你需要一个管理员账户来管理系统。请按照以下步骤操作：
 
-完成以上步骤后，重新登录您的Web应用。此时，您的账户就拥有了完整的管理员权限，可以看到并使用所有后台管理功能，例如“权限管理”插件的界面。
+   - **注册一个用户**：通过你的应用前端正常注册一个新用户。
+   - **提升为管理员**：在 Supabase SQL 编辑器中执行以下命令，将你刚刚注册的用户提升为管理员。你也可以不指定用户ID，函数会自动将系统中的第一个用户提升为管理员。
 
----
+     ```sql
+     -- 将 'YOUR_USER_ID' 替换为你的用户ID，或直接运行以自动选择第一个用户
+     SELECT promote_user_to_admin('YOUR_USER_ID');
+     ```
 
-## 详细设计文档索引
+     或者，如果你想让函数自动选择第一个注册的用户：
+
+     ```sql
+     -- 函数会自动找到第一个用户并将其提升为管理员
+     SELECT promote_user_to_admin();
+     ```
+
+### 详细设计文档索引
 
 以下是各个专题的详细设计文档，帮助您深入了解框架的特定方面。
 
-### 核心架构与开发
-- [**插件开发指南**](design/guide-plugin-development.md) - **（推荐新开发者阅读）** 学习如何创建、开发和集成您的第一个插件。
+### 入门与核心概念
+- [**插件开发指南**](design/guide-plugin-development.md) - **（新开发者必读）** 学习如何创建、开发和集成您的第一个插件。
+- [**统一权限模型**](design/feature-permission-group.md) - 深入理解框架基于“用户组”和“系统组”的统一权限设计。
 - [**框架API参考**](design/api-reference.md) - 框架提供的所有注册函数的详细技术文档。
-- [**权限系统设计**](design/feature-permission-system.md) - RBAC权限模型的完整设计，包括数据库结构和前后端集成。
-- [**权限管理插件**](design/plugin-permission-management.md) - 权限管理界面的设计和实现。
 
-### UI/UX设计
-- [**颜色系统指南**](design/guide-color-system.md) - 框架颜色变量使用规范，确保主题一致性。
+### 后端与数据库
+- [**数据库初始化脚本**](design/database-initialization.sql) - 包含所有核心表、函数和种子数据的统一SQL脚本。
+- [**数据库设计约定**](design/database-conventions.md) - 数据库表结构、字段命名规范及权限加载机制。
+
+### 功能与插件设计
+- [**权限管理插件**](design/plugin-permission-management.md) - “权限管理”插件的设计与实现。
+- [**数据库安全插件**](design/plugin-admin-db-security.md) - “数据库安全”插件，用于管理RLS策略和安全函数。
 - [**多标签页功能**](design/feature-multi-tab.md) - 后台管理界面的多Tab导航功能设计。
 
-### 后端集成
-- [**数据库设计约定**](design/database-conventions.md) - 数据库表结构、字段命名规范及权限加载机制。
-- [**统一权限模型**](design/feature-permission-group.md) - 框架最终的、基于集团的统一权限模型设计。
-
-- [**数据库初始化脚本**](design/database-initialization.sql) - 包含所有核心表、函数和种子数据的统一SQL脚本。
+### UI/UX
+- [**颜色系统指南**](design/guide-color-system.md) - 框架颜色变量使用规范，确保主题一致性。
 
 ## 贡献指南
 

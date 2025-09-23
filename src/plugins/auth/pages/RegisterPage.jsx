@@ -51,6 +51,18 @@ const RegisterPage = () => {
       });
       
       if (result.success) {
+        try {
+          // 注册成功，创建默认群组
+          const groupName = `${formData.email.split('@')[0]}'s Group`;
+          const { error: rpcError } = await supabase.rpc('create_group', { p_group_name: groupName });
+          if (rpcError) {
+            console.error('创建群组失败:', rpcError);
+            // 即便创建群组失败，也只在控制台打印错误，不影响用户登录流程
+          }
+        } catch (e) {
+          console.error('调用create_group RPC时出错:', e);
+        }
+
         setSuccess(t('registerSuccess'));
         // 延迟跳转到登录页面
         setTimeout(() => {

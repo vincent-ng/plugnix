@@ -31,7 +31,8 @@
 
 ### 自动发现 (Auto Discovery)
 - 通过动态扫描插件目录，自动发现和加载所有插件，无需手动维护插件列表。
-- 利用 Vite 的 `import.meta.glob` 功能在构建时优化动态导入，保持良好的性能。
+- `src/plugins/index.js` 是实现自动发现的关键。该文件利用 Vite 的 `import.meta.glob` 功能，在构建时扫描所有 `src/plugins/*/index.{js,jsx}` 文件。
+- `import.meta.glob` 会创建一个模块映射，然后在应用启动时，框架可以遍历这个映射，动态地 `import` 每个插件的入口文件并执行其中的注册函数。这个过程是自动化的，开发者只需将插件放入 `plugins` 目录即可。
 
 ## 目录结构
 
@@ -40,9 +41,11 @@
 ├── src/
 │   ├── framework/                  # 框架核心代码
 │   │   ├── api/                    # 框架提供的API
+│   │   ├── components/             # UI组件 (shadcn)
 │   │   ├── contexts/               # 全局上下文
 │   │   ├── i18n/                   # 框架的国际化配置
-│   │   └── layouts/                # 页面布局组件
+│   │   ├── layouts/                # 页面布局组件
+│   │   └── lib/                    # 框架工具库
 │   │
 │   ├── plugins/                    # 所有功能插件
 │   │   ├── auth/                   # 认证插件
@@ -51,8 +54,6 @@
 │   │   ├── about/                  # 关于页面插件
 │   │   ├── landing/                # 首页插件
 │   │   └── index.js                # 插件的自动扫描入口
-│   │
-│   ├── lib/                        # 工具库
 │   │
 │   ├── App.jsx                     # 应用根组件
 │   ├── main.jsx                    # 应用主入口
@@ -89,6 +90,37 @@
 
       * **`index.js`**: i18n配置和插件翻译资源的集成逻辑
 
+## 首次部署：创建第一个管理员
+
+本框架的权限系统通过一个被授予了所有权限的“管理员”角色（`Admin` role）来识别系统管理员。要让第一个用户成为系统管理员，需要一个一次性的手动引导（Bootstrapping）过程，将其与这个角色关联起来。
+
+**前提：**
+
+1.  您已经将项目连接到 Supabase 后端。
+2.  您已经执行了 `docs/design/database-initialization.sql` 脚本。该脚本会创建 `Admin` 角色，并为其授予所有系统级权限。同时，它会创建一个用于分配此角色的特殊用户组。
+
+**操作步骤：**
+
+1.  **获取您的用户ID (User ID)**
+    *   登录您的应用，触发 Supabase 的用户认证。
+    *   访问 Supabase 后台的 **Authentication** > **Users** 页面。
+    *   找到您的用户记录，并复制其 `ID`（一个UUID格式的字符串）。
+
+2.  **为用户赋予“Admin”角色**
+    *   在 Supabase 后台，导航到 **Table Editor**。
+    *   打开 `group_users` 表。这是将用户、组和角色关联起来的表。
+    *   点击 **+ Insert row** 创建一条新记录，将您的用户ID与系统预设的管理员角色关联起来。
+        *   `user_id`: 粘贴您在上一步复制的用户ID。
+        *   `group_id`: 填入用于系统管理的特殊组的ID。
+        *   `role_id`: 填入 `Admin` 角色的ID。
+    *   保存该记录。
+
+*（注意：具体的 `group_id` 和 `role_id` 的值是在 `database-initialization.sql` 脚本中定义的。通常情况下，您无需关心这些固定的UUID值。）*
+
+完成以上步骤后，重新登录您的Web应用。此时，您的账户就拥有了完整的管理员权限，可以看到并使用所有后台管理功能，例如“权限管理”插件的界面。
+
+---
+
 ## 详细设计文档索引
 
 以下是各个专题的详细设计文档，帮助您深入了解框架的特定方面。
@@ -105,6 +137,7 @@
 
 ### 后端集成
 - [**数据库设计约定**](design/database-conventions.md) - 数据库表结构、字段命名规范及权限加载机制。
+- [**统一权限模型**](design/feature-permission-group.md) - 框架最终的、基于集团的统一权限模型设计。
 
 - [**数据库初始化脚本**](design/database-initialization.sql) - 包含所有核心表、函数和种子数据的统一SQL脚本。
 

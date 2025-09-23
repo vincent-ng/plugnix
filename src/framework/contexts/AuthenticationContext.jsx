@@ -62,7 +62,8 @@ export const AuthenticationProvider = ({ children }) => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.auth.signUp({
+      // 1. 注册用户
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -70,11 +71,22 @@ export const AuthenticationProvider = ({ children }) => {
         }
       });
       
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+
+      // 2. 注册成功后，立即登录
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) throw signInError;
+
+      // 3. 更新用户状态
+      setUser(signInData.user);
       
-      return { success: true, data };
+      return { success: true, data: signInData };
     } catch (error) {
-      console.error('注册失败:', error.message);
+      console.error('注册或自动登录失败:', error.message);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);

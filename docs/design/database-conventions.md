@@ -18,13 +18,13 @@
 
 为自动化 `updated_at` 的更新，框架提供了 `add_updated_at_trigger(p_table_name TEXT)` 函数。
 
-#### **1.2 所有权 (`user_id`)**
+#### **1.2 创建者标记 (`user_id`)**
 
-对于用户可以创建和拥有的数据（例如文章、评论），表应包含一个 `user_id` 字段，用于记录创建者的唯一ID。
+对于需要明确记录创建者的数据（例如文章、评论），表应包含一个 `user_id` 字段。
 
 *   `user_id`: `UUID` 类型, `DEFAULT auth.uid()`。它应引用 `auth.users(id)`。
 
-`DEFAULT auth.uid()` 会在 `INSERT` 时自动将当前登录用户的ID填充到该字段。
+在统一权限模型下，此字段的主要作用是**审计和数据归属**（例如，在UI上显示“由...创建”），而不再是RLS策略中进行“所有权”判断的主要依据。权限检查完全由 `group_id` 和关联的权限函数处理。
 
 ### **2. 用户与权限**
 
@@ -38,40 +38,37 @@
 
 - [**权限系统设计**](./feature-permission-system.md)
 
-### **3. RLS 策略最佳实践：所有权与 RBAC 结合**
+### **3. 统一权限模型：基于“用户组”与“系统组”的RLS策略**
 
-行级安全 (RLS) 是我们权限控制的核心。我们推荐采用一种结合了“所有权”和“基于角色的访问控制 (RBAC)”的混合模式。
+我们最终的权限模型是一个统一的、基于RBAC的机制，它通过“用户组”管理常规协作，通过一个特殊的“系统组”管理全局管理员权限。
 
-#### **原则**
+#### **核心思想：统一的组权限检查**
 
-1.  **所有者优先**: 记录的创建者（所有者）默认拥有对该记录的完全控制权（增删查改）。
-2.  **管理员覆盖**: 拥有特定权限的管理员角色（例如，内容审查员）可以超越所有权限制，对所有记录进行操作。
+*   所有受保护的数据都必须归属于一个用户组 (`group_id`)。
+*   权限检查的核心是调用 `check_group_permission(group_id, permission_name)` 函数。
+*   该函数内部封装了完整的权限检查逻辑：
+    1.  首先，检查用户在数据所属的用户组内是否拥有所需权限。
+    2.  如果否，则回退检查用户是否在“系统组”中拥有该权限（即是否为系统管理员）。
 
 #### **实现模式**
 
-这两种规则可以通过在RLS策略中使用 `OR` 逻辑来优雅地结合。
+RLS策略的实现变得极其简单和统一，只需将权限判断完全委托给 `check_group_permission` 函数。
 
 **示例：`posts` 表的 `UPDATE` 策略**
 
 ```sql
--- 这是一个策略定义的示例，展示了设计思想
-CREATE POLICY "Allow update for owners OR admins with permission"
+-- 创建一个统一的策略，权限检查完全由 check_group_permission 处理
+CREATE POLICY "Allow update based on group permission"
 ON public.posts
 FOR UPDATE
 USING (
-  -- 条件1: 当前用户是这条记录的所有者
-  auth.uid() = user_id
-  OR
-  -- 条件2: 当前用户拥有覆盖性的 update 权限
-  check_permission('db.posts.update')
+  check_group_permission(posts.group_id, 'db.posts.update')
 );
 ```
 
-**注意**: 上述示例展示了手动创建组合策略的最佳实践。如果您选择使用框架提供的 `add_rbac_policies` 和 `add_owner_policy` 辅助函数，它们会分别为 RBAC 和所有权创建独立的策略。由于 PostgreSQL 会将同一操作的多个策略以 `OR` 逻辑组合，因此最终效果与单个组合策略是相同的。手动创建单个策略的可读性更高，而使用辅助函数则更便于自动化管理。
+这个模型极大简化了策略的编写和维护。关于这个统一模型的完整设计，包括数据库结构、自动化函数和实现细节，请参阅：
 
-这个策略清晰地表达了我们的意图：**“要么你是这条帖子的主人，要么你拥有管理所有帖子的权限，否则你不能更新它。”**
-
-同样的模式可以应用于 `SELECT`, `DELETE` 和 `INSERT` (在 `WITH CHECK` 子句中) 策略。
+- [**设计文档：基于用户组的统一权限模型**](./feature-permission-group.md)
 
 ### **4. 细粒度的表管理函数 (RPC)**
 
@@ -82,24 +79,17 @@ USING (
 *   `add_updated_at_trigger(p_table_name TEXT)`: 为指定表附加 `updated_at` 自动更新触发器。
 *   `remove_updated_at_trigger(p_table_name TEXT)`: 移除触发器。
 
-#### **4.2 行级安全 (RLS)**
+#### **4.2 行级安全与策略管理**
 
-*   `enable_rls(p_table_name TEXT)`: 为指定表启用行级安全。
-*   `disable_rls(p_table_name TEXT)`: 禁用行级安全。
+*   `setup_rbac_rls(p_table_name TEXT)`: 为指定表启用行级安全，并创建一套标准的、仅基于RBAC权限的增删查改策略。
+*   `teardown_rbac_rls(p_table_name TEXT)`: 从指定表上移除标准的RBAC策略，并禁用行级安全。
 
-#### **4.3 策略管理**
-
-*   `add_rbac_policies(p_table_name TEXT)`: 为表创建一套标准的、仅基于RBAC权限的增删查改策略。
-*   `remove_rbac_policies(p_table_name TEXT)`: 移除上述标准RBAC策略。
-*   `add_owner_policy(p_table_name TEXT)`: 为表添加一个策略，允许用户完全访问自己创建的记录（基于 `user_id` 字段）。
-*   `remove_owner_policy(p_table_name TEXT)`: 移除所有者访问策略。
-
-**注意**: `add_rbac_policies` 和 `add_owner_policy` 创建的策略是独立的。对于需要同时支持所有者和管理员访问的场景，推荐根据第3节的“最佳实践”手动创建组合策略，而不是调用这些辅助函数。
+**注意**: 这些辅助函数用于快速搭建基于“所有权”或简单RBAC的权限。在我们的统一权限模型中，我们推荐根据第3节的指导，手动创建基于 `check_group_permission` 的组合策略，以获得最佳的可维护性和扩展性。这些辅助函数可用于不需要集团功能的简单场景。
 
 ### **5. 核心辅助函数**
 
 以下是支撑整个权限和自动化体系的核心函数：
 
-*   `check_permission(permission_name TEXT)`: 检查当前用户是否拥有指定权限。这是所有RLS策略和受保护RPC函数的核心依赖。
+*   `check_permission(permission_name TEXT)`: **[内部使用]** 检查当前用户是否在“系统组”中拥有指定权限。此函数主要被 `check_group_permission` 内部调用，一般不应在RLS策略中直接使用。
+*   `check_group_permission(p_group_id UUID, p_permission_name TEXT)`: 检查当前用户在指定的用户组内是否拥有指定权限，如果否，则自动回退检查其是否拥有系统级权限。这是所有RLS策略中进行权限判断的唯一入口点。
 *   `handle_updated_at()`: 一个触发器函数，用于自动更新 `updated_at` 字段。
-*   `get_user_permissions(user_id UUID)`: 获取指定用户的所有权限名称列表。

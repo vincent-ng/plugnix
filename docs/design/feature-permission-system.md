@@ -14,8 +14,9 @@
 #### **2. 核心概念与命名约定**
 
 *   **权限 (Permission)**: 一个描述具体操作的、全局唯一的字符串。这是授权的最小单位。
-*   **角色 (Role)**: 一组权限的集合 (例如 `admin`, `editor`)。
-*   **用户 (User)**: 通过被赋予一个或多个角色来获得相应的权限。
+*   **角色 (Role)**: 一组权限的集合 (例如 `Admin`, `Editor`)。
+*   **用户 (User)**: 通过在某个组内被赋予一个或多个角色来获得相应的权限。
+*   **系统管理 (System Administration)**: 系统级的管理权限并非源于某个特定的组名或ID，而是源于一个被授予了所有权限的特殊角色（通常命名为 `Admin`）。在系统初始化时，会创建一个用于分配此角色的特殊用户组。任何被加入该组并赋予 `Admin` 角色的用户，都将成为系统管理员。
 
 **权限命名约定 (重要！)**
 
@@ -31,17 +32,17 @@
 
 ##### **第一步：数据库设置与初始化**
 
-我们所有的核心数据库对象，包括权限系统的四张核心表（`permissions`, `roles`, `role_permissions`, `user_roles`）、所有辅助函数以及初始的`admin`角色和权限数据，都已整合到一个统一的SQL脚本中。
+我们所有的核心数据库对象，包括权限系统的核心表、所有辅助函数以及初始的`System`组、`Admin`角色和权限数据，都已整合到一个统一的SQL脚本中。
 
 首先，我们需要一个包含所有权限定义、角色和辅助函数的基础环境。
 
 - [**数据库初始化脚本**](./database-initialization.sql)
 
-执行此脚本会创建 `permissions`, `roles`, `check_permission()` 等核心对象。
+执行此脚本会创建 `permissions`, `roles`, `groups`, `group_users`, `check_group_permission()` 等核心对象，并会自动创建`System`组和拥有所有权限的`Admin`角色。
 
-##### **第二步：为普通用户强制执行数据访问策略 (RLS)**
+##### **第二步：为普通用户组强制执行数据访问策略 (RLS)**
 
-这是权限系统的核心应用场景：控制普通用户能看到和操作哪些数据。这是通过将 `check_permission()` 函数嵌入到表的RLS策略中实现的。
+这是权限系统的核心应用场景：控制普通用户能看到和操作哪些数据。这是通过将 `check_group_permission()` 函数嵌入到表的RLS策略中实现的。
 
 **工作流程示例 (用户读取文章):**
 
@@ -51,52 +52,39 @@
     INSERT INTO permissions (name, description) VALUES ('db.posts.select', 'Read posts');
     ```
 
-2.  **创建RLS策略**: 在 `posts` 表上，我们创建一个 `SELECT` 策略。这个策略的 `USING` 子句会调用 `check_permission()`。
+2.  **创建RLS策略**: 在 `posts` 表上，我们创建一个 `SELECT` 策略。这个策略的 `USING` 子句会调用 `check_group_permission()`，并传入当前记录所属的 `group_id`。
     ```sql
     -- 为 posts 表启用 RLS
     ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 
-    -- 创建一个策略，只有拥有 'db.posts.select' 权限的用户才能读取数据
-    CREATE POLICY "Allow users to read posts based on permission"
+    -- 创建一个策略，用户需要拥有 'db.posts.select' 权限才能读取对应组的数据
+    CREATE POLICY "Allow users to read posts based on group permission"
       ON posts FOR SELECT
-      USING ( check_permission('db.posts.select') );
+      USING ( check_group_permission(posts.group_id, 'db.posts.select') );
     ```
 
-3.  **规则生效**: 设置完成后，任何用户（无论通过前端、API还是直接连接数据库）执行 `SELECT * FROM posts;` 时，PostgreSQL都会自动在后台执行 `check_permission('db.posts.select')`。只有当该函数返回 `true` 时，查询才会成功；否则，用户将收到一个空结果集，就好像这个表是空的一样。
+3.  **规则生效**: 设置完成后，任何用户执行 `SELECT * FROM posts;` 时，PostgreSQL都会自动在后台对每一行记录执行 `check_group_permission(posts.group_id, 'db.posts.select')`。该函数会检查用户是否是该组的成员并拥有所需权限。如果函数返回 `true`，则该行数据可见；否则，该行被过滤。如果用户在任何组中都没有权限，查询将返回一个空结果集。
 
 通过这种方式，我们将权限逻辑下沉到了数据库，实现了与具体应用代码无关的、统一且可靠的安全保障。
 
-##### **第三步：为管理员提供安全可控的管理操作 (RPC)**
+##### **第三步：为系统管理员提供全局权限**
 
-对于一些高级的管理任务，例如“为一个表启用RLS”，我们不希望前端或普通用户能随意执行。这些操作被封装在安全的RPC函数中，并且只有特定的管理员角色才能调用。
+系统管理员的权限检查已经统一到核心的权限函数中，无需特殊的RPC调用。其核心在于 `Admin` 角色，而非特定的组。
 
-**工作流程示例 (管理员启用RLS):**
+**工作流程示例 (管理员访问数据):**
 
-1.  **前端调用RPC**: 管理员在后台管理界面点击一个按钮，前端调用 `enable_rls` 函数。
-    ```javascript
-    const { error } = await supabase.rpc('enable_rls', { p_table_name: 'posts' });
-    ```
+1.  **管理员身份**: 管理员是在系统初始化时设立的特殊用户组中，被赋予了 `Admin` 角色的用户。
 
-2.  **RPC内部鉴权**: `enable_rls` 函数的第一步，就是检查调用者是否拥有 `system.rpc.invoke` 这个特殊的管理权限。
-    ```sql
-    -- enable_rls 函数的实现摘录
-    CREATE OR REPLACE FUNCTION enable_rls(p_table_name TEXT)
-    RETURNS VOID AS $$
-    BEGIN
-      -- 关键：检查调用者是否是授权的管理员
-      IF NOT check_permission('system.rpc.invoke') THEN
-        RAISE EXCEPTION 'Authorization failed: Requires admin privileges.';
-      END IF;
+2.  **权限检查逻辑**: 当任何权限检查函数（如`check_group_permission`）被调用时，它会执行以下步骤：
+    a.  首先，检查用户是否在当前操作的特定组（例如一个项目组）中拥有所需权限。
+    b.  如果特定组的权限检查失败，函数会**自动回退**，检查用户是否拥有全局性的 `Admin` 角色关联的权限。
+    c.  如果用户拥有该权限（作为`Admin`角色的成员），则权限检查通过。
 
-      -- 鉴权通过后，才执行核心逻辑
-      EXECUTE format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', p_table_name);
-    END;
-    $$ LANGUAGE plpgsql;
-    ```
+3.  **效果**: 这意味着，一个`Admin`用户在调用 `SELECT * FROM posts;` 时，即使他们不属于任何一个拥有 `posts` 记录的普通用户组，RLS策略中的 `check_group_permission` 依然会因为 `Admin` 角色的全局权限而返回 `true`，从而允许他们查看所有 `posts` 数据。
 
-这样，我们就清晰地分离了两种场景：
-- **普通用户**: 其数据访问权限由RLS策略在数据库层面自动强制执行。
-- **管理员**: 其系统管理能力由受保护的RPC函数提供，每次调用都需经过严格的权限校验。
+这样，我们就统一了权限模型：
+- **普通用户**: 其数据访问权限由其所在的用户组角色决定。
+- **管理员**: 通过被赋予 `Admin` 角色，获得对所有资源的全局访问权限，无需为每个资源单独授权。
 
 ##### **第四步：前端UI的动态渲染**
 

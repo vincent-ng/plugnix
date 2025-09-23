@@ -1,132 +1,69 @@
-# 设计文档：集团权限系统 (Group Permission)
+# 设计文档：基于用户组的统一权限模型
 
-本文档详细阐述了在现有“所有权”和“全局RBAC”权限模型的基础上，如何引入“集团”这一新的权限维度，以支持更复杂的多租户和团队协作场景。
+本文档详细阐述了框架的权限模型。该模型通过一个统一的、基于“用户组”的RBAC（Role-Based Access Control）机制，结合一个特殊的“系统组”来管理所有权限。
 
-## 1. 核心思想
+## 1. 核心思想：用户组与系统组
 
-集团权限的核心思想是：**用户的操作权限不仅取决于其自身的角色，还取决于其在特定数据所属的“集团”中所扮演的角色。**
+本模型的核心思想是 **“所有权限都通过组来管理”**。系统中存在两种类型的组：
 
-这在以下三个层级上扩展了我们现有的权限模型：
+*   **用户组 (User Groups)**: 用于管理项目、团队或任何资源集合的协作空间。每个用户组都是一个独立的权限域，可以拥有自己的成员和角色分配。例如，一个“项目A”组和一个“市场团队”组。
+*   **系统组 (System Group)**: 数据库初始化时会有一个特殊的、id为 `00000000-0000-0000-0000-000000000001` 的组，专门用于管理整个系统的管理员。这个组里面初始化时会创建一个`Admin`的角色关联这管理员的权限。任何用户一旦被加入此组并赋予这些权限，便获得了全局管理权限。
 
-1.  **个人层级 (所有权)**: 用户对自己创建的数据拥有完全控制权。
-2.  **集团层级 (团队协作)**: 用户可以访问和操作其所在集团拥有的数据，具体权限由其在集团内的角色（如`group_admin`, `group_member`）决定。
-3.  **全局层级 (管理员)**: 拥有全局权限的管理员（如`super_admin`）可以跨越所有集团和所有权限制，对系统内所有数据进行操作。
+这个设计的优势在于**模型统一**。所有权限检查都遵循同一套逻辑：**检查当前用户在目标组内是否拥有所需权限，如果没有，则回退检查其是否在系统组中拥有该权限。**
 
-这三个层级通过 `OR` 逻辑组合，形成一个灵活而强大的权限判断链。
+## 2. 数据库结构设计
 
-## 2. 数据库结构扩展
+为了支撑这个统一模型，我们采用了一套简化的、基于模板角色的RBAC表结构。
 
-为了支持集团权限，我们需要对数据库进行以下扩展：
+#### **2.1 核心表**
 
-#### **2.1 `groups` 表**
+*   `groups`: 存储所有组的信息 (`id`, `name`, `description`)。
+*   `permissions`: 存储所有原子化权限 (`id`, `name`, `description`)。
+*   `roles`: 定义角色 (`id`, `group_id`, `name`, `description`)。`group_id` 为 `NULL` 的角色是可被所有组使用的“全局角色模板”。
+*   `role_permissions`: 关联 `roles` 和 `permissions`，为角色预设一组权限。
+*   `group_users`: 将用户加入一个组，并赋予其一个角色 (`user_id`, `group_id`, `role_id`)。
 
-用于存储集团的基本信息。
+与早期设计不同，现在**每个组不再定义自己独有的角色**。相反，在创建组或管理成员时，直接从预设的模板角色（如 `Owner`, `Member`）中选择一个赋予用户。
 
-```sql
-CREATE TABLE groups (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  description TEXT,
-  -- 如果需要，可以有一个集团所有者
-  owner_id UUID REFERENCES auth.users(id),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
+## 3. 模板角色 (`Owner` & `Member`)
 
--- 别忘了启用 RLS 和添加基础策略
-ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
--- 允许所有登录用户读取集团列表
-CREATE POLICY "Allow authenticated users to read groups" ON groups FOR SELECT USING (auth.role() = 'authenticated');
--- 允许集团所有者或全局管理员修改集团信息
-CREATE POLICY "Allow owner or admin to update group" ON groups FOR UPDATE USING (auth.uid() = owner_id OR check_permission('db.groups.update'));
-```
+为了简化组的管理，系统预定义了两个核心的模板角色：`Owner` 和 `Member`。
 
-#### **2.2 `user_groups` 表**
+*   **Owner (所有者)**: 当一个用户创建一个新的用户组时，他会自动成为该组的 `Owner`。`Owner` 角色被授予了管理该组的所有权限，例如添加/移除成员、删除组、修改组信息等。
+*   **Member (成员)**: 普通的组成员，拥有组内资源的基础操作权限（如读取、创建），但没有管理权限。
 
-这是一个关键的关联表，用于定义用户与集团的成员关系以及其在集团内的角色。
+`database-initialization.sql` 脚本负责在系统初始化时创建这两个模板角色，并为它们分配合理的默认权限。
 
-```sql
--- 定义一个 ENUM 类型来规范集团内的角色
-CREATE TYPE group_role AS ENUM ('group_admin', 'group_editor', 'group_viewer');
+## 4. 核心权限检查逻辑 (`check_group_permission`)
 
-CREATE TABLE user_groups (
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-  role group_role NOT NULL DEFAULT 'group_viewer',
-  PRIMARY KEY (user_id, group_id)
-);
+这是所有RLS策略的核心依赖。它负责回答“当前用户是否对特定组的资源拥有特定权限”这个问题。其内部逻辑遵循以下步骤：
 
--- 启用 RLS
-ALTER TABLE user_groups ENABLE ROW LEVEL SECURITY;
--- 允许用户查看自己所属的集团
-CREATE POLICY "Allow users to read their own group memberships" ON user_groups FOR SELECT USING (auth.uid() = user_id);
--- 允许集团管理员或全局管理员管理集团成员
-CREATE POLICY "Allow group admins or global admins to manage members" ON user_groups
-  FOR ALL
-  USING (
-    -- 检查是否是全局管理员
-    check_permission('db.user_groups.manage')
-    OR
-    -- 检查是否是该集团的 group_admin
-    EXISTS (
-      SELECT 1
-      FROM user_groups ug
-      WHERE ug.group_id = user_groups.group_id AND ug.user_id = auth.uid() AND ug.role = 'group_admin'
-    )
-  );
-```
+1.  **检查目标组**：首先，函数会检查当前用户是否在传入的目标组 (`p_group_id`) 中，通过其被赋予的角色，拥有所需的权限 (`p_permission_name`)。
+2.  **成功则返回**：如果用户在目标组中拥有权限，函数立即返回 `true`，检查结束。
+3.  **回退检查系统组**：如果在目标组中没有找到权限，函数会接着检查该用户是否在全局的“系统组”中拥有相同的权限（这通常意味着用户是系统管理员）。
+4.  **最终结果**：如果用户在系统组中拥有权限，函数同样返回 `true`。如果两轮检查都失败，则返回 `false`。
 
-#### **2.3 为数据表添加 `group_id`**
+这个包含了“回退检查”的统一逻辑，正是我们权限模型的核心。
 
-对于需要进行集团权限控制的数据表（例如 `posts`），必须添加一个 `group_id` 字段，用于标识该记录隶属于哪个集团。
+## 5. 统一的RLS策略模型
 
-```sql
-ALTER TABLE posts
-ADD COLUMN group_id UUID REFERENCES groups(id) ON DELETE SET NULL;
-```
-
-## 3. RLS 策略升级
-
-这是实现集团权限的核心。我们需要将原有的两段式 `OR` 逻辑扩展为三段式。
+为了进一步简化RLS策略的创建，框架提供了一个辅助函数 `create_rls_policy`。它封装了创建策略的样板代码，你只需要提供表名和所需的权限名即可。
 
 **示例：`posts` 表的 `UPDATE` 策略**
 
 ```sql
--- 移除旧策略
-DROP POLICY "Allow update for owners OR admins with permission" ON public.posts;
-
--- 创建新的三段式策略
-CREATE POLICY "Allow update for owners, admins, or group admins"
-ON public.posts
-FOR UPDATE
-USING (
-  -- 条件1: 当前用户是这条记录的所有者 (个人层级)
-  auth.uid() = user_id
-  OR
-  -- 条件2: 当前用户拥有覆盖性的全局 update 权限 (全局层级)
-  check_permission('db.posts.update')
-  OR
-  -- 新增条件3: 当前用户是该记录所属集团的管理员 (集团层级)
-  EXISTS (
-    SELECT 1
-    FROM user_groups
-    WHERE
-      user_groups.group_id = posts.group_id AND -- 匹配记录的集团ID
-      user_groups.user_id = auth.uid() AND     -- 匹配当前用户
-      user_groups.role = 'group_admin'         -- 检查集团角色
-  )
-);
+-- 使用辅助函数为 posts 表的 UPDATE 操作创建 RLS 策略
+SELECT create_rls_policy('posts', 'UPDATE');
 ```
 
-同样的逻辑可以应用于 `SELECT`, `DELETE` 和 `INSERT` 策略，只需根据具体操作调整集团角色 (`group_admin`, `group_editor` 等) 的判断即可。
+这行代码会自动生成一个 `UPDATE` 策略，其内部依然是调用 `check_group_permission(posts.group_id, 'db.posts.update')`。这完美地诠释了模型的思想：当一个用户（无论是普通用户还是系统管理员）尝试更新 `posts` 表的某一行时，生成的策略会确保只有拥有 `db.posts.update` 权限的用户才能执行操作。
 
-## 4. 前端集成与使用流程
+如果你的表使用的不是默认的 `group_id` 列名，你也可以在第三个参数中指定它：
+```sql
+-- 假设你的表使用 'project_id' 作为组ID列
+SELECT create_rls_policy('tasks', 'UPDATE', p_group_id_column := 'project_id');
+```
 
-1.  **创建/加入集团**: 应用需要提供UI让用户可以创建新的集团，或者被邀请加入一个已有的集团。
-2.  **数据归属**: 当用户创建一条需要集团管理的数据时（如一篇团队博客），前端需要在创建请求中包含 `group_id`。
-3.  **上下文切换**: 应用应允许用户在不同的集团上下文之间切换。当用户切换到一个集团时，前端应重新拉取该集团下的数据。由于RLS策略在数据库层面强制执行，前端只需发出标准的查询请求，数据库会自动过滤出该用户在该集团下有权查看的数据。
-4.  **成员管理**: 拥有 `group_admin` 角色的用户或全局管理员，应该能看到管理集团成员的UI（添加/移除成员，变更角色）。
+## 6. 总结
 
-## 5. 总结
-
-通过引入 `groups` 和 `user_groups` 表，并升级RLS策略以包含对集团成员角色的检查，我们成功地将权限模型从“个人 vs 管理员”的二维结构，扩展到了包含“团队协作”的三维结构。这为构建功能丰富的多租户应用奠定了坚实的基础。
+通过将权限管理统一到“用户组”和“系统组”这两个概念上，并利用可复用的“模板角色”和单一的 `check_group_permission` 检查函数，我们构建了一个内聚且高度可扩展的权限模型。它极大地简化了RLS策略的编写和维护，使得权限管理更加清晰和直观。

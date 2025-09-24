@@ -1,0 +1,95 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useGroup } from '@/framework/contexts/GroupContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/framework/components/ui/dropdown-menu';
+import { Button } from '@/framework/components/ui/button';
+import { Input } from '@/framework/components/ui/input';
+import { Badge } from '@/framework/components/ui/badge';
+import { ChevronDown, Search, Building2, User } from 'lucide-react';
+
+export const GroupSwitcher = ({ className }) => {
+  const { t } = useTranslation(['group', 'role']);
+  const { currentGroup, userGroups, setCurrentGroup, userRole } = useGroup();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredGroups = userGroups.filter(group =>
+    group.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleGroupSelect = (group) => {
+    setCurrentGroup(group);
+    setSearchTerm('');
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className={`w-[200px] justify-between ${className}`}>
+          <div className="flex items-center gap-2">
+            {currentGroup ? (
+              <>
+                <Building2 className="h-4 w-4" />
+                <span className="truncate">{currentGroup.name}</span>
+              </>
+            ) : (
+              <>
+                <User className="h-4 w-4" />
+                <span>{t('group:personalWorkspace')}</span>
+              </>
+            )}
+          </div>
+          <ChevronDown className="h-4 w-4 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-[200px]" align="start">
+        <DropdownMenuLabel>{t('group:selectGroup')}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        
+        <div className="p-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('group:searchGroups')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </div>
+
+        {filteredGroups.length === 0 ? (
+          <div className="p-2 text-sm text-muted-foreground text-center">
+            {t('group:noGroupsFound')}
+          </div>
+        ) : (
+          filteredGroups.map((group) => (
+            <DropdownMenuItem
+              key={group.id}
+              onClick={() => handleGroupSelect(group)}
+              className="flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                <span>{group.name}</span>
+              </div>
+              {group.id === currentGroup?.id && (
+                <Badge variant="secondary" className="text-xs">
+                  {t(`role:${userRole?.toLowerCase()}`)}
+                </Badge>
+              )}
+            </DropdownMenuItem>
+          ))
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export default GroupSwitcher;

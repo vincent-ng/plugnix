@@ -10,7 +10,7 @@
 
       * 每个插件目录必须包含一个 `index.js` 或 `index.jsx` 文件作为插件入口。
       * 该文件必须导出一个默认函数作为插件注册函数。此函数接收框架的注册API作为参数。
-      * **函数签名**: `export default function registerPluginName({ registerRoute, registerAdminMenuItem, registerPublicMenuItem, registerI18nNamespace, registerComponent, registerPermission }) { /* ... */ }`
+      * **函数签名**: `export default function registerPluginName({ registerRoute, registerMenuItem, registerI18nNamespace, registerPermission }) { /* ... */ }`
 
   * **插件内部结构**
 
@@ -38,7 +38,7 @@
     import YourMainPage from './YourMainPage'; // 这是一个示例
 
     // 插件注册函数
-    export default function registerYourPlugin({ registerRoute, registerPublicMenuItem, registerPermission }) {
+    export default function registerYourPlugin({ registerRoute, registerMenuItem, registerPermission }) {
       // 注册权限（如果需要）
       registerPermission({
         name: 'ui.your-plugin.view',
@@ -46,15 +46,19 @@
       });
 
       // 在这里调用框架API来注册功能
+      // 注册一个没有菜单项的路由
       registerRoute({
         path: '/your-path',
         component: YourMainPage
       });
 
-      registerPublicMenuItem({
+      // 注册一个公共菜单项，并自动关联路由
+      registerMenuItem({
+        key: 'your-plugin',
         label: 'Your Plugin',
-        path: '/your-path'
-      });
+        path: '/your-path',
+        component: YourMainPage
+      }, 'public');
 
       console.log('Your plugin registered.');
     }
@@ -132,18 +136,14 @@ const AboutPage = () => {
 };
 
 // 2. 默认导出一个注册函数
-export default function registerAboutPlugin({ registerRoute, registerPublicMenuItem }) {
-  // 注册路由，将路径 '/about' 指向上面定义的 AboutPage 组件
-  registerRoute({
-    path: '/about',
-    component: AboutPage,
-  });
-
-  // 注册一个公共菜单项，方便用户访问
-  registerPublicMenuItem({
+export default function registerAboutPlugin({ registerMenuItem }) {
+  // 注册一个公共菜单项，它会自动注册路由
+  registerMenuItem({
+    key: 'about',
     label: '关于', // 菜单显示的文本
     path: '/about', // 点击后跳转的路径
-  });
+    component: AboutPage, // 关联的页面组件
+  }, 'public');
 }
 ```
 
@@ -226,7 +226,7 @@ import AboutPage from './AboutPage';
 import en from './i18n/en.json';
 import zh from './i18n/zh.json';
 
-export default function registerAboutPlugin({ registerRoute, registerPublicMenuItem, registerI18nNamespace }) {
+export default function registerAboutPlugin({ registerMenuItem, registerI18nNamespace }) {
   // 注册国际化命名空间
   registerI18nNamespace({
     name: 'about',
@@ -236,17 +236,13 @@ export default function registerAboutPlugin({ registerRoute, registerPublicMenuI
     },
   });
 
-  // 注册路由
-  registerRoute({
-    path: '/about',
-    component: AboutPage,
-  });
-
   // 注册菜单项，标签使用 i18n key
-  registerPublicMenuItem({
+  registerMenuItem({
+    key: 'about',
     label: 'about:menu_label', // 格式: <namespace>:<key>
     path: '/about',
-  });
+    component: AboutPage,
+  }, 'public');
 }
 ```
 

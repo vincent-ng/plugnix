@@ -55,36 +55,28 @@ const translations = {
 };
 
 // 博客插件注册函数
-export default function registerBlogPlugin({ registerRoute, registerAdminMenuItem, registerI18nNamespace }) {
+export default function registerBlogPlugin({ registerMenuItem, registerRoute, registerI18nNamespace }) {
   // 注册国际化资源
   registerI18nNamespace('blog', translations);
 
-  // 注册路由
-  registerRoute({
+  // 注册菜单项和路由
+  registerMenuItem({
+    key: 'blog',
+    label: 'blog:title',
     path: '/admin/blog',
     component: BlogListPage,
-    exact: true
-  });
+    icon: '📝',
+    order: 1
+  }, 'admin');
 
   registerRoute({
     path: '/admin/blog/create',
     component: CreateBlogPage,
-    exact: true
   });
 
   registerRoute({
     path: '/admin/blog/:id',
     component: BlogDetailPage,
-    exact: true
-  });
-
-  // 注册菜单项
-  registerAdminMenuItem({
-    key: 'blog',
-    label: 'blog:title',
-    path: '/admin/blog',
-    icon: '📝',
-    order: 1
   });
 
   console.log('Blog plugin registered successfully');

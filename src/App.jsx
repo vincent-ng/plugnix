@@ -4,14 +4,13 @@ import { I18nextProvider } from 'react-i18next';
 
 // 框架核心
 import { AuthenticationProvider } from '@/framework/contexts/AuthenticationContext';
-import { PermissionProvider } from '@/framework/permissions';
+import { GroupProvider } from '@/framework/contexts/GroupContext';
 import { ThemeProvider } from '@/framework/contexts/ThemeContext';
 import AdminLayout from '@/framework/layouts/AdminLayout';
 import PublicLayout from '@/framework/layouts/PublicLayout';
-import { Authorized } from '@/framework/permissions';
+import Authorized from '@/framework/components/Authorized';
 import i18n from '@/framework/i18n';
 import { registry } from '@/framework/api';
-import RoleBasedGuard from '@/framework/components/auth/RoleBasedGuard';
 import { Toaster } from '@/framework/components/ui/sonner';
 
 
@@ -85,11 +84,7 @@ const DynamicRoutes = () => {
       {/* 管理后台路由 */}
       <Route 
         path="/admin"
-        element={
-          <RoleBasedGuard roles={['admin', 'authenticated']}>
-            <AdminLayout />
-          </RoleBasedGuard>
-        }
+        element={<AdminLayout />}
       >
         {/* 动态插件路由 */}
         {adminRoutes.map((route) => {
@@ -140,13 +135,13 @@ function App() {
       <I18nextProvider i18n={i18n}>
         <ThemeProvider>
           <AuthenticationProvider>
-            <PermissionProvider>
+            <GroupProvider>
               <Router>
                 <div className="App">
                   <DynamicRoutes />
                 </div>
               </Router>
-            </PermissionProvider>
+            </GroupProvider>
           </AuthenticationProvider>
           <Toaster />
         </ThemeProvider>

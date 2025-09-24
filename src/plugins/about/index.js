@@ -14,18 +14,14 @@ const translations = {
   }
 };
 
-export default function registerPlugin({ registerPublicMenuItem, registerRoute, registerI18nNamespace }) {
+export default function registerPlugin({ registerMenuItem, registerI18nNamespace }) {
   // 注册国际化资源
   registerI18nNamespace('about', translations);
 
-  registerPublicMenuItem({
+  registerMenuItem({
     key: 'about',
     label: 'about:title',
-    path: '/about'
-  });
-
-  registerRoute({
     path: '/about',
     component: AboutPage
-  });
+  }, 'public');
 }

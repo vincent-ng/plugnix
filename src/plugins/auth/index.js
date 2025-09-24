@@ -11,7 +11,7 @@ import SignOutMenuItem from './components/SignOutMenuItem';
 export { LoginPage, RegisterPage };
 
 // 注册函数
-export default function registerAuthModule({ registerI18nNamespace, registerRoute, registerUserMenuItem }) {
+export default function registerAuthModule({ registerI18nNamespace, registerMenuItem, registerRoute }) {
   // 注册国际化资源
   registerI18nNamespace('auth', { en, zh });
   
@@ -27,11 +27,11 @@ export default function registerAuthModule({ registerI18nNamespace, registerRout
   });
   
   // 注册登出菜单项组件
-  registerUserMenuItem({
+  registerMenuItem({
     key: 'signOut',
     component: SignOutMenuItem,
     order: 999 // 确保登出按钮在最后
-  });
+  }, 'user');
 
   console.log('Auth module routes, i18n and user menu registered successfully');
 }

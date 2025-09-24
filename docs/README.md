@@ -131,7 +131,8 @@
 
 ### 入门与核心概念
 - [**插件开发指南**](design/guide-plugin-development.md) - **（新开发者必读）** 学习如何创建、开发和集成您的第一个插件。
-- [**统一权限模型**](design/feature-permission-group.md) - 深入理解框架基于“用户组”和“系统组”的统一权限设计。
+- [**统一权限模型**](design/feature-permission-model.md) - 深入理解框架基于“用户组”和“系统组”的统一权限设计。
+- [**权限视图**](design/feature-permission-view.md) - 了解如何在前端代码里使用权限相关的组件和API。
 - [**框架API参考**](design/api-reference.md) - 框架提供的所有注册函数的详细技术文档。
 
 ### 后端与数据库

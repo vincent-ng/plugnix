@@ -7,26 +7,27 @@
     *   **参数**: `routeObject` (对象) - 包含路由信息的对象，例如 `{ path: '/my-plugin', component: MyPluginPage }`。
     *   **示例**: `registerRoute({ path: '/about', component: AboutPage });`
 
-*   **`registerAdminMenuItem(menuItemObject)`**
-    *   **功能**: 在后台管理界面的菜单中注册一个新菜单项。
-    *   **参数**: `menuItemObject` (对象) - 包含菜单项信息的对象，例如 `{ label: 'My Plugin', path: '/my-plugin', order: 100 }`。`order` 属性用于排序。
-    *   **示例**: `registerAdminMenuItem({ label: 'User Management', path: '/admin/users', order: 20 });`
-
-*   **`registerPublicMenuItem(menuItemObject)`**
-    *   **功能**: 在公共页面的导航菜单中注册一个新菜单项。
-    *   **参数**: `menuItemObject` (对象) - 结构与 `registerAdminMenuItem` 相同。
-    *   **示例**: `registerPublicMenuItem({ label: 'About Us', path: '/about', order: 50 });`
-
-*   **`registerUserMenuItem(menuItemObject)`**
-    *   **功能**: 在用户下拉菜单中注册一个新菜单项。支持两种注册方式：
-        1. **传统方式**: 提供 `label`、`path`、`icon` 等属性
-        2. **组件方式**: 直接提供 `component` 属性，框架将渲染该组件
-    *   **参数**: `menuItemObject` (对象) - 菜单项配置对象
-        *   传统方式: `{ key, label, path, icon, className, onClick, order }`
-        *   组件方式: `{ key, component, order }`
-    *   **示例**: 
-        *   传统方式: `registerUserMenuItem({ key: 'profile', label: 'Profile', path: '/profile', order: 10 });`
-        *   组件方式: `registerUserMenuItem({ key: 'signOut', component: SignOutMenuItem, order: 999 });`
+*   **`registerMenuItem(menuItemObject, position)`**
+    *   **功能**: 在指定位置注册一个新菜单项。如果 `menuItemObject` 同时包含 `path` 和 `component` 属性，该函数还会自动注册一个对应的路由。
+    *   **参数**:
+        *   `menuItemObject` (对象) - 包含菜单项信息的对象。
+            *   `key` (字符串) - 菜单项的唯一标识。
+            *   `label` (字符串) - 菜单项显示文本，支持i18n键值。
+            *   `path` (字符串, 可选) - 菜单项链接路径。
+            *   `component` (React组件, 可选) - 如果提供，将自动注册为路由，并可用于渲染自定义菜单项。
+            *   `icon` (字符串|React组件，可选) - 菜单项图标。
+            *   `order` (数字，可选) - 菜单项排序权重，数字越小越靠前。
+            *   `className` (字符串，可选) - 自定义CSS类名 (主要用于 `user` 菜单)。
+            *   `onClick` (函数，可选) - 点击事件处理函数 (主要用于 `user` 菜单)。
+        *   `position` (字符串) - 菜单项的注册位置。必须是以下值之一：
+            *   `'admin'`: 后台管理界面的主菜单。
+            *   `'public'`: 公共页面的导航菜单。
+            *   `'user'`: 用户下拉菜单。
+    *   **示例**:
+        *   注册管理菜单项: `registerMenuItem({ key: 'users', label: 'User Management', path: '/admin/users', component: UserPage, icon: UserIcon, order: 20 }, 'admin');`
+        *   注册公共菜单项: `registerMenuItem({ key: 'about', label: 'About Us', path: '/about', component: AboutPage, order: 50 }, 'public');`
+        *   注册用户菜单项: `registerMenuItem({ key: 'profile', label: 'Profile', path: '/profile', component: ProfilePage, order: 10 }, 'user');`
+        *   注册自定义组件用户菜单项: `registerMenuItem({ key: 'signOut', component: SignOutMenuItem, order: 999 }, 'user');`
 
 *   **`registerI18nNamespace(pluginName, translations)`**
     *   **功能**: 为插件注册国际化（i18n）翻译资源。
@@ -35,17 +36,9 @@
         *   `translations` (对象) - 包含不同语言翻译的对象，例如 `{ en: { title: 'Hello' }, zh: { title: '你好' } }`。
     *   **示例**: `registerI18nNamespace('myPlugin', { en, zh });`
 
-*   **`registerComponent(name, component)`**
-    *   **功能**: 注册一个可供其他插件或框架本身复用的共享组件。
-    *   **参数**:
-        *   `name` (字符串) - 组件的唯一名称。
-        *   `component` (React组件) - 要注册的React组件。
-    *   **示例**: `registerComponent('SharedButton', MySharedButton);`
-
 *   **`registerPermission(permissionObject)`**
     *   **功能**: 为插件注册权限定义，用于声明插件所需的权限。
     *   **参数**: `permissionObject` (对象) - 包含权限信息的对象
-        *   `name` (字符串，必需) - 权限名称，用于权限检查
-        *   `description` (字符串，可选) - 权限描述
-        *   其他字段会被保留在权限对象中
+        *   `name` (字符串，必需) - 权限名称，用于权限检查。
+        *   `description` (字符串，可选) - 权限描述。
     *   **示例**: `registerPermission({ name: 'ui.blog.create', description: '创建博客文章' });`

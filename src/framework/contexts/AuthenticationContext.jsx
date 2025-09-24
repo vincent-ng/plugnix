@@ -84,6 +84,7 @@ export const AuthenticationProvider = ({ children }) => {
       // 3. 更新用户状态
       setUser(signInData.user);
       
+      console.log('注册并登录成功:', signInData.user);
       return { success: true, data: signInData };
     } catch (error) {
       console.error('注册或自动登录失败:', error.message);
@@ -97,10 +98,16 @@ export const AuthenticationProvider = ({ children }) => {
     try {
       setLoading(true);
       
+      // 清理用户相关的 localStorage 数据
+      if (user?.id) {
+        localStorage.removeItem(`currentGroup_${user.id}`);
+      }
+      
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       
       setUser(null);
+      console.log('登出成功');
       return { success: true };
     } catch (error) {
       console.error('登出失败:', error.message);

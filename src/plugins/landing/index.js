@@ -2,24 +2,19 @@ import translations from './translations.js';
 import LandingPage from './LandingPage.jsx';
 
 // 注册landing插件的函数
-const registerPluginLanding = ({ registerRoute, registerPublicMenuItem, registerI18nNamespace }) => {
+const registerPluginLanding = ({ registerMenuItem, registerI18nNamespace }) => {
   console.log('Registering landing plugin...');
   
   // 注册翻译
   registerI18nNamespace('landing', translations);
   
-  // 注册路由
-  registerRoute({
+  registerMenuItem({
+    key: 'home',
+    label: 'common:home',
     path: '/',
     component: LandingPage,
     name: 'Landing Page'
-  });
-
-  registerPublicMenuItem({
-    key: 'home',
-    label: 'common:home',
-    path: '/'
-  });
+  }, 'public');
   
   console.log('Landing plugin registered successfully');
 };

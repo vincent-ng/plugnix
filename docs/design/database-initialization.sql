@@ -85,7 +85,7 @@ BEGIN
   -- 4. If no fallback is checked, or if the system check fails, deny permission.
   RETURN FALSE;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- =====================================================================================
@@ -102,6 +102,7 @@ DECLARE
     command text;
     final_expression text;
     policy_template text;
+    v_action_lower text := LOWER(p_action);
 BEGIN
     policy_name := format('"Allow %s on %s"', p_action, p_table);
 
@@ -110,14 +111,14 @@ BEGIN
         -- Use the specified group_id column, defaulting to 'group_id'.
         -- %I is used for safely quoting identifiers (like column names).
         -- The ''::text'' cast is crucial to resolve the function signature in dynamic SQL.
-        final_expression := format('check_group_permission(%I, ''db.%s.%s''::text)', p_group_id_column, p_table, p_action);
+        final_expression := format('check_group_permission(%I, ''db.%s.%s''::text)', p_group_id_column, p_table, v_action_lower);
     ELSE
         final_expression := p_expression;
     END IF;
 
     -- Determine the policy clause based on the action
   -- INSERT policies use `WITH CHECK`, while others use `USING`.
-  IF p_action = 'INSERT' THEN
+  IF v_action_lower = 'insert' THEN
     policy_template := 'CREATE POLICY "Allow %s on %s" ON public.%I FOR %s WITH CHECK (%s);';
   ELSE
     policy_template := 'CREATE POLICY "Allow %s on %s" ON public.%I FOR %s USING (%s);';
@@ -231,7 +232,7 @@ SELECT create_rls_policy('group_users', 'DELETE');
 -- Creates a new group and sets the calling user as its owner.
 -- This function links the creator to the 'Owner' template role for the new group.
 -- It does not copy the role or its permissions, ensuring efficiency.
-CREATE OR REPLACE FUNCTION create_group(p_group_name TEXT)
+CREATE OR REPLACE FUNCTION create_group(p_group_name TEXT, p_group_description TEXT)
 RETURNS UUID AS $$
 DECLARE
   new_group_id UUID;
@@ -247,8 +248,8 @@ BEGIN
   END IF;
 
   -- 2. Create the new group.
-  INSERT INTO public.groups (name, user_id)
-  VALUES (p_group_name, auth.uid())
+  INSERT INTO public.groups (name, description)
+  VALUES (p_group_name, p_group_description)
   RETURNING id INTO new_group_id;
 
   -- 3. Set the creator as the 'Owner' in the group_users table.
@@ -492,6 +493,29 @@ $$ LANGUAGE plpgsql;
 
 -- To run the teardown, uncomment the following line and execute it in your SQL editor:
 -- SELECT teardown_framework();
+
+
+-- =====================================================================================
+-- ==                                END OF SCRIPT                                    ==
+-- =====================================================================================
+
+-- ... existing code ...
+
+CREATE OR REPLACE FUNCTION public.delete_group(p_group_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Check if the current user is the owner of the group
+  IF NOT is_group_owner(p_group_id, auth.uid()) THEN
+    RAISE EXCEPTION 'Only the group owner can delete the group';
+  END IF;
+
+  -- Delete the group
+  DELETE FROM public.groups WHERE id = p_group_id;
+END;
+$$;
 
 
 -- =====================================================================================

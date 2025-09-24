@@ -71,36 +71,28 @@ const translations = {
 };
 
 // 用户管理插件注册函数
-export default function registerUserPlugin({ registerRoute, registerAdminMenuItem, registerI18nNamespace }) {
+export default function registerUserPlugin({ registerMenuItem, registerRoute, registerI18nNamespace }) {
   // 注册国际化资源
   registerI18nNamespace('user', translations);
 
-  // 注册路由
-  registerRoute({
+  // 注册菜单项和路由
+  registerMenuItem({
+    key: 'users',
+    label: 'user:title',
     path: '/admin/users',
     component: UserListPage,
-    exact: true
-  });
+    icon: '👥',
+    order: 2
+  }, 'admin');
 
   registerRoute({
     path: '/admin/users/create',
     component: CreateUserPage,
-    exact: true
   });
 
   registerRoute({
     path: '/admin/users/:id',
     component: UserDetailPage,
-    exact: true
-  });
-
-  // 注册菜单项
-  registerAdminMenuItem({
-    key: 'users',
-    label: 'user:title',
-    path: '/admin/users',
-    icon: '👥',
-    order: 2
   });
 
   console.log('User management plugin registered successfully');

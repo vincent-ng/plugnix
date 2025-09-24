@@ -1,11 +1,12 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, matchPath } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from '@/framework/contexts/AuthenticationContext.jsx';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
 import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';
 import { registry } from '@/framework/api';
-import { Authorized } from '@/framework/permissions';
+import { Authorized } from '@/framework/components/Authorized';
+import { GroupSwitcher } from '@/framework/components/GroupSwitcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,9 +32,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@components/ui/sidebar';
-import { 
-  Home, 
-  Bell, 
+import {
+  Home,
+  Bell,
   Search,
   Moon,
   Sun,
@@ -46,16 +47,15 @@ import TabBar from '../components/TabBar.jsx';
 
 const AdminLayoutContent = () => {
   const { t, i18n } = useTranslation('common');
-  const { user, signOut } = useAuthentication();
+  const { user } = useAuthentication();
   const { theme, toggleTheme } = useTheme();
-  const { tabs, activeTab, openTab, switchTab } = useTabs();
-  const navigate = useNavigate();
+  const { tabs, openTab } = useTabs();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
-
 
 
   const menuItems = registry.getAdminMenuItems();
@@ -65,26 +65,20 @@ const AdminLayoutContent = () => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // 当路由变化时，同步更新activeTab
-  React.useEffect(() => {
-    if (tabs.some(tab => tab.path === location.pathname)) {
-      switchTab(location.pathname);
-    }
-  }, [location.pathname, tabs, switchTab]);
 
   // 应用侧边栏组件
   const AppSidebar = () => (
     <Sidebar>
       <SidebarHeader>
         <div className="px-2 py-2">
-          <Logo 
+          <Logo
             title={t('appAdminTitle')}
             subtitle={t('appAdminSubtitle')}
             className="text-sidebar-foreground"
           />
         </div>
       </SidebarHeader>
-      
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>{t('navigation:dashboard')}</SidebarGroupLabel>
@@ -92,16 +86,16 @@ const AdminLayoutContent = () => {
             <SidebarMenu>
               {menuItems.map((item) => {
                 const isActive = isActiveRoute(item.path);
-                
+
                 // 如果菜单项有权限要求，使用Authorized组件包装
                 const menuButton = (
-                  <SidebarMenuButton 
-                     isActive={isActive}
-                     onClick={() => {
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    onClick={() => {
                       openTab({ path: item.path, label: t(item.label) });
                       navigate(item.path);
                     }}
-                   >
+                  >
                     <Home className="w-4 h-4" />
                     <span>{t(item.label)}</span>
                     {isActive && (
@@ -124,7 +118,7 @@ const AdminLayoutContent = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      
+
       <SidebarFooter>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -154,11 +148,11 @@ const AdminLayoutContent = () => {
                 const Component = item.component;
                 return <Component key={item.key || index} />;
               }
-              
+
               // 否则渲染传统的菜单项
               return (
-                <DropdownMenuItem 
-                  key={item.key || index} 
+                <DropdownMenuItem
+                  key={item.key || index}
                   onClick={() => {
                     if (item.onClick) {
                       item.onClick();
@@ -184,7 +178,7 @@ const AdminLayoutContent = () => {
     <SidebarProvider>
       <div className="flex h-screen w-full">
         <AppSidebar />
-        
+
         {/* 主内容区域 */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* 顶部导航栏 */}
@@ -243,24 +237,29 @@ const AdminLayoutContent = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
+              {/* 组织切换器 */}
+              <GroupSwitcher />
 
             </div>
           </header>
 
           {/* Tab栏 */}
           <TabBar />
-          
+
           {/* 页面内容 */}
           <main className="flex-1 overflow-auto p-6">
             {/* 渲染所有Tab内容，使用CSS控制显示隐藏以保持状态 */}
             {tabs.map(tab => {
               const Component = tab.component;
+              // 检查当前tab是否应该被激活
+              const isActive = matchPath(tab.path, location.pathname) || tab.path === location.pathname;
+
               return (
                 <div
                   key={tab.path}
                   className="tab-content"
-                  style={{ 
-                    display: tab.path === activeTab ? 'block' : 'none',
+                  style={{
+                    display: isActive ? 'block' : 'none',
                     height: '100%'
                   }}
                 >
@@ -268,7 +267,7 @@ const AdminLayoutContent = () => {
                 </div>
               );
             })}
-            
+
             {/* 如果没有打开的Tab，显示默认内容 */}
             {tabs.length === 0 && (
               <div className="flex items-center justify-center h-full text-muted-foreground">

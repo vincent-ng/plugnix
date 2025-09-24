@@ -1,25 +1,38 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Button } from '@/framework/components/ui/button';
 import { Input } from '@/framework/components/ui/input';
 import { Textarea } from '@/framework/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/framework/components/ui/tabs';
-import { Authorized } from '@/framework/permissions';
+import { ExternalLink } from 'lucide-react';
+import PermissionTestPanel from './components/PermissionTestPanel';
 
 const TestPage = () => {
   const { t } = useTranslation('test');
-  
-  // 状态保持测试的状态
+  const navigate = useNavigate();
+  const [counter, setCounter] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [textareaValue, setTextareaValue] = useState('');
-  const [counter, setCounter] = useState(0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-foreground mb-8 text-center">
+        <h1 className="text-4xl font-bold text-foreground mb-6 text-center">
           {t('title')}
         </h1>
+        
+        {/* URL导航功能按钮 */}
+        <div className="flex justify-center mb-8">
+          <Button 
+            onClick={() => navigate('/test/url-navigation')}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+          >
+            <ExternalLink className="h-5 w-5 mr-2" />
+            {t('urlNavigation.buttonText')}
+          </Button>
+        </div>
         
         <Tabs defaultValue="basic" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
@@ -235,55 +248,7 @@ const TestPage = () => {
           </TabsContent>
           
           <TabsContent value="permission" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('permission.title')}</CardTitle>
-                <CardDescription>
-                  {t('permission.description')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* UI权限控制 */}
-                <div className="space-y-2">
-                  <h4 className="font-medium">{t('permission.uiPermission')}</h4>
-                  <Authorized permissions="ui.test.show-special-feature">
-                    <div className="p-3 border rounded-lg bg-blue-50 dark:bg-blue-950">
-                      <h3 className="font-medium">{t('permission.specialFeature')}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t('permission.specialFeatureDesc')}
-                      </p>
-                    </div>
-                  </Authorized>
-                </div>
-
-                {/* 数据库权限控制 */}
-                <div className="space-y-2">
-                  <h4 className="font-medium">{t('permission.dbPermission')}</h4>
-                  <Authorized permissions="db.posts.create">
-                    <Button variant="default">
-                      {t('permission.createPost')}
-                    </Button>
-                  </Authorized>
-                </div>
-
-                {/* 无权限时的回退内容 */}
-                <div className="space-y-2">
-                  <h4 className="font-medium">{t('permission.fallbackContent')}</h4>
-                  <Authorized 
-                    permissions="db.admin.system"
-                    fallback={
-                      <div className="p-3 border border-dashed rounded-lg text-center text-muted-foreground">
-                        {t('permission.noPermissionMessage')}
-                      </div>
-                    }
-                  >
-                    <Button variant="destructive">
-                      {t('permission.adminFunction')}
-                    </Button>
-                  </Authorized>
-                </div>
-              </CardContent>
-            </Card>
+            <PermissionTestPanel />
           </TabsContent>
         </Tabs>
         </div>

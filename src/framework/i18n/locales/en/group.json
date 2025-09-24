@@ -1,0 +1,9 @@
+{
+  "selectGroup": "Select Organization",
+  "searchGroups": "Search organizations...",
+  "noGroupsFound": "No organizations found",
+  "currentGroup": "Current Organization",
+  "switchGroup": "Switch Organization",
+  "personalWorkspace": "Personal Workspace",
+  "organizationWorkspace": "Organization Workspace"
+}

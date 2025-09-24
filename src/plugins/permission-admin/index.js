@@ -6,11 +6,10 @@ import zh from './i18n/zh.json';
 import PermissionAdminPage from './pages/PermissionAdminPage';
 
 // 权限管理插件注册函数
-export default function registerPermissionAdminPlugin({ 
-  registerRoute, 
-  registerAdminMenuItem, 
-  registerPermission, 
-  registerI18nNamespace 
+export default function registerPermissionAdminPlugin({
+  registerMenuItem,
+  registerPermission,
+  registerI18nNamespace
 }) {
   // 1. 注册国际化资源
   registerI18nNamespace('permissionAdmin', { en, zh });
@@ -22,19 +21,13 @@ export default function registerPermissionAdminPlugin({
   });
 
   // 3. 注册Admin菜单项，并用UI权限保护
-  registerAdminMenuItem({
+  registerMenuItem({
     label: 'permissionAdmin.menuLabel', // i18n key
     path: '/admin/permissions',
+    component: PermissionAdminPage,
     permission: 'ui.permission-admin.view',
     order: 100 // 较高的排序值，使其出现在核心功能区域
-  });
-
-  // 4. 注册路由，并用UI权限保护
-  registerRoute({
-    path: '/admin/permissions',
-    component: PermissionAdminPage,
-    permission: 'ui.permission-admin.view'
-  });
+  }, 'admin');
 
   // 5. 声明此插件进行管理操作所需的后端DB权限
   const tables = ['roles', 'permissions', 'role_permissions', 'user_roles'];

@@ -146,7 +146,6 @@ const plugins = [
 
 - `registerRoute(route)` - 注册路由
 - `registerMenuItem(menuItem)` - 注册菜单项
-- `registerComponent(name, component)` - 注册组件
 - `registerI18nNamespace(namespace, translations)` - 注册国际化资源
 - `registerPermission(permissionObject)` - 注册权限定义
 

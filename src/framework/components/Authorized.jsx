@@ -1,5 +1,5 @@
 import React from 'react';
-import { usePermission } from './PermissionContext.jsx';
+import { useGroup } from '../contexts/GroupContext.jsx';
 
 /**
  * 权限控制组件
@@ -19,10 +19,10 @@ export const Authorized = ({
   fallback = null,
   loading = false
 }) => {
-  const { hasAnyPermission, hasAllPermissions, loading: permissionLoading } = usePermission();
+  const { hasAnyPermission, hasAllPermissions, loading: groupLoading } = useGroup();
 
   // 如果正在加载权限信息
-  if (permissionLoading || loading) {
+  if (groupLoading || loading) {
     return fallback;
   }
 

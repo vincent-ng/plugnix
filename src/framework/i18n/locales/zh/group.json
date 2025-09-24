@@ -1,0 +1,9 @@
+{
+  "selectGroup": "选择组织",
+  "searchGroups": "搜索组织...",
+  "noGroupsFound": "未找到组织",
+  "currentGroup": "当前组织",
+  "switchGroup": "切换组织",
+  "personalWorkspace": "个人工作区",
+  "organizationWorkspace": "组织工作区"
+}

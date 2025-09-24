@@ -4,43 +4,33 @@ class Registry {
     this.routes = [];
     this.adminMenuItems = [];
     this.publicMenuItems = [];
-    this.userMenuItems = []; // 新增：用户菜单项
+    this.userMenuItems = [];
     this.i18nNamespaces = new Map();
-    this.components = new Map();
-    this.permissions = new Map(); // 新增：权限注册
+    this.permissions = new Map();
+  }
+
+  // 统一的菜单项注册方法
+  registerMenuItem(menuItem, position) {
+    let targetArray;
+    switch (position) {
+      case 'admin':
+        targetArray = this.adminMenuItems;
+        break;
+      case 'public':
+        targetArray = this.publicMenuItems;
+        break;
+      case 'user':
+        targetArray = this.userMenuItems;
+        break;
+      default:
+        throw new Error(`Invalid menu item position: ${position}`);
+    }
+    insertSorted(targetArray, menuItem);
   }
 
   // 注册路由
-  registerRoute(routeObject) {
-    if (!routeObject.path || !routeObject.component) {
-      throw new Error('Route must have path and component');
-    }
-    this.routes.push(routeObject);
-    console.log(`Route registered: ${routeObject.path}`);
-  }
-
-  // 注册管理菜单项
-  registerAdminMenuItem(menuItem) {
-    insertSorted(this.adminMenuItems, menuItem);
-  }
-
-  // 注册公共菜单项
-  registerPublicMenuItem(menuItem) {
-    insertSorted(this.publicMenuItems, menuItem);
-  }
-
-  // 新增：注册用户菜单项
-  registerUserMenuItem(menuItem) {
-    insertSorted(this.userMenuItems, menuItem);
-  }
-
-  // 注册组件
-  registerComponent(name, component) {
-    if (!name || !component) {
-      throw new Error('Component name and component are required');
-    }
-    this.components.set(name, component);
-    console.log(`Component registered: ${name}`);
+  registerRoute(route) {
+    this.routes.push(route);
   }
 
   // 注册国际化命名空间
@@ -73,6 +63,10 @@ class Registry {
     return this.routes;
   }
 
+  getRoute(path) {
+    return this.routes.find(route => route.path === path);
+  }
+
   // 获取所有注册的菜单项
   getAdminMenuItems() {
     return this.adminMenuItems;
@@ -93,15 +87,6 @@ class Registry {
   }
 
   // 获取所有注册的组件
-  getComponents() {
-    return this.components;
-  }
-
-  // 获取特定组件
-  getComponent(name) {
-    return this.components.get(name);
-  }
-
   // 获取所有注册的权限
   getPermissions() {
     return this.permissions;

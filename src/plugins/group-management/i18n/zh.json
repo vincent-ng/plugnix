@@ -3,12 +3,16 @@
   "pageTitle": "用户组管理",
   "groupList": {
     "title": "我的用户组",
+    "subtitle": "管理您的用户组或创建一个新的用户组。",
     "createGroup": "创建新组",
     "noGroups": "您还没有加入任何用户组",
     "memberCount": "{{count}} 名成员",
     "yourRole": "您的角色：{{role}}",
     "owner": "组长",
-    "member": "成员"
+    "member": "成员",
+    "noDescription": "暂无描述。",
+    "noSearchResults": "未找到匹配的用户组。",
+    "noSearchResultsHint": "请尝试搜索其他内容。"
   },
   "groupDetails": {
     "editGroup": "编辑组信息",
@@ -18,6 +22,20 @@
       "members": "成员管理",
       "roles": "角色管理",
       "settings": "组设置"
+    },
+    "errors": {
+      "loadFailed": "加载用户组详情失败"
+    },
+    "notFound": {
+      "title": "用户组未找到",
+      "description": "您正在查找的用户组可能已被删除或您没有权限访问。"
+    },
+    "noDescription": "暂无描述。",
+    "stats": {
+      "members": "成员",
+      "roles": "角色",
+      "active": "活跃",
+      "status": "状态"
     }
   },
   "createGroup": {
@@ -30,7 +48,10 @@
     "cancel": "取消",
     "creating": "创建中...",
     "success": "用户组创建成功",
-    "error": "创建用户组失败"
+    "error": "创建用户组失败",
+    "errors": {
+      "nameRequired": "组名称是必填项"
+    }
   },
   "members": {
     "inviteMember": "邀请成员",
@@ -61,6 +82,11 @@
       "cancel": "取消",
       "success": "邀请发送成功",
       "error": "邀请发送失败"
+    },
+    "errors": {
+      "loadFailed": "加载成员列表失败",
+      "updateRoleFailed": "更新角色失败",
+      "removeMemberFailed": "移除成员失败"
     }
   },
   "roles": {
@@ -93,17 +119,63 @@
     "save": "保存",
     "saving": "保存中...",
     "success": "操作成功",
-    "error": "操作失败"
+    "error": "操作失败",
+    "names": {
+      "Owner": "组长",
+      "Admin": "管理员",
+      "Member": "成员",
+      "Unknown": "未知"
+    },
+    "errors": {
+      "createFailed": "创建角色失败",
+      "updateFailed": "更新角色失败",
+      "loadFailed": "加载角色列表失败",
+      "deleteFailed": "删除角色失败"
+    },
+    "permissionTypes": {
+      "ui": "界面",
+      "database": "数据库"
+    }
   },
   "settings": {
     "basicInfo": "基本信息",
     "dangerZone": "危险操作",
     "name": "组名称",
+    "groupNamePlaceholder": "请输入组名称",
     "description": "组描述",
+    "descriptionPlaceholder": "请输入组描述（可选）",
+    "publicGroup": "公开组",
+    "publicGroupDescription": "公开组可以被任何人发现和加入。",
+    "memberInvite": "允许成员邀请",
+    "memberInviteDescription": "允许成员邀请新用户加入该组。",
+    "requireApproval": "需要审批才能加入",
+    "requireApprovalDescription": "新成员需要管理员批准才能加入。",
+    "groupInfo": "组信息",
+    "groupId": "组ID",
+    "memberCount": "成员数量",
+    "members": "名成员",
+    "createdAt": "创建时间",
+    "lastUpdated": "最后更新",
     "save": "保存",
     "saving": "保存中...",
-    "success": "保存成功",
-    "error": "保存失败"
+    "error": "保存失败",
+    "deleteGroup": "删除用户组",
+    "deleteGroupDescription": "删除用户组后，所有数据都将无法恢复。请谨慎操作。",
+    "confirmDelete": "确认删除",
+    "deleteWarning": "此操作不可逆。所有用户组数据，包括成员、角色和内容，都将被永久删除。",
+    "deleteConsequences": "请注意以下后果：",
+    "consequence1": "所有成员都将从组中移除。",
+    "consequence2": "所有相关的角色和权限都将被删除。",
+    "consequence3": "此操作无法撤销。",
+    "confirmText": "要确认，请在下方输入组名“{{groupName}}”。",
+    "errors": {
+      "deleteFailed": "删除用户组失败",
+      "updateFailed": "更新设置失败"
+    },
+    "success": {
+      "save": "设置保存成功",
+      "delete": "用户组删除成功"
+    }
   },
   "common": {
     "loading": "加载中...",

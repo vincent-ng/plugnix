@@ -4,13 +4,13 @@ import { Button } from '@/framework/components/ui/button';
 import { Input } from '@/framework/components/ui/input';
 import { Badge } from '@/framework/components/ui/badge';
 import { Textarea } from '@/framework/components/ui/textarea';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/framework/components/ui/table';
 import {
   Dialog,
@@ -21,11 +21,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/framework/components/ui/dialog';
-import { 
-  Plus, 
-  Shield, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Shield,
+  Edit,
+  Trash2,
   MoreHorizontal,
   Crown,
   User
@@ -36,9 +36,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/framework/components/ui/dropdown-menu';
-import { Checkbox } from '@/framework/components/ui/checkbox';
 import Authorized from '@/framework/components/Authorized';
 import RoleEditDialog from './RoleEditDialog';
+import { toast } from "sonner";
 import { getGroupRoles, createRole, updateRole, deleteRole } from '../services/roleService';
 
 export default function RolesTab({ groupId, userRole }) {
@@ -58,7 +58,9 @@ export default function RolesTab({ groupId, userRole }) {
         const rolesData = await getGroupRoles(groupId);
         setRoles(rolesData);
       } catch (error) {
-        console.error('Failed to load roles:', error);
+        toast.error(t('roles.errors.loadFailed'), {
+          description: error.message,
+        });
       } finally {
         setLoading(false);
       }
@@ -82,18 +84,22 @@ export default function RolesTab({ groupId, userRole }) {
       if (editingRole) {
         // 更新角色
         const updatedRole = await updateRole(editingRole.id, roleData);
-        setRoles(prev => prev.map(role => 
+        setRoles(prev => prev.map(role =>
           role.id === editingRole.id ? updatedRole : role
         ));
+        toast.success(t('roles.success.update'));
       } else {
         // 创建角色
         const newRole = await createRole(groupId, roleData);
         setRoles(prev => [...prev, newRole]);
+        toast.success(t('roles.success.create'));
       }
       setRoleDialogOpen(false);
       setEditingRole(null);
     } catch (error) {
-      console.error('Failed to save role:', error);
+      toast.error(editingRole ? t('roles.errors.updateFailed') : t('roles.errors.createFailed'), {
+        description: error.message,
+      });
     }
   };
 
@@ -102,8 +108,11 @@ export default function RolesTab({ groupId, userRole }) {
       try {
         await deleteRole(roleId);
         setRoles(prev => prev.filter(role => role.id !== roleId));
+        toast.success(t('roles.success.delete'));
       } catch (error) {
-        console.error('Failed to delete role:', error);
+        toast.error(t('roles.errors.deleteFailed'), {
+          description: error.message,
+        });
       }
     }
   };
@@ -161,7 +170,7 @@ export default function RolesTab({ groupId, userRole }) {
                   <div className="flex items-center gap-3">
                     {getRoleIcon(role.name)}
                     <div>
-                      <div className="font-medium">{role.name}</div>
+                      <div className="font-medium">{t(`roles.names.${role.name}`, { defaultValue: role.name })}</div>
                       <div className="text-sm text-muted-foreground">
                         {role.description}
                       </div>
@@ -197,7 +206,7 @@ export default function RolesTab({ groupId, userRole }) {
                             <Edit className="h-4 w-4 mr-2" />
                             {t('roles.editRole')}
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDeleteRole(role.id)}
                             className="text-destructive"
                           >

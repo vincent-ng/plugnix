@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/framework/components/ui/button';
 import { Input } from '@/framework/components/ui/input';
 import { Textarea } from '@/framework/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Switch } from '@/framework/components/ui/switch';
-import { Badge } from '@/framework/components/ui/badge';
-import { 
-  Save, 
-  AlertTriangle, 
+import {
+  Save,
+  AlertTriangle,
   Trash2,
-  Shield,
   Users,
   Settings
 } from 'lucide-react';
@@ -25,9 +24,16 @@ import {
 } from '@/framework/components/ui/dialog';
 import Authorized from '@/framework/components/Authorized';
 import { supabase } from '@/framework/lib/supabase';
+import { useGroup } from '@/framework/contexts/GroupContext';
+import { useTabs } from '@/framework/contexts/TabContext';
+import { toast } from 'sonner';
 
-export default function SettingsTab({ group, userRole, onGroupUpdate }) {
-  const { t } = useTranslation('groupManagement');
+export default function SettingsTab({ group, onGroupUpdate }) {
+  const { t } = useTranslation('group-management');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { fetchUserGroups, hasAnyPermission } = useGroup();
+  const { closeTab } = useTabs();
   const [formData, setFormData] = useState({
     name: group?.name || '',
     description: group?.description || '',
@@ -38,7 +44,6 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
   const [saving, setSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
-  const [error, setError] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -50,21 +55,27 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // TODO: 实现保存逻辑
-      console.log('保存用户组设置:', formData);
-      
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // 更新父组件的group数据
+      const { error: updateError } = await supabase
+        .from('groups')
+        .update(formData)
+        .eq('id', group.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
       onGroupUpdate(prev => ({
         ...prev,
         ...formData,
         updated_at: new Date().toISOString()
       }));
-      
+
+      toast.success(t('settings.success.save'));
+
     } catch (error) {
-      console.error('保存失败:', error);
+      toast.error(t('settings.errors.updateFailed'), {
+        description: error.message
+      });
     } finally {
       setSaving(false);
     }
@@ -74,9 +85,8 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
     if (confirmText !== group.name) {
       return;
     }
-    
+
     try {
-      setError(null);
       const { error: deleteError } = await supabase
         .from('groups')
         .delete()
@@ -85,19 +95,24 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
       if (deleteError) {
         throw deleteError;
       }
-      
+
+      toast.success(t('settings.success.delete'));
+
       // 重定向到列表页面
-      window.location.href = '/admin/groups';
-      
+      closeTab(location.pathname);
+      await fetchUserGroups();
+      navigate('/admin/groups');
+
     } catch (err) {
-      console.error('删除失败:', err);
-      setError(err.message || t('settings.deleteFailed'));
+      toast.error(t('settings.errors.deleteFailed'), {
+        description: err.message
+      });
+    } finally {
       setDeleteDialogOpen(false);
     }
   };
 
-  const canEditSettings = userRole === 'Owner' || userRole === 'Admin';
-  const canDeleteGroup = userRole === 'Owner';
+  const canEditSettings = hasAnyPermission(['db.groups.update']);
   const hasChanges = JSON.stringify(formData) !== JSON.stringify({
     name: group?.name || '',
     description: group?.description || '',
@@ -108,11 +123,6 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
 
   return (
     <div className="space-y-6">
-      {error && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
       {/* 基本信息 */}
       <Card>
         <CardHeader>
@@ -124,7 +134,7 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium mb-2 block">
-              {t('settings.groupName')}
+              {t('settings.name')}
             </label>
             <Input
               value={formData.name}
@@ -133,7 +143,7 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
               disabled={!canEditSettings}
             />
           </div>
-          
+
           <div>
             <label className="text-sm font-medium mb-2 block">
               {t('settings.description')}
@@ -193,8 +203,8 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
 
           {canEditSettings && (
             <div className="flex justify-end pt-4">
-              <Button 
-                onClick={handleSave} 
+              <Button
+                onClick={handleSave}
                 disabled={!hasChanges || saving}
               >
                 <Save className="h-4 w-4 mr-2" />
@@ -221,21 +231,21 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
               </div>
               <div className="font-mono text-sm">{group?.id}</div>
             </div>
-            
+
             <div>
               <div className="text-sm font-medium text-muted-foreground mb-1">
                 {t('settings.memberCount')}
               </div>
               <div>{group?.member_count || 0} {t('settings.members')}</div>
             </div>
-            
+
             <div>
               <div className="text-sm font-medium text-muted-foreground mb-1">
                 {t('settings.createdAt')}
               </div>
               <div>{new Date(group?.created_at).toLocaleString()}</div>
             </div>
-            
+
             <div>
               <div className="text-sm font-medium text-muted-foreground mb-1">
                 {t('settings.lastUpdated')}
@@ -248,87 +258,85 @@ export default function SettingsTab({ group, userRole, onGroupUpdate }) {
 
       {/* 危险操作 */}
       <Authorized permissions="db.groups.delete">
-        {canDeleteGroup && (
-          <Card className="border-destructive">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertTriangle className="h-5 w-5" />
-                {t('settings.dangerZone')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{t('settings.deleteGroup')}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {t('settings.deleteGroupDescription')}
-                  </div>
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              {t('settings.dangerZone')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-medium">{t('settings.deleteGroup')}</div>
+                <div className="text-sm text-muted-foreground">
+                  {t('settings.deleteGroupDescription')}
                 </div>
-                
-                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive">
+              </div>
+
+              <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t('settings.deleteGroup')}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="h-5 w-5" />
+                      {t('settings.confirmDelete')}
+                    </DialogTitle>
+                    <DialogDescription>
+                      {t('settings.deleteWarning')}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    <div className="p-4 bg-destructive/10 rounded-lg">
+                      <div className="text-sm font-medium text-destructive mb-2">
+                        {t('settings.deleteConsequences')}
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• {t('settings.consequence1')}</li>
+                        <li>• {t('settings.consequence2')}</li>
+                        <li>• {t('settings.consequence3')}</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        {t('settings.confirmText', { groupName: group?.name })}
+                      </label>
+                      <Input
+                        value={confirmText}
+                        onChange={(e) => setConfirmText(e.target.value)}
+                        placeholder={group?.name}
+                      />
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => {
+                      setDeleteDialogOpen(false);
+                      setConfirmText('');
+                    }}>
+                      {t('common.cancel')}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteGroup}
+                      disabled={confirmText !== group?.name}
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       {t('settings.deleteGroup')}
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2 text-destructive">
-                        <AlertTriangle className="h-5 w-5" />
-                        {t('settings.confirmDelete')}
-                      </DialogTitle>
-                      <DialogDescription>
-                        {t('settings.deleteWarning')}
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      <div className="p-4 bg-destructive/10 rounded-lg">
-                        <div className="text-sm font-medium text-destructive mb-2">
-                          {t('settings.deleteConsequences')}
-                        </div>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          <li>• {t('settings.consequence1')}</li>
-                          <li>• {t('settings.consequence2')}</li>
-                          <li>• {t('settings.consequence3')}</li>
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <label className="text-sm font-medium mb-2 block">
-                          {t('settings.confirmText', { groupName: group?.name })}
-                        </label>
-                        <Input
-                          value={confirmText}
-                          onChange={(e) => setConfirmText(e.target.value)}
-                          placeholder={group?.name}
-                        />
-                      </div>
-                    </div>
-                    
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => {
-                        setDeleteDialogOpen(false);
-                        setConfirmText('');
-                      }}>
-                        {t('common.cancel')}
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        onClick={handleDeleteGroup}
-                        disabled={confirmText !== group?.name}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t('settings.deleteGroup')}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardContent>
+        </Card>
       </Authorized>
     </div>
   );

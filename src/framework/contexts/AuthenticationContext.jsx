@@ -27,8 +27,14 @@ export const AuthenticationProvider = ({ children }) => {
 
     // 监听认证状态变化
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
+      (_event, session) => {
+        const newUser = session?.user ?? null;
+        setUser(currentUser => {
+            if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
+                return newUser;
+            }
+            return currentUser;
+        });
         setLoading(false);
       }
     );

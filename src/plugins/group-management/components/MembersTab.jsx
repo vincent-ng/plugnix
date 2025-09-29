@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/framework/components/ui/button';
 import { Input } from '@/framework/components/ui/input';
 import { Badge } from '@/framework/components/ui/badge';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/framework/components/ui/table';
 import {
   Dialog,
@@ -27,12 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/framework/components/ui/select';
-import { 
-  UserPlus, 
-  Search, 
-  MoreHorizontal, 
-  Crown, 
-  User, 
+import {
+  UserPlus,
+  Search,
+  MoreHorizontal,
+  Crown,
+  User,
   Shield,
   Trash2,
   Edit
@@ -44,13 +44,14 @@ import {
   DropdownMenuTrigger,
 } from '@/framework/components/ui/dropdown-menu';
 import Authorized from '@/framework/components/Authorized';
-import { 
-  getGroupMembers, 
-  inviteMember, 
-  removeMember, 
+import {
+  getGroupMembers,
+  inviteMember,
+  removeMember,
   changeMemberRole,
-  getAvailableRoles 
+  getAvailableRoles
 } from '../services/memberService';
+import { toast } from 'sonner';
 
 export default function MembersTab({ groupId, userRole }) {
   const { t } = useTranslation('group-management');
@@ -63,13 +64,11 @@ export default function MembersTab({ groupId, userRole }) {
   const [availableRoles, setAvailableRoles] = useState([]);
   const [inviting, setInviting] = useState(false);
 
-  // 加载成员数据
   useEffect(() => {
     const loadMembers = async () => {
       setLoading(true);
       try {
         const memberData = await getGroupMembers(groupId);
-        // 转换数据格式以适配现有UI
         const formattedMembers = memberData.map(member => ({
           id: member.id,
           user_id: member.user_id,
@@ -83,7 +82,9 @@ export default function MembersTab({ groupId, userRole }) {
         }));
         setMembers(formattedMembers);
       } catch (error) {
-        console.error('加载成员失败:', error);
+        toast.error(t('common.error'), {
+          description: t('members.errors.loadMembersFailed'),
+        });
       } finally {
         setLoading(false);
       }
@@ -92,14 +93,18 @@ export default function MembersTab({ groupId, userRole }) {
     loadMembers();
   }, [groupId]);
 
-  // 加载可用角色
   useEffect(() => {
     const loadRoles = async () => {
       try {
         const roles = await getAvailableRoles(groupId);
         setAvailableRoles(roles);
+        if (roles.length > 0) {
+          setInviteRole(roles.find(r => r.name === 'Member')?.name || roles[0].name);
+        }
       } catch (error) {
-        console.error('加载角色失败:', error);
+        toast.error(t('common.error'), {
+          description: t('members.errors.loadRolesFailed'),
+        });
       }
     };
 
@@ -114,7 +119,7 @@ export default function MembersTab({ groupId, userRole }) {
 
   const handleInviteMember = async () => {
     if (!inviteEmail.trim()) return;
-    
+
     setInviting(true);
     try {
       await inviteMember(groupId, inviteEmail, inviteRole);
@@ -132,13 +137,15 @@ export default function MembersTab({ groupId, userRole }) {
         last_active: member.last_active
       }));
       setMembers(formattedMembers);
-      
+
       // 重置表单
       setInviteEmail('');
-      setInviteRole('Member');
+      setInviteRole(availableRoles.find(r => r.name === 'Member')?.name || availableRoles[0]?.name);
       setInviteDialogOpen(false);
     } catch (error) {
-      console.error('邀请成员失败:', error);
+      toast.error(t('common.error'), {
+        description: t('members.errors.inviteFailed'),
+      });
     } finally {
       setInviting(false);
     }
@@ -151,7 +158,9 @@ export default function MembersTab({ groupId, userRole }) {
         // 从本地状态中移除成员
         setMembers(prev => prev.filter(m => m.id !== memberId));
       } catch (error) {
-        console.error('移除成员失败:', error);
+        toast.error(t('common.error'), {
+          description: t('members.errors.removeFailed'),
+        });
       }
     }
   };
@@ -160,11 +169,13 @@ export default function MembersTab({ groupId, userRole }) {
     try {
       await changeMemberRole(groupId, memberId, newRole);
       // 更新本地状态中的成员角色
-      setMembers(prev => prev.map(m => 
+      setMembers(prev => prev.map(m =>
         m.id === memberId ? { ...m, role: newRole } : m
       ));
     } catch (error) {
-      console.error('修改角色失败:', error);
+      toast.error(t('common.error'), {
+        description: t('members.errors.changeRoleFailed'),
+      });
     }
   };
 
@@ -236,7 +247,7 @@ export default function MembersTab({ groupId, userRole }) {
                     </label>
                     <Input
                       type="email"
-                      placeholder="user@example.com"
+                      placeholder={t('members.invite.placeholder.email')}
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                     />
@@ -252,7 +263,7 @@ export default function MembersTab({ groupId, userRole }) {
                       <SelectContent>
                         {availableRoles.map(role => (
                           <SelectItem key={role.name} value={role.name}>
-                            {role.display_name}
+                            {t(`members.roles.${role.name.toLowerCase()}`, role.display_name)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -263,7 +274,7 @@ export default function MembersTab({ groupId, userRole }) {
                   <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
                     {t('common.cancel')}
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleInviteMember}
                     disabled={!inviteEmail.trim() || inviting}
                   >
@@ -307,7 +318,7 @@ export default function MembersTab({ groupId, userRole }) {
                 <TableCell>
                   <Badge variant={getRoleBadgeVariant(member.role)} className="flex items-center gap-1 w-fit">
                     {getRoleIcon(member.role)}
-                    {member.role}
+                    {t(`members.roles.${member.role.toLowerCase()}`, member.role)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground">
@@ -327,16 +338,16 @@ export default function MembersTab({ groupId, userRole }) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {availableRoles.map(role => (
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               key={role.name}
                               onClick={() => handleChangeRole(member.id, role.name)}
                               disabled={member.role === role.name}
                             >
                               <Edit className="mr-2 h-4 w-4" />
-                              {t('members.changeRoleTo', { role: role.display_name })}
+                              {t('members.changeRoleTo', { role: t(`members.roles.${role.name.toLowerCase()}`, role.display_name) })}
                             </DropdownMenuItem>
                           ))}
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleRemoveMember(member.id)}
                             className="text-red-600"
                           >

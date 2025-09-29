@@ -7,12 +7,14 @@ import { Textarea } from '@/framework/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { ArrowLeft, Users } from 'lucide-react';
 import { supabase } from '@/framework/lib/supabase';
+import { useGroup } from '@/framework/contexts/GroupContext';
+import { toast } from 'sonner';
 
 const CreateGroupPage = () => {
   const { t } = useTranslation('group-management');
   const navigate = useNavigate();
+  const { fetchUserGroups } = useGroup();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     description: ''
@@ -29,11 +31,10 @@ const CreateGroupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
 
     try {
       if (!formData.name.trim()) {
-        throw new Error('组名称不能为空');
+        throw new Error(t('createGroup.errors.nameRequired'));
       }
 
       const { data, error } = await supabase.rpc('create_group', {
@@ -45,10 +46,15 @@ const CreateGroupPage = () => {
         throw error;
       }
 
-      console.log('Group created successfully:', data);
+      toast.success(t('createGroup.success.create'), {
+        description: t('createGroup.success.createDesc', { groupName: formData.name }),
+      });
+      await fetchUserGroups();
       navigate('/admin/groups');
     } catch (err) {
-      setError(err.message || t('createGroup.error'));
+      toast.error(t('createGroup.errors.createFailed'), {
+        description: err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -72,12 +78,6 @@ const CreateGroupPage = () => {
           </h1>
         </div>
       </div>
-
-      {error && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
 
       {/* 创建表单 */}
       <Card>

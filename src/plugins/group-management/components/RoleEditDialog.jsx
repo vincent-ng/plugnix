@@ -18,19 +18,20 @@ import { Separator } from '@/framework/components/ui/separator';
 import { ScrollArea } from '@/framework/components/ui/scroll-area';
 import { Search, Shield, Database } from 'lucide-react';
 import { getAvailablePermissions } from '../services/roleService';
+import { toast } from "sonner";
 
-export default function RoleEditDialog({ 
-  open, 
-  onOpenChange, 
-  role = null, 
-  onSave 
+export default function RoleEditDialog({
+  open,
+  onOpenChange,
+  role = null,
+  onSave
 }) {
   const { t } = useTranslation('group-management');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [availablePermissions, setAvailablePermissions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // 表单状态
   const [formData, setFormData] = useState({
     name: '',
@@ -74,7 +75,9 @@ export default function RoleEditDialog({
       const permissions = await getAvailablePermissions();
       setAvailablePermissions(permissions);
     } catch (error) {
-      console.error('加载权限失败:', error);
+      toast.error(t('roles.errors.loadPermissionsFailed'), {
+        description: error.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -116,7 +119,9 @@ export default function RoleEditDialog({
         permissions: []
       });
     } catch (error) {
-      console.error('保存角色失败:', error);
+      toast.error(t('roles.errors.saveRoleFailed'), {
+        description: error.message,
+      });
     } finally {
       setSaving(false);
     }
@@ -137,6 +142,28 @@ export default function RoleEditDialog({
     groups[type].push(permission);
     return groups;
   }, {});
+
+  const getPermissionTypeName = (type) => {
+    switch (type) {
+      case 'ui':
+        return t('roles.uiPermissions');
+      case 'db':
+        return t('roles.dbPermissions');
+      default:
+        return t('common.other');
+    }
+  }
+
+  const getPermissionIcon = (type) => {
+    switch (type) {
+      case 'ui':
+        return <Shield className="h-4 w-4 text-blue-500" />;
+      case 'db':
+        return <Database className="h-4 w-4 text-green-500" />;
+      default:
+        return null;
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -185,7 +212,7 @@ export default function RoleEditDialog({
                   {t('roles.permissions')}
                 </Label>
                 <Badge variant="secondary">
-                  {formData.permissions.length} {t('roles.permissionCount')}
+                  {t('roles.permissionCount', { count: formData.permissions.length })}
                 </Badge>
               </div>
 
@@ -221,7 +248,7 @@ export default function RoleEditDialog({
                               checked={formData.permissions.includes(permission.id)}
                               onCheckedChange={() => handlePermissionToggle(permission.id)}
                             />
-                            <Label 
+                            <Label
                               htmlFor={permission.id}
                               className="text-sm cursor-pointer flex-1"
                             >
@@ -251,7 +278,7 @@ export default function RoleEditDialog({
                               checked={formData.permissions.includes(permission.id)}
                               onCheckedChange={() => handlePermissionToggle(permission.id)}
                             />
-                            <Label 
+                            <Label
                               htmlFor={permission.id}
                               className="text-sm cursor-pointer flex-1"
                             >
@@ -278,7 +305,7 @@ export default function RoleEditDialog({
                               checked={formData.permissions.includes(permission.id)}
                               onCheckedChange={() => handlePermissionToggle(permission.id)}
                             />
-                            <Label 
+                            <Label
                               htmlFor={permission.id}
                               className="text-sm cursor-pointer flex-1"
                             >
@@ -295,7 +322,7 @@ export default function RoleEditDialog({
 
                   {filteredPermissions.length === 0 && !loading && (
                     <div className="text-center py-4 text-muted-foreground">
-                      {t('roles.noPermissions')}
+                      {searchTerm ? t('roles.noPermissionsFound') : t('roles.noPermissions')}
                     </div>
                   )}
                 </div>
@@ -305,14 +332,14 @@ export default function RoleEditDialog({
         </ScrollArea>
 
         <DialogFooter>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={saving}
           >
             {t('common.cancel')}
           </Button>
-          <Button 
+          <Button
             onClick={handleSave}
             disabled={!formData.display_name.trim() || saving}
           >

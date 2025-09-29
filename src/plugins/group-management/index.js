@@ -15,7 +15,7 @@ export default function registerGroupManagementPlugin({
   registerPermission
 }) {
   // 注册国际化命名空间
-  registerI18nNamespace('groupManagement', {
+  registerI18nNamespace('group-management', {
     zh: zhTranslations,
     en: enTranslations
   });

@@ -8,14 +8,15 @@ import { Badge } from '@/framework/components/ui/badge';
 import Authorized from '@/framework/components/Authorized';
 import { useGroup } from '@/framework/contexts/GroupContext';
 import { supabase } from '@/framework/lib/supabase';
-import { ArrowLeft, Crown, User, Edit, Trash2, Users, Shield, Settings } from 'lucide-react';
+import { ArrowLeft, Crown, User, Users, Shield, Settings, Edit, Trash2 } from 'lucide-react';
 import MembersTab from '../components/MembersTab';
 import RolesTab from '../components/RolesTab';
 import SettingsTab from '../components/SettingsTab';
+import { toast } from 'sonner';
 
 
 export default function GroupDetailsPage() {
-  const { t } = useTranslation('groupManagement');
+  const { t } = useTranslation('group-management');
   const { groupId } = useParams();
   const navigate = useNavigate();
   const [group, setGroup] = useState(null);
@@ -40,10 +41,12 @@ export default function GroupDetailsPage() {
         setGroup({
           ...groupData,
           member_count: groupData.group_users[0]?.count || 0,
-          user_role: groupInContext?.role || 'Unknown'
+          user_role: groupInContext?.role || t('roles.names.Unknown')
         });
       } catch (error) {
-        console.error('Error loading group details:', error);
+        toast.error(t('groupDetails.errors.loadFailed'), {
+          description: error.message,
+        });
       } finally {
         setLoading(false);
       }
@@ -54,16 +57,10 @@ export default function GroupDetailsPage() {
     }
   }, [groupId, groupsLoading, userGroups]);
 
-  const handleDeleteGroup = async () => {
-    if (window.confirm(t('groupDetails.confirmDelete'))) {
-      // TODO: 实现删除逻辑
-      console.log('删除用户组:', groupId);
-      navigate('/admin/groups');
-    }
-  };
-
   const getRoleIcon = (role) => {
-    return role === 'Owner' ? <Crown className="h-4 w-4" /> : <User className="h-4 w-4" />;
+    if (role === 'Owner') return <Crown className="h-4 w-4" />;
+    if (role === 'Admin') return <Shield className="h-4 w-4" />;
+    return <User className="h-4 w-4" />;
   };
 
   const getRoleBadgeVariant = (role) => {
@@ -85,8 +82,8 @@ export default function GroupDetailsPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold mb-2">用户组不存在</h2>
-            <p className="text-muted-foreground mb-4">您访问的用户组可能已被删除或您没有访问权限</p>
+            <h2 className="text-2xl font-semibold mb-2">{t('groupDetails.notFound.title')}</h2>
+            <p className="text-muted-foreground mb-4">{t('groupDetails.notFound.description')}</p>
             <Button asChild>
               <Link to="/admin/groups">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -115,11 +112,11 @@ export default function GroupDetailsPage() {
               <h1 className="text-3xl font-bold">{group.name}</h1>
               <Badge variant={getRoleBadgeVariant(group.user_role)} className="flex items-center gap-1">
                 {getRoleIcon(group.user_role)}
-                {t(`groupList.${group.user_role.toLowerCase()}`)}
+                {t(`roles.names.${group.user_role}`, { defaultValue: group.user_role })}
               </Badge>
             </div>
             <p className="text-muted-foreground">
-              {group.description || '暂无描述'}
+              {group.description || t('groupDetails.noDescription')}
             </p>
           </div>
         </div>
@@ -129,17 +126,6 @@ export default function GroupDetailsPage() {
             <Button variant="outline" size="sm">
               <Edit className="h-4 w-4 mr-2" />
               {t('groupDetails.editGroup')}
-            </Button>
-          </Authorized>
-          
-          <Authorized permissions="ui.group.delete">
-            <Button 
-              variant="destructive" 
-              size="sm"
-              onClick={handleDeleteGroup}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {t('groupDetails.deleteGroup')}
             </Button>
           </Authorized>
         </div>
@@ -152,27 +138,27 @@ export default function GroupDetailsPage() {
             <Users className="h-8 w-8 text-blue-500 mr-3" />
             <div>
               <p className="text-2xl font-bold">{group.member_count}</p>
-              <p className="text-muted-foreground">成员数量</p>
+              <p className="text-muted-foreground">{t('groupDetails.stats.members')}</p>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="flex items-center p-6">
             <Shield className="h-8 w-8 text-green-500 mr-3" />
             <div>
-              <p className="text-2xl font-bold">3</p>
-              <p className="text-muted-foreground">自定义角色</p>
+              <p className="text-2xl font-bold">{group.roles_count || 0}</p>
+              <p className="text-muted-foreground">{t('groupDetails.stats.roles')}</p>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="flex items-center p-6">
             <Settings className="h-8 w-8 text-purple-500 mr-3" />
             <div>
-              <p className="text-2xl font-bold">活跃</p>
-              <p className="text-muted-foreground">组状态</p>
+              <p className="text-2xl font-bold">{t('groupDetails.stats.active')}</p>
+              <p className="text-muted-foreground">{t('groupDetails.stats.status')}</p>
             </div>
           </CardContent>
         </Card>
@@ -184,21 +170,21 @@ export default function GroupDetailsPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="border-b">
               <TabsList className="h-auto p-0 bg-transparent justify-start rounded-none border-0">
-                <TabsTrigger 
-                  value="members" 
+                <TabsTrigger
+                  value="members"
                   className="flex items-center gap-2 px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
                 >
                   <Users className="h-4 w-4" />
                   {t('groupDetails.tabs.members')}
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="roles"
                   className="flex items-center gap-2 px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
                 >
                   <Shield className="h-4 w-4" />
                   {t('groupDetails.tabs.roles')}
                 </TabsTrigger>
-                <TabsTrigger 
+                <TabsTrigger
                   value="settings"
                   className="flex items-center gap-2 px-6 py-4 rounded-none border-b-2 border-transparent data-[state=active]:border-primary"
                 >
@@ -217,9 +203,8 @@ export default function GroupDetailsPage() {
             </TabsContent>
 
             <TabsContent value="settings" className="p-6 mt-0">
-              <SettingsTab 
-                group={group} 
-                userRole={group.user_role}
+              <SettingsTab
+                group={group}
                 onGroupUpdate={setGroup}
               />
             </TabsContent>

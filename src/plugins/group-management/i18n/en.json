@@ -3,12 +3,16 @@
   "pageTitle": "Group Management",
   "groupList": {
     "title": "My Groups",
+    "subtitle": "Manage your groups or create a new one.",
     "createGroup": "Create New Group",
     "noGroups": "You haven't joined any groups yet",
     "memberCount": "{{count}} members",
     "yourRole": "Your role: {{role}}",
     "owner": "Owner",
-    "member": "Member"
+    "member": "Member",
+    "noDescription": "No description.",
+    "noSearchResults": "No matching groups found.",
+    "noSearchResultsHint": "Try searching for something else."
   },
   "groupDetails": {
     "editGroup": "Edit Group",
@@ -18,6 +22,20 @@
       "members": "Members",
       "roles": "Roles",
       "settings": "Settings"
+    },
+    "errors": {
+      "loadFailed": "Failed to load group details"
+    },
+    "notFound": {
+      "title": "Group Not Found",
+      "description": "The group you are looking for may have been deleted or you do not have permission to access it."
+    },
+    "noDescription": "No description provided.",
+    "stats": {
+      "members": "Members",
+      "roles": "Roles",
+      "active": "Active",
+      "status": "Status"
     }
   },
   "createGroup": {
@@ -30,7 +48,10 @@
     "cancel": "Cancel",
     "creating": "Creating...",
     "success": "Group created successfully",
-    "error": "Failed to create group"
+    "error": "Failed to create group",
+    "errors": {
+      "nameRequired": "Name is required"
+    }
   },
   "members": {
     "inviteMember": "Invite Member",
@@ -61,6 +82,11 @@
       "cancel": "Cancel",
       "success": "Invitation sent successfully",
       "error": "Failed to send invitation"
+    },
+    "errors": {
+      "loadFailed": "Failed to load members",
+      "updateRoleFailed": "Failed to update role",
+      "removeMemberFailed": "Failed to remove member"
     }
   },
   "roles": {
@@ -93,17 +119,63 @@
     "save": "Save",
     "saving": "Saving...",
     "success": "Operation successful",
-    "error": "Operation failed"
+    "error": "Operation failed",
+    "names": {
+      "Owner": "Owner",
+      "Admin": "Admin",
+      "Member": "Member",
+      "Unknown": "Unknown"
+    },
+    "errors": {
+      "createFailed": "Failed to create role",
+      "updateFailed": "Failed to update role",
+      "loadFailed": "Failed to load roles",
+      "deleteFailed": "Failed to delete role"
+    },
+    "permissionTypes": {
+      "ui": "UI",
+      "database": "Database"
+    }
   },
   "settings": {
     "basicInfo": "Basic Information",
     "dangerZone": "Danger Zone",
     "name": "Group Name",
+    "groupNamePlaceholder": "Enter group name",
     "description": "Group Description",
+    "descriptionPlaceholder": "Enter group description (optional)",
+    "publicGroup": "Public Group",
+    "publicGroupDescription": "Public groups can be discovered and joined by anyone.",
+    "memberInvite": "Allow Member Invite",
+    "memberInviteDescription": "Allow members to invite new users to the group.",
+    "requireApproval": "Require Approval to Join",
+    "requireApprovalDescription": "New members need admin approval to join.",
+    "groupInfo": "Group Information",
+    "groupId": "Group ID",
+    "memberCount": "Member Count",
+    "members": "members",
+    "createdAt": "Created At",
+    "lastUpdated": "Last Updated",
     "save": "Save",
     "saving": "Saving...",
-    "success": "Saved successfully",
-    "error": "Failed to save"
+    "error": "Failed to save",
+    "deleteGroup": "Delete Group",
+    "deleteGroupDescription": "Once you delete a group, there is no going back. Please be certain.",
+    "confirmDelete": "Confirm Deletion",
+    "deleteWarning": "This action is irreversible. All group data, including members, roles, and content, will be permanently deleted.",
+    "deleteConsequences": "Please be aware of the following consequences:",
+    "consequence1": "All members will be removed from the group.",
+    "consequence2": "All associated roles and permissions will be deleted.",
+    "consequence3": "This action cannot be undone.",
+    "confirmText": "To confirm, please type the group name \"{{groupName}}\" below.",
+    "errors": {
+      "deleteFailed": "Failed to delete group",
+      "updateFailed": "Failed to update settings"
+    },
+    "success": {
+      "save": "Settings saved successfully",
+      "delete": "Group deleted successfully"
+    }
   },
   "common": {
     "loading": "Loading...",

@@ -1,0 +1,64 @@
+{
+  "admin": {
+    "title": "Herodex",
+    "dashboard": "Dashboard",
+    "submissions": "Submission Review",
+    "skills": "Skill Management",
+    "overview": "Overview",
+    "pendingSubmissions": "Pending Submissions",
+    "totalPlayers": "Total Players",
+    "totalSkills": "Total Skills",
+    "recentActivity": "Recent Activity"
+  },
+  "player": {
+    "title": "Herodex",
+    "dashboard": "Character Panel",
+    "submission": "Daily Submission",
+    "skills": "Skill Tree",
+    "profile": "Hero Profile",
+    "totalXp": "Total XP",
+    "levelTitle": "Title",
+    "gameAlias": "Hero Name",
+    "submitHomework": "Submit to Master",
+    "diaryPlaceholder": "Today's cultivation insights...",
+    "attachments": "Cultivation Results",
+    "uploadFile": "Upload Attachment"
+  },
+  "skills": {
+    "locked": "Locked",
+    "unlocked": "Unlocked",
+    "mastered": "Mastered",
+    "level": "Level",
+    "proficiency": "Proficiency",
+    "prerequisites": "Prerequisites",
+    "subject": "Subject",
+    "grade": "Grade"
+  },
+  "submissions": {
+    "pending": "Pending",
+    "processed": "Processed",
+    "completed": "Completed",
+    "date": "Date",
+    "diary": "Cultivation Diary",
+    "attachments": "Attachments",
+    "aiSuggestion": "Master's Suggestion",
+    "review": "Review",
+    "approve": "Confirm Award",
+    "xpGained": "XP Reward",
+    "proficiencyGained": "Proficiency Reward",
+    "comment": "Master's Comment"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "create": "Create",
+    "update": "Update",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "back": "Back"
+  }
+}

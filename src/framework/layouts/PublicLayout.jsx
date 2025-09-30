@@ -66,7 +66,7 @@ const PublicLayout = () => {
     <div className="min-h-screen bg-background flex flex-col relative">
       {/* 顶部导航栏 */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <Logo 
@@ -213,7 +213,7 @@ const PublicLayout = () => {
 
       {/* 主内容区域 */}
       <main className="flex-1 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="relative z-10">
             <Outlet />
           </div>

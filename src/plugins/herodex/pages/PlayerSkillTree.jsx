@@ -1,11 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
-import { Badge } from '@/framework/components/ui/badge';
-import { Progress } from '@/framework/components/ui/progress';
+import ReactFlow, {
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  ConnectionLineType
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/framework/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/framework/components/ui/dialog';
 import { playerService, skillService, subjectService } from '../lib/supabase';
+import SkillNode from '../components/SkillNode';
+import dagre from 'dagre';
+
+const dagreGraph = new dagre.graphlib.Graph();
+dagreGraph.setDefaultEdgeLabel(() => ({}));
+
+const nodeWidth = 100; // 节点宽度调整
+const nodeHeight = 80; // 节点高度调整
+
+const getLayoutedElements = (nodes, edges, direction = 'TB') => {
+  const isHorizontal = direction === 'LR';
+  dagreGraph.setGraph({ rankdir: direction });
+
+  nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
+  edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(dagreGraph);
+
+  nodes.forEach((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    node.targetPosition = isHorizontal ? 'left' : 'top';
+    node.sourcePosition = isHorizontal ? 'right' : 'bottom';
+
+    // We are shifting the dagre node position (anchor=center center) to the top left
+    // so it matches the React Flow node anchor point (top left).
+    node.position = {
+      x: nodeWithPosition.x - nodeWidth / 2,
+      y: nodeWithPosition.y - nodeHeight / 2,
+    };
+
+    return node;
+  });
+
+  return { nodes, edges };
+};
+
 
 const PlayerSkillTree = () => {
   const { t } = useTranslation('herodex');
@@ -14,8 +61,71 @@ const PlayerSkillTree = () => {
   const [playerSkills, setPlayerSkills] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [dependencies, setDependencies] = useState([]);
-  const [selectedSkill, setSelectedSkill] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // React Flow 状态
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // 使用useMemo优化nodeTypes，避免不必要的重新渲染
+  const nodeTypes = useMemo(() => ({
+    skillNode: SkillNode,
+  }), []);
+
+  // 生成React Flow的节点和边数据
+  const generateFlowData = (skills, playerSkillsData, dependenciesData) => {
+    const flowNodes = skills.map(skill => {
+      const skillStatus = getSkillStatus(skill, {
+        playerSkillsData,
+        dependenciesData,
+        skillsData: skills
+      });
+
+      const prerequisites = getPrerequisites(skill.skill_id, {
+        dependenciesData,
+        skillsData: skills,
+        playerSkillsData
+      });
+
+      return {
+        id: skill.skill_id,
+        type: 'skillNode',
+        data: {
+          skill,
+          skillStatus,
+          prerequisites,
+          onSkillClick: handleSkillClick
+        },
+        position: { x: 0, y: 0 } // 初始位置，会被Dagre覆盖
+      };
+    });
+
+    const flowEdges = dependenciesData.map(dep => ({
+      id: `${dep.prerequisite_skill_id}-${dep.skill_id}`,
+      source: dep.prerequisite_skill_id,
+      target: dep.skill_id,
+      type: 'smoothstep',
+      animated: true,
+      style: { stroke: '#60a5fa', strokeWidth: 3 } // 连线样式调整
+    }));
+
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      flowNodes,
+      flowEdges
+    );
+
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  };
+
+  // 处理技能点击 - 现在由SkillNode内部处理
+  const handleSkillClick = useCallback((skill) => {
+    // 这个函数现在主要用于兼容性，实际的工具栏显示由SkillNode内部管理
+    console.log('Skill clicked:', skill.skill_name_game);
+  }, []);
+
+  // 处理连接
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
   useEffect(() => {
     loadData();
@@ -24,27 +134,30 @@ const PlayerSkillTree = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       const currentPlayer = await playerService.getCurrentPlayer();
       if (!currentPlayer) {
         window.location.href = '/herodex';
         return;
       }
-      
+
       setPlayer(currentPlayer);
-      
+
       const [allSkillsData, playerSkillsData, subjectsData, dependenciesData] = await Promise.all([
         skillService.getAllSkills(),
         skillService.getPlayerSkills(currentPlayer.player_id),
         subjectService.getAllSubjects(),
         skillService.getSkillDependencies()
       ]);
-      
+
       setAllSkills(allSkillsData);
       setPlayerSkills(playerSkillsData);
       setSubjects(subjectsData);
       setDependencies(dependenciesData);
-      
+
+      // 生成React Flow的节点和边
+      generateFlowData(allSkillsData, playerSkillsData, dependenciesData);
+
     } catch (error) {
       console.error('Failed to load data:', error);
     } finally {
@@ -52,21 +165,36 @@ const PlayerSkillTree = () => {
     }
   };
 
-  const getPlayerSkillData = (skillId) => {
-    return playerSkills.find(ps => ps.skill_id === skillId) || {
-      status: 'LOCKED',
-      current_level: 0,
-      current_proficiency: 0
-    };
-  };
+  // 统一的技能状态计算函数
+  const getSkillStatus = (skill, options = {}) => {
+    const {
+      playerSkillsData = playerSkills,
+      dependenciesData = dependencies,
+      skillsData = allSkills
+    } = options;
 
-  const getSkillStatus = (skill) => {
-    const playerSkill = getPlayerSkillData(skill.skill_id);
+    // 创建玩家技能映射表
+    const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
+    const playerSkillData = playerSkillsMap.get(skill.skill_id);
+
+    // 如果玩家有这个技能的记录，直接使用数据库中的状态
+    if (playerSkillData) {
+      return {
+        status: playerSkillData.status,
+        level: playerSkillData.current_level || 0,
+        proficiency: playerSkillData.current_proficiency || 0,
+        maxProficiency: getMaxProficiencyForLevel(skill, playerSkillData.current_level || 1)
+      };
+    }
+
+    // 如果玩家没有这个技能的记录，需要根据前置条件判断状态
+    const isUnlockable = isSkillUnlockable(skill, { playerSkillsData, dependenciesData, skillsData });
+
     return {
-      status: playerSkill.status,
-      level: playerSkill.current_level || 0,
-      proficiency: playerSkill.current_proficiency || 0,
-      maxProficiency: getMaxProficiencyForLevel(skill, playerSkill.current_level || 1)
+      status: isUnlockable ? 'UNLOCKED' : 'LOCKED',
+      level: 0,
+      proficiency: 0,
+      maxProficiency: getMaxProficiencyForLevel(skill, 1)
     };
   };
 
@@ -77,55 +205,48 @@ const PlayerSkillTree = () => {
     return skill.thresholds_json[level];
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'LOCKED': return '🔒';
-      case 'UNLOCKED': return '📖';
-      case 'MASTERED': return '⭐';
-      default: return '❓';
-    }
-  };
+  // 统一的前置条件获取函数
+  const getPrerequisites = (skillId, options = {}) => {
+    const {
+      dependenciesData = dependencies,
+      skillsData = allSkills,
+      playerSkillsData = playerSkills
+    } = options;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'LOCKED': return 'text-muted-foreground';
-      case 'UNLOCKED': return 'text-blue-600';
-      case 'MASTERED': return 'text-yellow-600';
-      default: return 'text-muted-foreground';
-    }
-  };
+    const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
 
-  const getLevelTitle = (level) => {
-    const titles = {
-      0: '未入门',
-      1: '初窥门径',
-      2: '略有小成',
-      3: '驾轻就熟',
-      4: '炉火纯青',
-      5: '登峰造极'
-    };
-    return titles[level] || '未知境界';
-  };
-
-  const getSkillsBySubject = (subjectId) => {
-    return allSkills.filter(skill => skill.subject_id === subjectId);
-  };
-
-  const getPrerequisites = (skillId) => {
-    return dependencies
+    return dependenciesData
       .filter(dep => dep.skill_id === skillId)
-      .map(dep => ({
-        ...dep,
-        skill: allSkills.find(s => s.skill_id === dep.prerequisite_skill_id)
-      }));
+      .map(dep => {
+        const skill = skillsData.find(s => s.skill_id === dep.prerequisite_skill_id);
+        const playerSkill = playerSkillsMap.get(dep.prerequisite_skill_id);
+        const isMet = playerSkill ? playerSkill.current_level >= dep.unlock_level : false;
+
+        return {
+          ...dep,
+          skill,
+          isMet
+        };
+      });
   };
 
-  const isSkillUnlockable = (skill) => {
-    const prerequisites = getPrerequisites(skill.skill_id);
+  // 统一的技能解锁判断函数
+  const isSkillUnlockable = (skill, options = {}) => {
+    const {
+      playerSkillsData = playerSkills,
+      dependenciesData = dependencies,
+      skillsData = allSkills
+    } = options;
+
+    const prerequisites = getPrerequisites(skill.skill_id, { dependenciesData, skillsData, playerSkillsData });
     if (prerequisites.length === 0) return true;
-    
+
+    const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
+
     return prerequisites.every(prereq => {
-      const playerSkill = getPlayerSkillData(prereq.prerequisite_skill_id);
+      const playerSkill = playerSkillsMap.get(prereq.prerequisite_skill_id);
+      // 如果没有找到玩家技能记录，说明该前置技能还没有解锁，返回false
+      if (!playerSkill) return false;
       return playerSkill.current_level >= prereq.unlock_level;
     });
   };
@@ -165,195 +286,36 @@ const PlayerSkillTree = () => {
               </CardHeader>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {getSkillsBySubject(subject.subject_id).map((skill) => {
-                const skillStatus = getSkillStatus(skill);
-                const prerequisites = getPrerequisites(skill.skill_id);
-                const unlockable = isSkillUnlockable(skill);
-                
-                return (
-                  <Dialog key={skill.skill_id}>
-                    <DialogTrigger asChild>
-                      <Card 
-                        className={`cursor-pointer transition-all hover:shadow-md ${
-                          skillStatus.status === 'LOCKED' && !unlockable 
-                            ? 'opacity-50' 
-                            : 'hover:scale-105'
-                        }`}
-                        onClick={() => setSelectedSkill(skill)}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className={`text-2xl ${getStatusColor(skillStatus.status)}`}>
-                              {getStatusIcon(skillStatus.status)}
-                            </div>
-                            <Badge variant="outline">
-                              {skill.grade_level}年级
-                            </Badge>
-                          </div>
-                          <CardTitle className="text-lg">
-                            {skill.skill_name_game}
-                          </CardTitle>
-                          <CardDescription className="text-sm">
-                            {skill.skill_name_real}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium">
-                                {getLevelTitle(skillStatus.level)}
-                              </span>
-                              <span className="text-sm text-muted-foreground">
-                                Lv.{skillStatus.level}
-                              </span>
-                            </div>
-                            
-                            {skillStatus.status !== 'LOCKED' && (
-                              <div className="space-y-1">
-                                <Progress 
-                                  value={(skillStatus.proficiency / skillStatus.maxProficiency) * 100} 
-                                  className="h-2"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>{skillStatus.proficiency}</span>
-                                  <span>{skillStatus.maxProficiency}</span>
-                                </div>
-                              </div>
-                            )}
-                            
-                            {prerequisites.length > 0 && skillStatus.status === 'LOCKED' && (
-                              <div className="text-xs text-muted-foreground">
-                                需要：{prerequisites[0].skill?.skill_name_game} Lv.{prerequisites[0].unlock_level}
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </DialogTrigger>
-
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center space-x-2">
-                          <span className={`text-2xl ${getStatusColor(skillStatus.status)}`}>
-                            {getStatusIcon(skillStatus.status)}
-                          </span>
-                          <span>{skill.skill_name_game}</span>
-                        </DialogTitle>
-                        <DialogDescription>
-                          {skill.skill_name_real}
-                        </DialogDescription>
-                      </DialogHeader>
-                      
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-medium mb-2">技能描述</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {skill.description_game}
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <h4 className="font-medium mb-1">当前等级</h4>
-                            <div className="text-lg font-bold">
-                              Lv.{skillStatus.level}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {getLevelTitle(skillStatus.level)}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h4 className="font-medium mb-1">熟练度</h4>
-                            <div className="text-lg font-bold">
-                              {skillStatus.proficiency}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              / {skillStatus.maxProficiency}
-                            </div>
-                          </div>
-                        </div>
-
-                        {skillStatus.status !== 'LOCKED' && (
-                          <div>
-                            <h4 className="font-medium mb-2">修炼进度</h4>
-                            <Progress 
-                              value={(skillStatus.proficiency / skillStatus.maxProficiency) * 100} 
-                              className="h-3"
-                            />
-                          </div>
-                        )}
-
-                        {prerequisites.length > 0 && (
-                          <div>
-                            <h4 className="font-medium mb-2">前置条件</h4>
-                            <div className="space-y-2">
-                              {prerequisites.map((prereq) => {
-                                const prereqStatus = getPlayerSkillData(prereq.prerequisite_skill_id);
-                                const isMet = prereqStatus.current_level >= prereq.unlock_level;
-                                
-                                return (
-                                  <div 
-                                    key={prereq.dependency_id}
-                                    className={`flex items-center justify-between p-2 border rounded ${
-                                      isMet ? 'border-green-200 bg-green-50' : 'border-gray-200'
-                                    }`}
-                                  >
-                                    <span className="text-sm">
-                                      {prereq.skill?.skill_name_game}
-                                    </span>
-                                    <div className="flex items-center space-x-2">
-                                      <Badge variant={isMet ? 'default' : 'outline'}>
-                                        需要 Lv.{prereq.unlock_level}
-                                      </Badge>
-                                      {isMet && <span className="text-green-600">✓</span>}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="bg-muted p-3 rounded-lg">
-                          <h4 className="font-medium mb-1">学习目标</h4>
-                          <p className="text-sm text-muted-foreground">
-                            {skill.description_real}
-                          </p>
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                );
-              })}
+            {/* React Flow 技能树 */}
+            <div className="h-[600px] border rounded-lg">
+              <ReactFlow
+                nodes={nodes.filter(node => {
+                  const skill = allSkills.find(s => s.skill_id === node.id);
+                  return skill && skill.subject_id === subject.subject_id;
+                })}
+                edges={edges.filter(edge => {
+                  const sourceSkill = allSkills.find(s => s.skill_id === edge.source);
+                  const targetSkill = allSkills.find(s => s.skill_id === edge.target);
+                  return sourceSkill && targetSkill &&
+                    sourceSkill.subject_id === subject.subject_id &&
+                    targetSkill.subject_id === subject.subject_id;
+                })}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={onConnect}
+                nodeTypes={nodeTypes}
+                connectionLineType={ConnectionLineType.SmoothStep}
+                fitView
+                fitViewOptions={{ padding: 0.2 }}
+                proOptions={{ hideAttribution: true }}
+              >
+                <Controls />
+                <Background variant="dots" gap={12} size={1} />
+              </ReactFlow>
             </div>
           </TabsContent>
         ))}
       </Tabs>
-
-      {/* 图例 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">图例说明</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <span className="text-xl">🔒</span>
-              <span>未解锁 - 需要完成前置条件</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl">📖</span>
-              <span>修炼中 - 可以获得熟练度</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xl">⭐</span>
-              <span>已精通 - 达到最高等级</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

@@ -1,9 +1,9 @@
 {
-  "name": "web-plugin-framework",
+  "name": "plugnix",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "模块化插件式前端框架 - 支持动态插件加载的现代化Web应用框架",
+  "description": "Plugnix - 模块化插件式前端框架",
   "keywords": [
     "frontend",
     "framework",
@@ -12,7 +12,7 @@
     "react",
     "vite"
   ],
-  "author": "Web Plugin Framework Team",
+  "author": "Plugnix Team",
   "license": "MIT",
   "scripts": {
     "dev": "vite",
@@ -91,10 +91,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/web-plugin-framework.git"
+    "url": "https://github.com/your-username/plugnix.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/web-plugin-framework/issues"
+    "url": "https://github.com/your-username/plugnix/issues"
   },
-  "homepage": "https://github.com/your-username/web-plugin-framework#readme"
+  "homepage": "https://github.com/your-username/plugnix#readme"
 }

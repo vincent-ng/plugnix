@@ -1,4 +1,4 @@
-# Web Plugin Framework
+# Plugnix
 
 一个现代化的模块化插件式前端框架，基于 React + Vite 构建，支持动态插件加载和管理。
 
@@ -63,7 +63,7 @@ npm run preview
 ## 📁 项目结构
 
 ```
-web-plugin-framework/
+plugnix/
 ├── src/
 │   ├── framework/           # 框架核心
 │   │   ├── api/            # API 接口
@@ -267,4 +267,4 @@ function MyComponent() {
 
 ---
 
-**Web Plugin Framework** - 让前端开发更加模块化和可扩展 🚀
+**Plugnix** - 让前端开发更加模块化和可扩展 🚀

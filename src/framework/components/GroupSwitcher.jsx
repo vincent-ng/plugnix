@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGroup } from '@/framework/contexts/GroupContext';
 import {
@@ -10,22 +10,15 @@ import {
   DropdownMenuTrigger,
 } from '@/framework/components/ui/dropdown-menu';
 import { Button } from '@/framework/components/ui/button';
-import { Input } from '@/framework/components/ui/input';
 import { Badge } from '@/framework/components/ui/badge';
-import { ChevronDown, Search, Building2, User } from 'lucide-react';
+import { ChevronDown, Building2, User } from 'lucide-react';
 
 export const GroupSwitcher = ({ className }) => {
   const { t } = useTranslation(['group', 'role']);
   const { currentGroup, userGroups, setCurrentGroup, userRole } = useGroup();
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredGroups = userGroups.filter(group =>
-    group.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleGroupSelect = (group) => {
     setCurrentGroup(group);
-    setSearchTerm('');
   };
 
   return (
@@ -52,24 +45,12 @@ export const GroupSwitcher = ({ className }) => {
         <DropdownMenuLabel>{t('group:selectGroup')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <div className="p-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={t('group:searchGroups')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-        </div>
-
-        {filteredGroups.length === 0 ? (
+        {userGroups.length === 0 ? (
           <div className="p-2 text-sm text-muted-foreground text-center">
             {t('group:noGroupsFound')}
           </div>
         ) : (
-          filteredGroups.map((group) => (
+          userGroups.map((group) => (
             <DropdownMenuItem
               key={group.id}
               onClick={() => handleGroupSelect(group)}

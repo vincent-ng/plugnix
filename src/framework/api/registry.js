@@ -99,10 +99,14 @@ class Registry {
 
 }
 
+function getNumberOrDefault(value, defaultValue = 999) {
+  return !value && value !== 0 ? defaultValue : value;
+}
+
 function insertSorted(array, item) {
-  const itemOrder = item.order == null ? 999 : item.order;
+  const itemOrder = getNumberOrDefault(item.order);
   const index = array.findIndex(
-    (existingItem) => (existingItem.order == null ? 999 : existingItem.order) > itemOrder
+    (existingItem) => getNumberOrDefault(existingItem.order) > itemOrder
   );
 
   if (index === -1) {

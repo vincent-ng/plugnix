@@ -6,6 +6,7 @@ export default function registerPluginProfile({ registerMenuItem, registerI18nNa
   registerMenuItem({
     label: 'profile:profile.title',
     path: '/profile',
+    icon: 'User',
     component: ProfilePage,
   }, 'user');
 

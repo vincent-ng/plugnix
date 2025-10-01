@@ -14,4 +14,13 @@ export default function register({ registerMenuItem, registerI18nNamespace }) {
     icon: LayoutDashboard,
     order: 0,
   }, 'admin');
+
+  registerMenuItem({
+    key: 'dashboard',
+    label: 'dashboard:menu.title',
+    path: '/admin',
+    component: DashboardPage,
+    icon: LayoutDashboard,
+    order: 0,
+  }, 'user');
 }

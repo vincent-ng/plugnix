@@ -28,9 +28,11 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
   
   // 注册登出菜单项组件
   registerMenuItem({
-    key: 'signOut',
+    label: 'auth:common.signOut',
+    icon: 'LogOut',
     component: SignOutMenuItem,
-    order: 999 // 确保登出按钮在最后
+    separator: 'front',
+    order: 9999 // 确保登出按钮在最后
   }, 'user');
 
   console.log('Auth module routes, i18n and user menu registered successfully');

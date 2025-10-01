@@ -8,20 +8,14 @@ import { Button } from '@components/ui/button';
 import { Badge } from '@components/ui/badge';
 import { Card, CardContent } from '@components/ui/card';
 import { Separator } from '@components/ui/separator';
-import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger } from '@/framework/components/ui/sheet';
+import { RecursiveAccordionMenu } from '@/framework/components/RecursiveAccordionMenu';
+import { RecursiveNavigationMenu } from '@/framework/components/RecursiveNavigationMenu';
 import {
   NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@components/ui/navigation-menu';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@components/ui/dropdown-menu';
 import Logo from '../components/Logo.jsx';
 import SocialLinks from '../components/SocialLinks.jsx';
 import { UserNav } from '@/framework/components/UserNav.jsx';
@@ -30,7 +24,6 @@ import {
   Menu,
   Moon,
   Sun,
-  ChevronDown,
 } from 'lucide-react';
 
 const PublicLayout = () => {
@@ -59,14 +52,14 @@ function AuthButton({ isMobile }) {
   const handleLoginClick = () => navigate('/login');
 
   if (!user) {
-    return <Button onClick={handleLoginClick} className={isMobile ? "w-full" : ''}>{t('auth:signIn', '登录')}</Button>;
+    return <Button onClick={handleLoginClick} className={isMobile ? "w-full" : ''}>{t('login')}</Button>;
   }
 
-  return <UserNav triggerStyle="avatar" />;
+  return <UserNav />;
 }
 
 function DesktopNav({ menuItems }) {
-  const { t, i18n } = useTranslation('common');
+  const { t } = useTranslation('common');
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
 
@@ -82,36 +75,11 @@ function DesktopNav({ menuItems }) {
 
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
-              {menuItems.slice(0, 4).map((item) => (
-                <NavigationMenuItem key={item.key}>
-                  <NavigationMenuLink asChild>
-                    <Link to={item.path} className={getNavLinkClassName(isActiveRoute(item.path))}>
-                      {t(item.label)}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-              {menuItems.length > 4 && (
-                <NavigationMenuItem>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className={`${navigationMenuTriggerStyle()} gap-1`}>
-                        {t('more', 'More')}
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {menuItems.slice(4).map((item) => (
-                        <DropdownMenuItem key={item.key} asChild>
-                          <Link to={item.path} className={isActiveRoute(item.path) ? 'bg-accent' : ''}>
-                            {t(item.label)}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </NavigationMenuItem>
-              )}
+              <RecursiveNavigationMenu
+                menuItems={menuItems}
+                getNavLinkClassName={getNavLinkClassName}
+                isActiveRoute={isActiveRoute}
+              />
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -137,10 +105,25 @@ function MobileNav({ menuItems }) {
   const location = useLocation();
 
   const isActiveRoute = (path) => location.pathname === path;
+
+  const handleLinkClick = () => {
+    setIsOpen(false);
+  };
+
   const getMobileNavLinkClassName = (isActive) =>
-    `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${
-      isActive ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+    `flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-accent text-accent-foreground' : 'text-foreground hover:bg-accent hover:text-accent-foreground'
     }`;
+
+  const renderMobileMenuItem = (item) => (
+    <Link
+      to={item.path}
+      onClick={handleLinkClick}
+      className={getMobileNavLinkClassName(isActiveRoute(item.path))}
+    >
+      <span>{t(item.label)}</span>
+      {isActiveRoute(item.path) && <Badge variant="secondary" className="ml-auto text-xs">Active</Badge>}
+    </Link>
+  );
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -155,19 +138,7 @@ function MobileNav({ menuItems }) {
             <Logo title={t('appPublicTitle')} subtitle={t('appPublicSubtitle')} />
           </div>
           <nav className="flex-1 py-6">
-            <div className="space-y-2">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.key}
-                  to={item.path}
-                  onClick={() => setIsOpen(false)}
-                  className={getMobileNavLinkClassName(isActiveRoute(item.path))}
-                >
-                  <span>{t(item.label)}</span>
-                  {isActiveRoute(item.path) && <Badge variant="secondary" className="ml-auto text-xs">Active</Badge>}
-                </Link>
-              ))}
-            </div>
+            <RecursiveAccordionMenu menuItems={menuItems} renderItem={renderMobileMenuItem} />
           </nav>
           <div className="border-t border-border pt-6">
             <div className="flex items-center justify-between mb-4">

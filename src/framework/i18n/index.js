@@ -41,7 +41,8 @@ const frameworkTranslations = {
       socialLinks: 'Social Links',
       copyright: '© 2024 Plugin Framework. All rights reserved.',
       privacyPolicy: 'Privacy Policy',
-      termsOfService: 'Terms of Service'
+      termsOfService: 'Terms of Service',
+      gotoConsole: 'Console'
     },
     navigation: {
       dashboard: 'Dashboard',
@@ -90,7 +91,8 @@ const frameworkTranslations = {
       socialLinks: '社交链接',
       copyright: '© 2024 插件框架。保留所有权利。',
       privacyPolicy: '隐私政策',
-      termsOfService: '服务条款'
+      termsOfService: '服务条款',
+      gotoConsole: '控制台'
     },
     navigation: {
       dashboard: '仪表板',

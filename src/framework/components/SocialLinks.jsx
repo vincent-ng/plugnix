@@ -13,7 +13,7 @@ const SocialLinks = ({
     {
       name: 'GitHub',
       icon: Github,
-      href: '#', // 这里可以配置实际的链接
+      href: 'https://github.com/vincent-ng/plugnix', // 这里可以配置实际的链接
       label: 'GitHub'
     },
     {

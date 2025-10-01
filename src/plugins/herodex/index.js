@@ -12,20 +12,20 @@ import PlayerSkillTree from './pages/PlayerSkillTree';
 
 
 // 插件注册函数
-export default function registerHerodexPlugin({ 
-  registerI18nNamespace, 
-  registerMenuItem, 
+export default function registerHerodexPlugin({
+  registerI18nNamespace,
+  registerMenuItem,
   registerRoute,
-  registerPermission 
+  registerPermission
 }) {
   // 注册国际化资源
   registerI18nNamespace('herodex', { en, zh });
-  
+
   // 注册权限定义
   // UI权限
   registerPermission({ name: 'ui.herodex.admin.view', description: '查看小侠成长录管理后台' });
   registerPermission({ name: 'ui.herodex.player.view', description: '查看小侠成长录玩家界面' });
-  
+
   // 数据库权限
   registerPermission({ name: 'db.hdx_players.select', description: '查看玩家信息' });
   registerPermission({ name: 'db.hdx_players.insert', description: '创建玩家' });
@@ -44,54 +44,52 @@ export default function registerHerodexPlugin({
   registerMenuItem({
     key: 'herodex-admin',
     label: 'herodex:admin.title',
-    path: '/admin/herodex',
-    component: AdminDashboard,
     icon: '⚔️',
     order: 10,
-    // permissions: ['ui.herodex.admin.view']
-  }, 'admin');
-
-  registerMenuItem({
-    key: 'herodex-admin-submissions',
-    label: 'herodex:admin.submissions',
-    path: '/admin/herodex/submissions',
-    component: AdminSubmissionReview,
-    // permissions: ['ui.herodex.admin.view']
-  }, 'admin');
-
-  registerMenuItem({
-    key: 'herodex-admin-skills',
-    label: 'herodex:admin.skills',
-    path: '/admin/herodex/skills',
-    component: AdminSkillManagement,
-    // permissions: ['ui.herodex.admin.view']
+    children: [{
+      key: 'herodex-admin-dashboard',
+      label: 'herodex:admin.dashboard',
+      path: '/admin/herodex',
+      component: AdminDashboard,
+    },
+    {
+      key: 'herodex-admin-submissions',
+      label: 'herodex:admin.submissions',
+      path: '/admin/herodex/submissions',
+      component: AdminSubmissionReview,
+    },
+    {
+      key: 'herodex-admin-skills',
+      label: 'herodex:admin.skills',
+      path: '/admin/herodex/skills',
+      component: AdminSkillManagement,
+    }]
   }, 'admin');
 
   // 注册玩家端路由和菜单
   registerMenuItem({
     key: 'herodex-player',
     label: 'herodex:player.title',
-    path: '/herodex',
-    component: PlayerDashboard,
     icon: '🗡️',
     order: 5,
-    // permissions: ['ui.herodex.player.view']
-  }, 'public');
-
-  registerMenuItem({
-    key: 'herodex-submission',
-    label: 'herodex:player.submission',
-    path: '/herodex/submission',
-    component: PlayerSubmission,
-    // permissions: ['ui.herodex.player.view']
-  }, 'public');
-
-  registerMenuItem({
-    key: 'herodex-skills',
-    label: 'herodex:player.skills',
-    path: '/herodex/skills',
-    component: PlayerSkillTree,
-    // permissions: ['ui.herodex.player.view']
+    children: [{
+      key: 'herodex-player-dashboard',
+      label: 'herodex:player.dashboard',
+      path: '/herodex',
+      component: PlayerDashboard,
+    },
+    {
+      key: 'herodex-submission',
+      label: 'herodex:player.submission',
+      path: '/herodex/submission',
+      component: PlayerSubmission,
+    },
+    {
+      key: 'herodex-skills',
+      label: 'herodex:player.skills',
+      path: '/herodex/skills',
+      component: PlayerSkillTree,
+    }]
   }, 'public');
 
   console.log('Herodex plugin registered successfully');

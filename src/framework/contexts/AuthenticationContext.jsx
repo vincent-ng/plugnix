@@ -30,10 +30,14 @@ export const AuthenticationProvider = ({ children }) => {
       (_event, session) => {
         const newUser = session?.user ?? null;
         setUser(currentUser => {
-            if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
-                return newUser;
-            }
-            return currentUser;
+          if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
+            console.log('onAuthStateChange', {
+              oldUser: currentUser,
+              newUser
+            });
+            return newUser;
+          }
+          return currentUser;
         });
         setLoading(false);
       }
@@ -45,14 +49,14 @@ export const AuthenticationProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
+
       setUser(data.user);
       console.log('登录成功:', data.user);
       return { error: null }; // 登录成功，无错误
@@ -67,7 +71,7 @@ export const AuthenticationProvider = ({ children }) => {
   const register = async (email, password, userData = {}) => {
     try {
       setLoading(true);
-      
+
       // 1. 注册用户
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
@@ -76,7 +80,7 @@ export const AuthenticationProvider = ({ children }) => {
           data: userData
         }
       });
-      
+
       if (signUpError) throw signUpError;
 
       // 2. 注册成功后，立即登录
@@ -89,7 +93,7 @@ export const AuthenticationProvider = ({ children }) => {
 
       // 3. 更新用户状态
       setUser(signInData.user);
-      
+
       console.log('注册并登录成功:', signInData.user);
       return { success: true, data: signInData };
     } catch (error) {
@@ -103,15 +107,15 @@ export const AuthenticationProvider = ({ children }) => {
   const logout = async () => {
     try {
       setLoading(true);
-      
+
       // 清理用户相关的 localStorage 数据
       if (user?.id) {
         localStorage.removeItem(`currentGroup_${user.id}`);
       }
-      
+
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       setUser(null);
       console.log('登出成功');
       return { success: true };

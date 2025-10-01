@@ -36,11 +36,13 @@ export const createPluginAPI = () => {
      * @property {string} label - 菜单项显示文本，支持i18n键值。
      * @property {string} [path] - 点击菜单项后导航到的路径。
      * @property {string|React.Component} [icon] - 菜单项图标。
+     * @property {Array<MenuItemConfig>} [children] - 子菜单项数组，用于创建可折叠的菜单组。
      * @property {number} [order] - 菜单项排序权重，数字越小越靠前。
      * @property {string|Array<string>} [permissions] - 查看该菜单项所需的权限。
      * @property {string} [className] - 自定义 CSS 类名。
      * @property {Function} [onClick] - 点击事件处理函数。
      * @property {React.Component} [component] - 用于渲染菜单项的自定义组件。
+     * @property {'front'|'end'|'both'} [separator] - 在菜单项前后添加分隔线。
      */
     /**
      * 注册一个菜单项到指定位置（后台、公共或用户）。
@@ -72,15 +74,45 @@ export const createPluginAPI = () => {
      *   label: 'Logout',
      *   onClick: () => { console.log('logout'); }
      * }, 'user');
+     * 
+     * // 注册一个带分组的菜单
+     * registerMenuItem({
+     *   key: 'settings',
+     *   label: 'Settings',
+     *   icon: '⚙️',
+     *   children: [
+     *     {
+     *       key: 'general',
+     *       label: 'General',
+     *       path: '/admin/settings/general',
+     *       component: GeneralSettingsPage,
+     *     },
+     *     {
+     *       key: 'account',
+     *       label: 'Account',
+     *       path: '/admin/settings/account',
+     *       component: AccountSettingsPage,
+     *     }
+     *   ]
+     * }, 'admin');
      */
     registerMenuItem: (menuItemObject, position) => {
-      const { path, component, permissions } = menuItemObject;
-      if (path && component) {
-        registry.registerRoute({ path, component, permissions });
-      }
+      // 递归注册路由
+      const registerRoutesRecursively = (item) => {
+        const { path, component, permissions, children } = item;
+        if (path && component) {
+          registry.registerRoute({ path, component, permissions });
+        }
+        if (children && children.length > 0) {
+          children.forEach(registerRoutesRecursively);
+        }
+      };
+
+      registerRoutesRecursively(menuItemObject);
+      
       return registry.registerMenuItem(menuItemObject, position);
     },
-    
+
     /**
      * 注册国际化翻译资源
      * @param {string} pluginName - 插件唯一名称，用作命名空间

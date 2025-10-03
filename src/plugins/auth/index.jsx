@@ -1,3 +1,5 @@
+import eventBus from '@/framework/lib/eventBus';
+
 // 认证模块的翻译资源
 import en from './i18n/en.json';
 import zh from './i18n/zh.json';
@@ -5,7 +7,6 @@ import zh from './i18n/zh.json';
 // 导入页面组件用于路由注册
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import SignOutMenuItem from './components/SignOutMenuItem';
 
 // 导出页面组件
 export { LoginPage, RegisterPage };
@@ -26,11 +27,13 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
     component: RegisterPage
   });
   
-  // 注册登出菜单项组件
+  // 注册登出菜单项
   registerMenuItem({
     label: 'auth:common.signOut',
     icon: 'LogOut',
-    component: SignOutMenuItem,
+    onClick: () => {
+      eventBus.emit('auth:logout');
+    },
     separator: 'front',
     order: 9999 // 确保登出按钮在最后
   }, 'user');

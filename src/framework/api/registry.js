@@ -1,4 +1,6 @@
 // 注册中心 - 管理所有插件的注册信息
+import { matchPath } from 'react-router-dom';
+
 class Registry {
   constructor() {
     this.routes = [];
@@ -65,6 +67,15 @@ class Registry {
 
   getRoute(path) {
     return this.routes.find(route => route.path === path);
+  }
+
+  findRoute(path) {
+    for (const route of this.routes) {
+      if (matchPath(route.path, path)) {
+        return route;
+      }
+    }
+    return null;
   }
 
   // 获取所有注册的菜单项

@@ -1,0 +1,77 @@
+{
+  "menu": {
+    "title": "组用户管理"
+  },
+  "page": {
+    "title": "组用户管理",
+    "description": "管理各个组内的用户成员"
+  },
+  "table": {
+    "group": "用户组",
+    "user": "用户",
+    "email": "邮箱",
+    "role": "角色",
+    "joinedAt": "加入时间",
+    "actions": "操作"
+  },
+  "actions": {
+    "addUser": "添加用户",
+    "editRole": "修改角色",
+    "removeUser": "移除用户",
+    "viewDetails": "查看详情",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "search": "搜索"
+  },
+  "dialog": {
+    "addUser": {
+      "title": "添加用户到组",
+      "selectGroup": "选择用户组",
+      "selectUser": "选择用户",
+      "userEmail": "用户邮箱",
+      "emailPlaceholder": "请输入用户的邮箱地址",
+      "group": "所属组",
+      "selectRole": "选择角色",
+      "rolePlaceholder": "请选择一个角色"
+    },
+    "editRole": {
+      "title": "修改用户角色",
+      "currentRole": "当前角色",
+      "newRole": "新角色",
+      "rolePlaceholder": "请选择新角色"
+    },
+    "removeUser": {
+      "title": "移除用户",
+      "message": "确定要将用户 {user} 从组 {group} 中移除吗？",
+      "warning": "此操作不可撤销"
+    }
+  },
+  "messages": {
+    "loading": "加载中...",
+    "noData": "暂无数据",
+    "addSuccess": "用户添加成功",
+    "addError": "添加用户失败",
+    "updateSuccess": "角色修改成功",
+    "updateError": "修改角色失败",
+    "removeSuccess": "用户移除成功",
+    "removeError": "移除用户失败",
+    "loadError": "加载初始数据失败。",
+    "loadMembersError": "加载组成员失败。",
+    "addSuccess": "用户成功添加到组！",
+    "addError": "添加用户失败。",
+    "addFormInvalid": "请填写所有必填项。",
+    "updateSuccess": "用户角色更新成功！",
+    "updateError": "更新角色失败。",
+    "removeSuccess": "用户已从组中移除。",
+    "removeError": "移除用户失败。",
+    "noData": "该组内暂无用户。",
+    "selectGroupPrompt": "请先从上方选择一个组以查看其成员。",
+    "selectGroupFirst": "请先选择一个组，然后再添加用户。"
+  },
+  "filters": {
+    "searchPlaceholder": "按用户名称或邮箱搜索...",
+    "groupPlaceholder": "请选择一个组",
+    "allGroups": "所有组"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "menu": {
+    "title": "Group Users"
+  },
+  "page": {
+    "title": "Group Users Management",
+    "description": "Manage users within groups"
+  },
+  "table": {
+    "group": "Group",
+    "user": "User",
+    "email": "Email",
+    "role": "Role",
+    "joinedAt": "Joined At",
+    "actions": "Actions"
+  },
+  "actions": {
+    "addUser": "Add User",
+    "editRole": "Edit Role",
+    "removeUser": "Remove User",
+    "viewDetails": "View Details",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "search": "Search"
+  },
+  "dialog": {
+    "addUser": {
+      "title": "Add User to Group",
+      "selectGroup": "Select Group",
+      "selectUser": "Select User",
+      "userEmail": "User Email",
+      "emailPlaceholder": "Enter the user's email address",
+      "group": "Group",
+      "selectRole": "Select Role",
+      "rolePlaceholder": "Please select a role"
+    },
+    "editRole": {
+      "title": "Edit User Role",
+      "currentRole": "Current Role",
+      "newRole": "New Role",
+      "rolePlaceholder": "Please select a new role"
+    },
+    "removeUser": {
+      "title": "Remove User",
+      "message": "Are you sure you want to remove user {user} from group {group}?",
+      "warning": "This action cannot be undone"
+    }
+  },
+  "messages": {
+    "loading": "Loading...",
+    "noData": "No data available",
+    "addSuccess": "User added successfully",
+    "addError": "Failed to add user",
+    "updateSuccess": "Role updated successfully",
+    "updateError": "Failed to update role",
+    "removeSuccess": "User removed successfully",
+    "removeError": "Failed to remove user",
+    "loadError": "Failed to load initial data.",
+    "loadMembersError": "Failed to load group members.",
+    "addSuccess": "User added to group successfully!",
+    "addError": "Failed to add user.",
+    "addFormInvalid": "Please fill in all required fields.",
+    "updateSuccess": "User role updated successfully!",
+    "updateError": "Failed to update role.",
+    "removeSuccess": "User removed from group successfully.",
+    "removeError": "Failed to remove user.",
+    "noData": "No users in this group yet.",
+    "selectGroupPrompt": "Please select a group above to view its members.",
+    "selectGroupFirst": "Please select a group before adding a user."
+  },
+  "filters": {
+    "searchPlaceholder": "Search by user name or email...",
+    "groupPlaceholder": "Select a group",
+    "allGroups": "All Groups"
+  }
+}

@@ -55,7 +55,7 @@ export default function registerGroupManagementPlugin({
   // 注册管理员菜单项
   registerMenuItem({
     key: 'group-management',
-    label: 'groupManagement:menu.title',
+    label: 'group-management:pageTitle',
     path: '/admin/groups',
     component: GroupListPage,
     icon: 'Users',
@@ -65,7 +65,7 @@ export default function registerGroupManagementPlugin({
   //   // 注册管理员菜单项
   // registerMenuItem({
   //   key: 'group-management-create',
-  //   label: 'groupManagement:menu.create',
+  //   label: 'group-management:menu.create',
   //   path: '/admin/groups/new',
   //   component: CreateGroupPage,
   //   icon: 'Users',

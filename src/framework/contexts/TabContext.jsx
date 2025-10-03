@@ -1,11 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { registry } from '../api';
-import { matchPath, useLocation } from 'react-router-dom';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 
-// 创建Tab上下文
 const TabContext = createContext();
 
-// 自定义Hook用于使用Tab上下文
 export const useTabs = () => {
   const context = useContext(TabContext);
   if (!context) {
@@ -14,69 +12,39 @@ export const useTabs = () => {
   return context;
 };
 
-// Tab Provider组件
 export const TabProvider = ({ children }) => {
   const [tabs, setTabs] = useState([]);
-  const [activeTab, setActiveTab] = useState(null);
+  const [activeTab, setActiveTab] = useState(null); // Now a tab object
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // 当路由变化时，同步更新activeTab
   useEffect(() => {
     const currentPath = location.pathname;
 
-    // 检查是否有完全匹配的已打开标签页
-    const directMatch = tabs.find(tab => tab.path === currentPath);
-    if (directMatch) {
-      setActiveTab(directMatch.path);
-      return;
+    const findTabForPath = (path) => {
+      return tabs.find(tab => tab.path === path) || null;
+    };
+
+    const newActiveTab = findTabForPath(currentPath);
+
+    if (newActiveTab?.path !== activeTab?.path) {
+      setActiveTab(newActiveTab);
     }
+  }, [location.pathname, tabs, activeTab?.path]);
 
-    // 如果没有完全匹配的，尝试寻找动态路由匹配
-    const dynamicMatch = tabs.find(tab => {
-      const route = registry.getRoute(tab.path);
-      return route && matchPath(route.path, currentPath);
-    });
-
-    if (dynamicMatch) {
-      setActiveTab(dynamicMatch.path);
-    }
-    // 如果都找不到，可能是个全新的页面，openTab会处理
-
-  }, [location.pathname, tabs]);
-
-
-  // 打开新Tab或切换到已存在的Tab
   const openTab = ({ path, label }) => {
-    // 检查Tab是否已存在
     const existingTab = tabs.find(tab => tab.path === path);
-    
-    if (existingTab) {
-      // 如果Tab已存在，切换到该Tab
-      setActiveTab(path);
-    } else {
-      // 从registry获取路由信息
-      const routes = registry.getRoutes();
-      let route = routes.find(r => r.path === path);
 
-      if (!route) {
-        for (const r of routes) {
-          if (matchPath(r.path, path)) {
-            route = r;
-            break;
-          }
-        }
+    if (existingTab) {
+      if (activeTab?.path !== existingTab.path) {
+        switchTab(existingTab);
       }
-      
+    } else {
+      const route = registry.findRoute(path);
       if (route) {
-        // 创建新Tab，包含组件引用
-        const newTab = {
-          path,
-          label,
-          component: route.component
-        };
-        
+        const newTab = { path, label, component: route.component };
         setTabs(prevTabs => [...prevTabs, newTab]);
-        setActiveTab(path);
+        setActiveTab(newTab);
       } else {
         console.error(`[TabContext] No route found for path: ${path}`);
       }
@@ -84,32 +52,45 @@ export const TabProvider = ({ children }) => {
   };
 
   const closeTab = (path) => {
-    setTabs(prevTabs => {
-      const tabIndex = prevTabs.findIndex(tab => tab.path === path);
-      if (tabIndex === -1) return prevTabs;
+    const tabIndex = tabs.findIndex(tab => tab.path === path);
+    if (tabIndex === -1) return;
 
-      const newTabs = prevTabs.filter(tab => tab.path !== path);
+    const newTabs = tabs.filter(tab => tab.path !== path);
 
-      // If the closed tab was the active one, switch to another tab
-      if (activeTab === path) {
-        if (newTabs.length > 0) {
-          // Switch to the previous tab or the first one
-          const newActivePath = newTabs[tabIndex - 1]?.path || newTabs[0]?.path;
-          setActiveTab(newActivePath);
-        } else {
-          setActiveTab(null); // No tabs left
-        }
+    if (activeTab?.path === path) {
+      const newActiveTab = newTabs.length > 0
+        ? (newTabs[tabIndex] || newTabs[tabIndex - 1] || newTabs[0])
+        : null;
+
+      setActiveTab(newActiveTab);
+      if (newActiveTab) {
+        navigate(newActiveTab.path);
+      } else {
+        navigate('/admin');
       }
+    }
+    setTabs(newTabs);
+  };
 
+  const reorderTabs = (fromIndex, toIndex) => {
+    setTabs(prevTabs => {
+      const newTabs = Array.from(prevTabs);
+      const [movedTab] = newTabs.splice(fromIndex, 1);
+      newTabs.splice(toIndex, 0, movedTab);
       return newTabs;
     });
   };
 
+  const switchTab = (tab) => {
+    if (tab && tab.path !== activeTab?.path) {
+      setActiveTab(tab);
+      navigate(tab.path);
+    }
+  };
 
-  const switchTab = (path) => {
-    // switchTab 应该只更新 activeTab 状态，而不触发导航
-    // 导航应该由点击Tab时的Link组件处理
-    setActiveTab(path);
+  const isTabActive = (tab) => {
+    if (!activeTab || !tab) return false;
+    return activeTab.path === tab.path;
   };
 
   const value = {
@@ -117,7 +98,9 @@ export const TabProvider = ({ children }) => {
     activeTab,
     openTab,
     closeTab,
+    reorderTabs,
     switchTab,
+    isTabActive,
   };
 
   return <TabContext.Provider value={value}>{children}</TabContext.Provider>;

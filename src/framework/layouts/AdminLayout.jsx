@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useMatch } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';
 import { registry } from '@/framework/api';
@@ -13,9 +13,10 @@ import { UserNav } from '@/framework/components/UserNav.jsx';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
 import { LanguageSwitcher } from '@/framework/components/LanguageSwitcher.jsx';
 import { Separator } from '@components/ui/separator';
-import { Moon, Sun, Menu } from 'lucide-react';
+import { Sun, Menu } from 'lucide-react';
 import { RecursiveAccordionMenu } from '@/framework/components/RecursiveAccordionMenu.jsx';
 import IconRenderer from '@/framework/components/IconRenderer.jsx';
+import TabBar from "@/framework/components/TabBar.jsx";
 
 const AdminLayout = () => {
   return (
@@ -26,55 +27,44 @@ const AdminLayout = () => {
 };
 
 const AdminLayoutContent = () => {
-  const { t } = useTranslation();
-  const { openTab } = useTabs();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { tabs, isTabActive } = useTabs();
+  const { toggleTheme } = useTheme();
 
   const menuItems = registry.getAdminMenuItems();
 
-  const isActiveRoute = (path) => {
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
-  };
-
-  const renderMenuItem = (item) => (
-    <a
-      href="#"
-      onClick={(e) => {
-        e.preventDefault();
-        if (item.onClick) {
-          item.onClick();
-        } else if (item.path) {
-          openTab({ path: item.path, label: t(item.label) });
-          navigate(item.path);
-        }
-      }}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActiveRoute(item.path) ? 'bg-muted text-primary' : ''}`}
-    >
-      <IconRenderer icon={item.icon} />
-      {t(item.label)}
-    </a>
-  );
-
+  const renderMenuItem = (item) => <MenuItem item={item} />;
 
   return (
     <SidebarProvider>
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <DesktopSidebar menuItems={menuItems} renderMenuItem={renderMenuItem} />
         <div className="flex flex-col">
-          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
+          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[48px] lg:px-6">
             <MobileNav menuItems={menuItems} renderMenuItem={renderMenuItem} />
-            <div className="flex-1" />
+            <div className="flex-1">
+              {tabs.length > 0 && <TabBar />}
+            </div>
             <LanguageSwitcher />
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-8 h-8">
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             </Button>
             <Separator orientation="vertical" className="h-6" />
             <GroupSwitcher />
           </header>
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-            <Outlet />
+          <main className="flex-1 overflow-y-auto p-4">
+            {tabs.map(tab => {
+              const route = registry.findRoute(tab.path);
+              if (!route) return null;
+              const Element = route.component;
+              return (
+                <div key={tab.path} style={{ display: isTabActive(tab) ? 'block' : 'none' }}>
+                  <Authorized permissions={route.permissions}>
+                    <Element />
+                  </Authorized>
+                </div>
+              );
+            })}
+            {tabs.length === 0 && <Outlet />}
           </main>
         </div>
       </div>
@@ -82,11 +72,39 @@ const AdminLayoutContent = () => {
   );
 };
 
+const MenuItem = ({ item }) => {
+  const { t } = useTranslation();
+  const { openTab } = useTabs();
+  const navigate = useNavigate();
+  // The `end` option is important for matching nested routes correctly.
+  // We want to match if the current path is the item's path or a sub-route.
+  const isActive = useMatch({ path: item.path, end: item.path === '/' });
+
+  return (
+    <a
+      href="#"
+      onClick={(e) => {
+        e.preventDefault();
+        if (item.onClick) {
+          item.onClick();
+        } else if (item.path) {
+          openTab({ path: item.path, label: item.label });
+          navigate(item.path);
+        }
+      }}
+      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${isActive ? 'bg-muted text-primary' : ''}`}
+    >
+      <IconRenderer icon={item.icon} />
+      {t(item.label)}
+    </a>
+  );
+};
+
 const DesktopSidebar = ({ menuItems, renderMenuItem }) => {
   return (
     <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+        <div className="flex h-14 items-center border-b px-4 lg:h-[48px] lg:px-6">
           <Logo title="Plugnix" subtitle="Admin" linkTo="/" />
         </div>
         <div className="flex-1">

@@ -1,25 +1,39 @@
 import React from 'react';
-import { Tabs, TabsList } from './ui/tabs';
+import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
+import { useTabs } from '@/framework/contexts/TabContext.jsx';
 import TabItem from './TabItem';
-import { useTabs } from '../contexts/TabContext';
 
 const TabBar = () => {
-  const { tabs, activeTab } = useTabs();
+  const { tabs, reorderTabs } = useTabs();
 
-  if (tabs.length === 0) {
-    return null;
-  }
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // 5px antd
+      },
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      const oldIndex = tabs.findIndex(t => t.path === active.id);
+      const newIndex = tabs.findIndex(t => t.path === over.id);
+      reorderTabs(oldIndex, newIndex);
+    }
+  };
 
   return (
-    <div className="border-b bg-background">
-      <Tabs value={activeTab} className="w-full">
-        <TabsList className="h-auto p-0 bg-transparent justify-start rounded-none border-0">
-          {tabs.map((tab) => (
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <SortableContext items={tabs.map(t => t.path)} strategy={horizontalListSortingStrategy}>
+        <div className="flex h-12 border-b bg-background">
+          {tabs.map(tab => (
             <TabItem key={tab.path} tab={tab} />
           ))}
-        </TabsList>
-      </Tabs>
-    </div>
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 };
 

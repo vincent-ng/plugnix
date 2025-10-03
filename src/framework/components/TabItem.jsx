@@ -1,42 +1,49 @@
 import React from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { useTabs } from '@/framework/contexts/TabContext.jsx';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { TabsTrigger } from './ui/tabs';
+import { Button } from '@components/ui/button';
 import { X } from 'lucide-react';
-import { Button } from './ui/button';
-import { useTabs } from '../contexts/TabContext';
 
 const TabItem = ({ tab }) => {
-  const { switchTab, closeTab, activeTab } = useTabs();
-  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { isTabActive, switchTab, closeTab } = useTabs();
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: tab.path });
 
-  const handleTabClick = (e) => {
-    e.preventDefault();
-    switchTab(tab.path);
-    navigate(tab.path);
-  };
-
-  const handleCloseClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    closeTab(tab.path);
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
   };
 
   return (
-    <TabsTrigger
-      value={tab.path}
-      className="group relative pr-8 max-w-48"
-      onClick={handleTabClick}
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`flex items-center px-4 py-2 border-b-2 transition-colors cursor-pointer whitespace-nowrap 
+        ${
+          isTabActive(tab)
+            ? 'border-primary text-primary bg-muted'
+            : 'text-muted-foreground'
+        }`}
+      onClick={() => switchTab(tab)}
     >
-      <span className="truncate">{tab.label}</span>
+      {t(tab.label)}
       <Button
         variant="ghost"
-        size="sm"
-        className="absolute right-1 h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
-        onClick={handleCloseClick}
+        size="icon"
+        className="w-6 h-6 ml-2 rounded-full hover:bg-muted"
+        onClick={(e) => {
+          e.stopPropagation();
+          closeTab(tab.path);
+        }}
       >
-        <X className="h-3 w-3" />
+        <X className="w-4 h-4" />
       </Button>
-    </TabsTrigger>
+    </div>
   );
 };
 

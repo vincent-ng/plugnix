@@ -10,17 +10,27 @@ import { supabase } from '@/framework/lib/supabase';
  */
 export const getGroupMembers = async (groupId) => {
   try {
-    const { data, error } = await supabase
-      .from('group_users')
-      .select(`
-        *,
-        user:users(id, username, email, display_name, avatar_url)
-      `)
-      .eq('group_id', groupId)
-      .order('joined_at', { ascending: false });
+    const { data, error } = await supabase.rpc('get_group_members', {
+      p_group_id: groupId,
+    });
 
     if (error) throw error;
-    return data;
+
+    if (!data) return [];
+
+    return data.map((member) => ({
+      group_user_id: member.group_user_id,
+      group_id: member.group_id,
+      user_id: member.user_id,
+      role: member.role_name,
+      joined_at: member.created_at,
+      user: {
+        ...member.user_raw_user_meta_data,
+        id: member.user_id,
+        email: member.user_email,
+        avatar_url: member.user_avatar_url,
+      },
+    }));
   } catch (error) {
     console.error('获取成员列表失败:', error);
     throw error;

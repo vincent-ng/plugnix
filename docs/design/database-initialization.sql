@@ -214,6 +214,7 @@ CREATE TABLE group_users (
   group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now(),
   PRIMARY KEY (group_id, user_id)
 );
 COMMENT ON TABLE group_users IS 'Assigns a user to a group with a specific role.';

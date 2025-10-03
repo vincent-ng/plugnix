@@ -43,6 +43,7 @@ export const useGroupProvider = () => {
 
   // 获取用户的组织列表
   const fetchUserGroups = async () => {
+    console.log('Fetching user groups for user:', user);
     if (!user) {
       setLoading(false);
       resetGroup();

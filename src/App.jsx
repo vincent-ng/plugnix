@@ -127,9 +127,6 @@ const DynamicRoutes = () => {
 
 // 主应用组件
 function App() {
-
-
-
   return (
     <ErrorBoundary>
       <I18nextProvider i18n={i18n}>

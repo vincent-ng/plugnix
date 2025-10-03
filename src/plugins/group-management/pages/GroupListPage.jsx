@@ -50,11 +50,10 @@ export default function GroupListPage() {
           </p>
         </div>
 
-        <Authorized permissions="db.groups.insert">
+        <Authorized permissions="">
           <Button onClick={() => {
             const path = '/admin/groups/new';
             openTab({ path, label: t('groupList.createGroup') });
-            navigate(path);
           }}>
             <Plus className="h-4 w-4 mr-2" />
             {t('groupList.createGroup')}

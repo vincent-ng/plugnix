@@ -69,18 +69,7 @@ export default function MembersTab({ groupId, userRole }) {
       setLoading(true);
       try {
         const memberData = await getGroupMembers(groupId);
-        const formattedMembers = memberData.map(member => ({
-          id: member.id,
-          user_id: member.user_id,
-          username: member.user.username,
-          email: member.user.email,
-          display_name: member.user.display_name,
-          avatar_url: member.user.avatar_url,
-          role: member.role,
-          joined_at: member.joined_at,
-          last_active: member.last_active
-        }));
-        setMembers(formattedMembers);
+        setMembers(memberData);
       } catch (error) {
         toast.error(t('common.error'), {
           description: t('members.errors.loadMembersFailed'),
@@ -91,7 +80,7 @@ export default function MembersTab({ groupId, userRole }) {
     };
 
     loadMembers();
-  }, [groupId]);
+  }, [groupId, t]);
 
   useEffect(() => {
     const loadRoles = async () => {
@@ -109,13 +98,15 @@ export default function MembersTab({ groupId, userRole }) {
     };
 
     loadRoles();
-  }, [groupId]);
+  }, [groupId, t]);
 
-  const filteredMembers = members.filter(member =>
-    member.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMembers = members.filter(member => {
+    const term = searchTerm.toLowerCase();
+    const displayName = member.user?.display_name?.toLowerCase() || '';
+    const email = member.user?.email?.toLowerCase() || '';
+    const username = member.user?.username?.toLowerCase() || '';
+    return displayName.includes(term) || email.includes(term) || username.includes(term);
+  });
 
   const handleInviteMember = async () => {
     if (!inviteEmail.trim()) return;
@@ -125,18 +116,9 @@ export default function MembersTab({ groupId, userRole }) {
       await inviteMember(groupId, inviteEmail, inviteRole);
       // 重新加载成员列表
       const memberData = await getGroupMembers(groupId);
-      const formattedMembers = memberData.map(member => ({
-        id: member.id,
-        user_id: member.user_id,
-        username: member.user.username,
-        email: member.user.email,
-        display_name: member.user.display_name,
-        avatar_url: member.user.avatar_url,
-        role: member.role,
-        joined_at: member.joined_at,
-        last_active: member.last_active
-      }));
-      setMembers(formattedMembers);
+      setMembers(memberData);
+
+      toast.success(t('members.inviteSuccess'));
 
       // 重置表单
       setInviteEmail('');
@@ -156,7 +138,8 @@ export default function MembersTab({ groupId, userRole }) {
       try {
         await removeMember(groupId, memberId);
         // 从本地状态中移除成员
-        setMembers(prev => prev.filter(m => m.id !== memberId));
+        setMembers(prev => prev.filter(m => m.group_user_id !== memberId));
+        toast.success(t('members.removeSuccess'));
       } catch (error) {
         toast.error(t('common.error'), {
           description: t('members.errors.removeFailed'),
@@ -170,8 +153,9 @@ export default function MembersTab({ groupId, userRole }) {
       await changeMemberRole(groupId, memberId, newRole);
       // 更新本地状态中的成员角色
       setMembers(prev => prev.map(m =>
-        m.id === memberId ? { ...m, role: newRole } : m
+        m.group_user_id === memberId ? { ...m, role: newRole } : m
       ));
+      toast.success(t('members.changeRoleSuccess'));
     } catch (error) {
       toast.error(t('common.error'), {
         description: t('members.errors.changeRoleFailed'),
@@ -295,22 +279,21 @@ export default function MembersTab({ groupId, userRole }) {
               <TableHead>{t('members.member')}</TableHead>
               <TableHead>{t('members.role')}</TableHead>
               <TableHead>{t('members.joinedAt')}</TableHead>
-              <TableHead>{t('members.lastActive')}</TableHead>
               {canManageMembers && <TableHead className="w-12"></TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredMembers.map((member) => (
-              <TableRow key={member.id}>
+              <TableRow key={member.group_user_id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                       <User className="h-4 w-4" />
                     </div>
                     <div>
-                      <div className="font-medium">{member.display_name}</div>
+                      <div className="font-medium">{member.user.display_name}</div>
                       <div className="text-sm text-muted-foreground">
-                        {member.email}
+                        {member.user.email}
                       </div>
                     </div>
                   </div>
@@ -323,9 +306,6 @@ export default function MembersTab({ groupId, userRole }) {
                 </TableCell>
                 <TableCell className="text-muted-foreground">
                   {new Date(member.joined_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {new Date(member.last_active).toLocaleDateString()}
                 </TableCell>
                 {canManageMembers && (
                   <TableCell>
@@ -340,7 +320,7 @@ export default function MembersTab({ groupId, userRole }) {
                           {availableRoles.map(role => (
                             <DropdownMenuItem
                               key={role.name}
-                              onClick={() => handleChangeRole(member.id, role.name)}
+                              onClick={() => handleChangeRole(member.group_user_id, role.name)}
                               disabled={member.role === role.name}
                             >
                               <Edit className="mr-2 h-4 w-4" />
@@ -348,7 +328,7 @@ export default function MembersTab({ groupId, userRole }) {
                             </DropdownMenuItem>
                           ))}
                           <DropdownMenuItem
-                            onClick={() => handleRemoveMember(member.id)}
+                            onClick={() => handleRemoveMember(member.group_user_id)}
                             className="text-red-600"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/framework/lib/supabase.js';
+import eventBus from '@/framework/lib/eventBus';
 
 const AuthenticationContext = createContext({});
 
@@ -15,30 +16,24 @@ export const AuthenticationProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 检查用户会话
   useEffect(() => {
-    // 获取当前用户
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
+    setLoading(true);
 
-    getUser();
-
-    // 监听认证状态变化
+    // onAuthStateChange fires immediately with the current session, so we don't need a separate getUser call.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         const newUser = session?.user ?? null;
+
+        // Only update state if the user ID is different. This prevents re-renders
+        // when the session is refreshed but the user is the same.
         setUser(currentUser => {
-          if (JSON.stringify(currentUser) !== JSON.stringify(newUser)) {
-            console.log('onAuthStateChange', {
-              oldUser: currentUser,
-              newUser
-            });
+          if (currentUser?.id !== newUser?.id) {
             return newUser;
           }
-          return currentUser;
+          return currentUser; // Keep the old state to prevent re-renders
         });
+
         setLoading(false);
       }
     );
@@ -104,7 +99,7 @@ export const AuthenticationProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -125,7 +120,17 @@ export const AuthenticationProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]); // 添加 user 作为依赖
+
+  // 从事件总线监听登出事件
+  useEffect(() => {
+    const unsubscribe = eventBus.on('auth:logout', () => {
+      logout();
+    });
+
+    return unsubscribe; // 在组件卸载时取消订阅
+  }, [logout]); // 添加 logout 作为依赖
+
 
   const value = {
     user,

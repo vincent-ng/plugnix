@@ -40,35 +40,31 @@
 #### **3. 架构与实现**
 
 *   **3.1 插件注册**
-    *   插件将在 `src/plugins/permission-admin/index.js` 文件中进行注册，并声明自身运行所需的UI和数据库权限。
-    *   为了访问此插件，用户需要拥有 `ui.permission-admin.view` 权限。
+    *   插件将在 `src/plugins/permission-admin/index.js` 文件中进行注册，并声明自身运行所需的数据库权限（统一策略：以 `db.*` 为准）。
+    *   为了访问此插件页面，建议以“最小 DB 权限”进行守卫，例如使用 `db.permissions.select`。
 
     ```javascript
     // src/plugins/permission-admin/index.js
     import PermissionAdminPage from './pages/PermissionAdminPage';
 
     export default function registerPermissionAdminPlugin({ registerRoute, registerAdminMenuItem, registerPermission }) {
-      // 1. 声明插件自身需要的UI权限
-      registerPermission({
-        name: 'ui.permission-admin.view',
-        description: '访问权限管理面板'
-      });
+      // 1. 使用 DB 权限作为页面与操作的统一控制来源
+      const pagePermission = 'db.permissions.select';
 
       // 2. 注册Admin菜单项
       registerAdminMenuItem({
         label: '权限管理', // i18n key: 'permissionAdmin.menuLabel'
-        path: '/admin/permissions',
-        permission: 'ui.permission-admin.view'
+        path: '/admin/permissions'
       });
 
-      // 3. 注册路由
+      // 3. 注册路由（以最小 DB 权限守卫进入）
       registerRoute({
         path: '/admin/permissions',
         component: PermissionAdminPage,
-        permission: 'ui.permission-admin.view'
+        permissions: [pagePermission]
       });
 
-      // 4. 声明管理操作所需的后端DB权限
+      // 4. 声明管理操作所需的后端DB权限（用于按钮、具体操作等）
       const tables = ['groups', 'permissions', 'group_users', 'group_permissions'];
       const actions = ['select', 'insert', 'update', 'delete'];
       tables.forEach(table => {
@@ -163,7 +159,6 @@ async function createGroup(name, description) {
 
 为了让此插件正常工作，使用此插件的管理员角色（例如 `admin`）必须被授予以下权限：
 
-*   `ui.permission-admin.view` (访问UI)
 *   `db.groups.select`, `db.groups.insert`, `db.groups.update`, `db.groups.delete`
 *   `db.permissions.select`, `db.permissions.insert`, `db.permissions.delete`
 *   `db.group_users.select`, `db.group_users.insert`, `db.group_users.delete`

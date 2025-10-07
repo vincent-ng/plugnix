@@ -1,0 +1,65 @@
+{
+  "menu": {
+    "title": "Group Roles"
+  },
+  "page": {
+    "title": "Group Roles",
+    "description": "Create and edit roles within the current group, and manage role permissions"
+  },
+  "actions": {
+    "createRole": "Create Role",
+    "viewPermissions": "View Permissions",
+    "editRole": "Edit Role",
+    "deleteRole": "Delete Role",
+    "managePermissions": "Manage Permissions",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirmDelete": "Confirm Delete"
+  },
+  "filters": {
+    "searchPlaceholder": "Search roles by name or description"
+  },
+  "table": {
+    "name": "Name",
+    "description": "Description",
+    "permissions": "Permissions",
+    "createdAt": "Created At",
+    "actions": "Actions"
+  },
+  "dialog": {
+    "create": {
+      "title": "Create Role",
+      "name": "Name",
+      "description": "Description",
+      "namePlaceholder": "e.g., Owner, Editor",
+      "descPlaceholder": "Responsibilities of this role"
+    },
+    "edit": {
+      "title": "Edit Role"
+    },
+    "delete": {
+      "title": "Delete Role",
+      "content": "This action cannot be undone. Are you sure to delete this role?"
+    },
+    "permissions": {
+      "title": "Role Permissions",
+      "search": "Search permissions",
+      "ui": "UI Permissions",
+      "db": "Database Permissions",
+      "assigned": "Assigned",
+      "available": "Available",
+      "noPermissions": "No permissions found"
+    }
+  },
+  "messages": {
+    "loading": "Loading...",
+    "noData": "No roles",
+    "selectGroupPrompt": "Please select a group from the top",
+    "createSuccess": "Role created successfully",
+    "updateSuccess": "Role updated successfully",
+    "deleteSuccess": "Role deleted successfully",
+    "assignSuccess": "Permission assigned successfully",
+    "removeSuccess": "Permission removed successfully",
+    "error": "Operation failed"
+  }
+}

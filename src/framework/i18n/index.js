@@ -49,6 +49,20 @@ const frameworkTranslations = {
       settings: 'Settings',
       profile: 'Profile'
     },
+    group: {
+      selectGroup: 'Select Group',
+      personalWorkspace: 'Personal Workspace',
+      noGroupsFound: 'No groups found',
+      createNewGroup: 'Create New Group',
+      createGroup: 'Create Group',
+      createGroupDescription: 'Create a new group to collaborate with others.',
+      groupName: 'Group Name',
+      groupDescription: 'Description',
+      creating: 'Creating...',
+      create: 'Create',
+      groupCreatedSuccessfully: 'Group created successfully!',
+      errorCreatingGroup: 'Error creating group'
+    },
     tabs: {
       welcome: 'Welcome to the admin panel. Please select a menu item to get started.',
       noTabsOpen: 'No tabs are currently open'
@@ -98,6 +112,20 @@ const frameworkTranslations = {
       dashboard: '仪表板',
       settings: '设置',
       profile: '个人资料'
+    },
+    group: {
+      selectGroup: '选择组',
+      personalWorkspace: '个人工作区',
+      noGroupsFound: '未找到任何组',
+      createNewGroup: '创建新组',
+      createGroup: '创建组',
+      createGroupDescription: '创建一个新组以便与他人协作。',
+      groupName: '组名称',
+      groupDescription: '描述',
+      creating: '创建中...',
+      create: '创建',
+      groupCreatedSuccessfully: '组创建成功！',
+      errorCreatingGroup: '创建组时出错'
     },
     tabs: {
       welcome: '欢迎使用管理面板。请选择菜单项开始使用。',

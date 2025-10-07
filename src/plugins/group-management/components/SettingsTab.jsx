@@ -32,7 +32,7 @@ export default function SettingsTab({ group, onGroupUpdate }) {
   const { t } = useTranslation('group-management');
   const navigate = useNavigate();
   const location = useLocation();
-  const { fetchUserGroups, hasAnyPermission } = useGroup();
+  const { refreshUserGroups, hasAnyPermission } = useGroup();
   const { closeTab } = useTabs();
   const [formData, setFormData] = useState({
     name: group?.name || '',
@@ -100,7 +100,7 @@ export default function SettingsTab({ group, onGroupUpdate }) {
 
       // 重定向到列表页面
       closeTab(location.pathname);
-      await fetchUserGroups();
+      await refreshUserGroups();
       navigate('/admin/groups');
 
     } catch (err) {

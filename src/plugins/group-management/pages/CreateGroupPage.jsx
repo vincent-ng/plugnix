@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 const CreateGroupPage = () => {
   const { t } = useTranslation('group-management');
   const navigate = useNavigate();
-  const { fetchUserGroups } = useGroup();
+  const { refreshUserGroups } = useGroup();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -49,7 +49,7 @@ const CreateGroupPage = () => {
       toast.success(t('createGroup.success.create'), {
         description: t('createGroup.success.createDesc', { groupName: formData.name }),
       });
-      await fetchUserGroups();
+      await refreshUserGroups();
       navigate('/admin/groups');
     } catch (err) {
       toast.error(t('createGroup.errors.createFailed'), {

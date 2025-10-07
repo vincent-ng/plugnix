@@ -130,18 +130,16 @@ function App() {
   return (
     <ErrorBoundary>
       <I18nextProvider i18n={i18n}>
-        <ThemeProvider>
-          <AuthenticationProvider>
-            <GroupProvider>
+        <AuthenticationProvider>
+          <GroupProvider>
+            <ThemeProvider>
               <Router>
-                <div className="App">
-                  <DynamicRoutes />
-                </div>
+                <DynamicRoutes />
+                <Toaster />
               </Router>
-            </GroupProvider>
-          </AuthenticationProvider>
-          <Toaster />
-        </ThemeProvider>
+            </ThemeProvider>
+          </GroupProvider>
+        </AuthenticationProvider>
       </I18nextProvider>
     </ErrorBoundary>
   );

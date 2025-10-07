@@ -42,7 +42,7 @@ export const useGroupProvider = () => {
   };
 
   // 获取用户的组织列表
-  const fetchUserGroups = async () => {
+  const refreshUserGroups = async () => {
     console.log('Fetching user groups for user:', user);
     if (!user) {
       setLoading(false);
@@ -118,7 +118,11 @@ export const useGroupProvider = () => {
   };
 
   useEffect(() => {
-    fetchUserGroups();
+    refreshUserGroups();
+  }, [user]);
+
+  useEffect(() => {
+    refreshUserGroups();
   }, [user]);
 
   // 获取用户在当前组织中的角色
@@ -153,7 +157,7 @@ export const useGroupProvider = () => {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    fetchUserGroups
+    refreshUserGroups
   };
 }
 

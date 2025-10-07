@@ -21,12 +21,12 @@
 
 **权限命名约定 (重要！)**
 
-为了清晰地组织和区分权限，我们采用以下前缀格式：
+我们采用“单一来源”的命名策略：统一使用 `db.<table>.<action>` 来表达权限，既用于后端的RLS校验，也用于前端的路由与UI显示控制。这样可以避免“UI权限”和“数据库权限”两套体系造成的割裂。
 
-*   `db.<table_name>.<action>`: 用于描述对数据库表的操作权限。这是后端Edge Function进行验证时使用的格式。
-    *   **示例**: `db.posts.create`, `db.users.delete`
-*   `ui.<plugin_name>.<feature>`: 用于描述前端UI元素的可见性或可交互性，与后端操作不直接挂钩。
-    *   **示例**: `ui.dashboard.view-analytics`, `ui.settings.show-advanced-options`
+*   `db.<table>.<action>`：权威的权限命名，前后端一致。推荐动作为 `select/insert/update/delete`。
+    *   **示例**：`db.roles.select`, `db.role_permissions.insert`, `db.permissions.delete`
+
+说明：历史上曾使用过 `ui.*` 前缀来控制界面显示（例如 `ui.group-roles.create`）。在当前统一策略下，`ui.*` 不再推荐使用，所有页面访问与操作显示均以 `db.*` 为准。如果确有纯UI开关（不涉及数据访问），可使用组件内部状态或配置项，而非独立的权限名。
 
 ---
 #### **3. 系统如何工作？**
@@ -62,11 +62,11 @@
 ```javascript
 // src/plugins/your-plugin/index.js
 export default function registerYourPlugin({ registerPermission }) {
-  // 声明一个纯前端UI权限
-  registerPermission({ name: 'ui.your-plugin.view', description: '允许查看你的插件页面' });
-  
-  // 假设你的插件也需要创建文章，相关的后端权限也在这里声明，以保持清晰
-  registerPermission({ name: 'db.posts.create', description: '允许创建新文章' });
+  // 统一声明 DB 权限：同时用于后端RLS与前端路由/按钮显示控制
+  registerPermission({ name: 'db.posts.select', description: '查看文章列表' });
+  registerPermission({ name: 'db.posts.insert', description: '创建文章' });
+  registerPermission({ name: 'db.posts.update', description: '编辑文章' });
+  registerPermission({ name: 'db.posts.delete', description: '删除文章' });
 }
 ```
 
@@ -76,18 +76,21 @@ export default function registerYourPlugin({ registerPermission }) {
 
 ```javascript
 // src/plugins/your-plugin/index.js
-export default function registerYourPlugin({ registerRoute, registerAdminMenuItem, ... }) {
-  // ...
-  registerAdminMenuItem({
-    label: 'Your Plugin',
+export default function registerYourPlugin({ registerRoute, registerMenuItem }) {
+  // 使用“页面访问的最小 DB 权限”控制菜单和路由
+  const pagePermission = 'db.posts.select';
+
+  registerMenuItem({
+    key: 'your-plugin',
+    label: 'your-plugin:menu.title',
     path: '/admin/your-plugin',
-    permissions: 'ui.your-plugin.view' // <-- 使用UI权限控制菜单可见性
-  });
+    component: YourPluginPage,
+  }, 'admin');
 
   registerRoute({
     path: '/admin/your-plugin',
     component: YourPluginPage,
-    permissions: 'ui.your-plugin.view' // <-- 使用UI权限控制路由访问
+    permissions: [pagePermission]
   });
 }
 ```
@@ -113,11 +116,11 @@ export default function YourPluginPage() {
 
       <br />
 
-      {/* 示例2: 这个区域只有拥有特定UI权限的用户才能看到 */}
-      <Authorized permissions="ui.your-plugin.show-special-feature">
+      {/* 所有 UI 显示均以 DB 权限统一控制，避免与后端割裂 */}
+      <Authorized permissions="db.posts.update">
         <div style={{ border: '1px solid grey', padding: '1rem', marginTop: '1rem' }}>
-          <h3>Special Feature</h3>
-          <p>This content is only visible to users with the 'ui.your-plugin.show-special-feature' permission.</p>
+          <h3>Editor Tools</h3>
+          <p>Only users with 'db.posts.update' see editor tools.</p>
         </div>
       </Authorized>
     </div>
@@ -208,10 +211,9 @@ function MyComponent() {
 
 ##### **4.6 最佳实践**
 
-1. **权限命名约定**：
-   - UI 权限：`ui.<plugin>.<action>`
-   - 数据库权限：`db.<table>.<action>`
-   - 系统权限：`system.<action>`
+1. **权限命名约定（统一）**：
+   - 数据库权限：`db.<table>.<action>`（select/insert/update/delete）。同一权限串同时用于后端与前端。
+   - 不再推荐使用 `ui.*` 权限；如需纯UI开关，优先使用组件内部状态或配置。
 
 2. **性能优化**：
    - 权限数据会在用户登录后缓存

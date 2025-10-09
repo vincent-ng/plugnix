@@ -61,5 +61,26 @@
     "assignSuccess": "Permission assigned successfully",
     "removeSuccess": "Permission removed successfully",
     "error": "Operation failed"
+  },
+  "permissions": {
+    "system.rpc.invoke": "Invoke system RPC",
+    "db.permissions.select": "Select permissions",
+    "db.permissions.insert": "Insert permissions",
+    "db.permissions.update": "Update permissions",
+    "db.permissions.delete": "Delete permissions",
+    "db.groups.select": "Select groups",
+    "db.groups.update": "Update groups",
+    "db.groups.delete": "Delete groups",
+    "db.roles.select": "Select roles",
+    "db.roles.insert": "Insert roles",
+    "db.roles.update": "Update roles",
+    "db.roles.delete": "Delete roles",
+    "db.role_permissions.select": "Select role permissions",
+    "db.role_permissions.insert": "Assign permissions to role",
+    "db.role_permissions.delete": "Revoke permissions from role",
+    "db.group_users.select": "Select group members",
+    "db.group_users.insert": "Add members to group",
+    "db.group_users.update": "Update member roles in group",
+    "db.group_users.delete": "Remove members from group"
   }
 }

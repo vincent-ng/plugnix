@@ -50,7 +50,7 @@ const RecursiveAccordionMenuItem = ({ item, renderItem }) => {
 
 export const RecursiveAccordionMenu = ({ menuItems, renderItem }) => {
   return (
-    <Accordion type="multiple" className="w-full">
+    <Accordion type="multiple" defaultValue={menuItems.map((item) => item.key)} className="w-full">
       {menuItems.map((item) => (
         <RecursiveAccordionMenuItem key={item.key} item={item} renderItem={renderItem} />
       ))}

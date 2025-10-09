@@ -61,5 +61,26 @@
     "assignSuccess": "权限分配成功",
     "removeSuccess": "权限移除成功",
     "error": "操作失败"
+  },
+  "permissions": {
+    "system.rpc.invoke": "调用系统RPC",
+    "db.permissions.select": "查询权限",
+    "db.permissions.insert": "新增权限",
+    "db.permissions.update": "更新权限",
+    "db.permissions.delete": "删除权限",
+    "db.groups.select": "查询用户组",
+    "db.groups.update": "更新用户组",
+    "db.groups.delete": "删除用户组",
+    "db.roles.select": "查询角色",
+    "db.roles.insert": "新增角色",
+    "db.roles.update": "更新角色",
+    "db.roles.delete": "删除角色",
+    "db.role_permissions.select": "查询角色权限",
+    "db.role_permissions.insert": "为角色分配权限",
+    "db.role_permissions.delete": "从角色收回权限",
+    "db.group_users.select": "查询组成员",
+    "db.group_users.insert": "添加组成员",
+    "db.group_users.update": "更新组成员角色",
+    "db.group_users.delete": "从组中移除成员"
   }
 }

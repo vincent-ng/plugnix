@@ -24,14 +24,12 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [availablePermissions, setAvailablePermissions] = useState([]);
-  const [assignedPermissions, setAssignedPermissions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const isEdit = !!role;
 
   const [formData, setFormData] = useState({
     name: '',
-    display_name: '',
     description: '',
     permissions: []
   });
@@ -40,50 +38,40 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
     if (role) {
       setFormData({
         name: role.name || '',
-        display_name: role.display_name || '',
         description: role.description || '',
         permissions: role.permissions || []
       });
     } else {
-      setFormData({ name: '', display_name: '', description: '', permissions: [] });
+      setFormData({ name: '', description: '', permissions: [] });
     }
   }, [role]);
 
   useEffect(() => {
     if (!open) return;
-    if (mode === 'view' && role?.id) {
-      loadAssignedPermissions(role.id);
-    } else {
-      loadAvailablePermissions();
-    }
-  }, [open, mode, role]);
 
-  const loadAvailablePermissions = async () => {
-    setLoading(true);
-    try {
-      const perms = await getAvailablePermissions();
-      setAvailablePermissions(perms);
-    } catch (error) {
-      toast.error(t('messages.error'), { description: error.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // 统一加载所有可用权限
+        const allPerms = await getAvailablePermissions();
+        setAvailablePermissions(allPerms || []);
 
-  const loadAssignedPermissions = async (roleId) => {
-    setLoading(true);
-    try {
-      // 后端返回的是权限 ID 列表，这里将其映射到权限详情，便于在查看模式展示名称与分组
-      const assignedIds = await getRolePermissions(roleId);
-      const allPerms = await getAvailablePermissions();
-      const assignedObjs = (allPerms || []).filter(p => assignedIds?.includes?.(p.id));
-      setAssignedPermissions(assignedObjs);
-    } catch (error) {
-      toast.error(t('messages.error'), { description: error.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+        let assignedIds = [];
+        // 在查看或编辑模式下，加载角色已分配的权限
+        if ((mode === 'view' || isEdit) && role?.id) {
+          assignedIds = await getRolePermissions(role.id);
+        }
+        // 统一使用 formData.permissions 存储已分配/已选择的权限ID
+        setFormData(prev => ({ ...prev, permissions: assignedIds || [] }));
+      } catch (error) {
+        toast.error(t('messages.error'), { description: error.message });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [open, role, isEdit, mode]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -107,7 +95,6 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
       setSaving(true);
       await onSave({
         name: formData.name,
-        display_name: formData.display_name,
         description: formData.description,
         permissions: formData.permissions,
       });
@@ -119,8 +106,7 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
     }
   };
 
-  const sourceList = mode === 'view' ? assignedPermissions : availablePermissions;
-  const filteredPermissions = sourceList.filter(p => {
+  const filteredPermissions = availablePermissions.filter(p => {
     const name = (p?.name || '').toLowerCase();
     const desc = (p?.description || '').toLowerCase();
     const term = searchTerm.toLowerCase();
@@ -147,7 +133,7 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
             {mode === 'view' ? t('actions.viewPermissions') : (isEdit ? t('dialog.edit.title') : t('dialog.create.title'))}
           </DialogTitle>
           <DialogDescription>
-            {mode === 'view' ? (role ? (role.display_name || role.name) : '') : t('page.description')}
+            {mode === 'view' ? (role ? (role.name) : '') : t('page.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -157,11 +143,6 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">{t('dialog.create.name')}</Label>
                 <Input id="name" name="name" value={formData.name} onChange={handleInputChange} className="col-span-3" placeholder={t('dialog.create.namePlaceholder')} />
-              </div>
-
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="display_name" className="text-right">Display Name</Label>
-                <Input id="display_name" name="display_name" value={formData.display_name} onChange={handleInputChange} className="col-span-3" />
               </div>
 
               <div className="grid grid-cols-4 items-center gap-4">
@@ -238,6 +219,8 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
 }
 // 折叠分组的通用渲染组件，减少重复代码
 function PermissionSection({ value, icon: Icon, title, items = [], mode, selectedIds = [], onToggle }) {
+  const { t } = useTranslation('group-roles');
+
   return (
     <AccordionItem value={value}>
       <AccordionTrigger>
@@ -249,16 +232,20 @@ function PermissionSection({ value, icon: Icon, title, items = [], mode, selecte
         <div className="flex flex-wrap gap-2">
           {items.map(p => {
             const isSelected = selectedIds.includes(p.id);
-            const variant = mode === 'view'
-              ? (value === 'ui' ? 'outline' : 'secondary')
-              : (isSelected ? 'default' : 'secondary');
+            const isInteractive = mode !== 'view';
+
+            let variant = 'secondary';
+            if (isSelected) {
+              variant = 'default';
+            }
+
             return (
               <Badge
                 key={p.id}
                 variant={variant}
-                title={p.description}
-                className={mode === 'view' ? '' : 'cursor-pointer'}
-                onClick={mode === 'view' ? undefined : () => onToggle(p.id)}
+                title={t(p.description)}
+                className={isInteractive ? 'cursor-pointer' : 'cursor-default'}
+                onClick={isInteractive ? () => onToggle(p.id) : undefined}
               >
                 {p.name}
               </Badge>

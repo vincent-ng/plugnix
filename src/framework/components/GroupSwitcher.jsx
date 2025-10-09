@@ -69,7 +69,7 @@ export const GroupSwitcher = ({ className }) => {
                 </div>
                 {group.id === currentGroup?.id && (
                   <Badge variant="secondary" className="text-xs">
-                    {t(`role:${userRole?.toLowerCase()}`)}
+                    {t(`group:${userRole?.toLowerCase()}`)}
                   </Badge>
                 )}
               </DropdownMenuItem>

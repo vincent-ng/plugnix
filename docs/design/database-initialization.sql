@@ -391,33 +391,33 @@ INSERT INTO public.groups (id, name, description) VALUES (get_system_group_id(),
 -- Some are for admins (via the System group), others are for role-based assignment within user groups.
 INSERT INTO permissions (name, description) VALUES
   -- System-level permissions for admins
-  ('system.rpc.invoke', 'Allow invoking system-level RPC functions like managing RLS'),
-  ('db.permissions.select', 'Read all permissions in the system'),
-  ('db.permissions.insert', 'Create new permissions in the system'),
-  ('db.permissions.update', 'Update existing permissions in the system'),
-  ('db.permissions.delete', 'Delete permissions from the system'),
+  ('system.rpc.invoke', 'permissions.system.rpc.invoke'),
+  ('db.permissions.select', 'permissions.db.permissions.select'),
+  ('db.permissions.insert', 'permissions.db.permissions.insert'),
+  ('db.permissions.update', 'permissions.db.permissions.update'),
+  ('db.permissions.delete', 'permissions.db.permissions.delete'),
 
   -- Group management permissions (can be assigned to roles)
-  ('db.groups.select', 'Read group information'),
-  ('db.groups.update', 'Update group information (e.g., name, description)'),
-  ('db.groups.delete', 'Delete a group'),
+  ('db.groups.select', 'permissions.db.groups.select'),
+  ('db.groups.update', 'permissions.db.groups.update'),
+  ('db.groups.delete', 'permissions.db.groups.delete'),
 
   -- Role management permissions (can be assigned to roles)
-  ('db.roles.select', 'Read roles within a group'),
-  ('db.roles.insert', 'Create new roles within a group'),
-  ('db.roles.update', 'Update roles within a group'),
-  ('db.roles.delete', 'Delete roles within a group'),
+  ('db.roles.select', 'permissions.db.roles.select'),
+  ('db.roles.insert', 'permissions.db.roles.insert'),
+  ('db.roles.update', 'permissions.db.roles.update'),
+  ('db.roles.delete', 'permissions.db.roles.delete'),
 
   -- Role-permission assignment permissions (can be assigned to roles)
-  ('db.role_permissions.select', 'Read permissions assigned to a role'),
-  ('db.role_permissions.insert', 'Assign permissions to a role'),
-  ('db.role_permissions.delete', 'Remove permissions from a role'),
+  ('db.role_permissions.select', 'permissions.db.role_permissions.select'),
+  ('db.role_permissions.insert', 'permissions.db.role_permissions.insert'),
+  ('db.role_permissions.delete', 'permissions.db.role_permissions.delete'),
 
   -- Group membership permissions (can be assigned to roles)
-  ('db.group_users.select', 'Read group member assignments'),
-  ('db.group_users.insert', 'Assign users to a group'),
-  ('db.group_users.update', 'Change a user''s role in a group'),
-  ('db.group_users.delete', 'Remove users from a group');
+  ('db.group_users.select', 'permissions.db.group_users.select'),
+  ('db.group_users.insert', 'permissions.db.group_users.insert'),
+  ('db.group_users.update', 'permissions.db.group_users.update'),
+  ('db.group_users.delete', 'permissions.db.group_users.delete');
 
 -- Insert template roles (group_id is NULL). These are read-only templates for user-created groups.
 INSERT INTO public.roles (name, description) VALUES

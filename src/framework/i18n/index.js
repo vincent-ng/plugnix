@@ -15,6 +15,7 @@ const frameworkTranslations = {
       success: 'Success',
       cancel: 'Cancel',
       confirm: 'Confirm',
+      create: 'Create',
       view: 'View',
       save: 'Save',
       delete: 'Delete',
@@ -50,6 +51,7 @@ const frameworkTranslations = {
       profile: 'Profile'
     },
     group: {
+      title: 'User Group Management',
       selectGroup: 'Select Group',
       personalWorkspace: 'Personal Workspace',
       noGroupsFound: 'No groups found',
@@ -59,9 +61,11 @@ const frameworkTranslations = {
       groupName: 'Group Name',
       groupDescription: 'Description',
       creating: 'Creating...',
-      create: 'Create',
       groupCreatedSuccessfully: 'Group created successfully!',
-      errorCreatingGroup: 'Error creating group'
+      errorCreatingGroup: 'Error creating group',
+      owner: 'Owner',
+      member: 'Member',
+      admin: 'Admin',
     },
     tabs: {
       welcome: 'Welcome to the admin panel. Please select a menu item to get started.',
@@ -79,6 +83,7 @@ const frameworkTranslations = {
       success: '成功',
       cancel: '取消',
       confirm: '确认',
+      create: '创建',
       view: '查看',
       save: '保存',
       delete: '删除',
@@ -114,6 +119,7 @@ const frameworkTranslations = {
       profile: '个人资料'
     },
     group: {
+      title: '用户组管理',
       selectGroup: '选择组',
       personalWorkspace: '个人工作区',
       noGroupsFound: '未找到任何组',
@@ -125,7 +131,10 @@ const frameworkTranslations = {
       creating: '创建中...',
       create: '创建',
       groupCreatedSuccessfully: '组创建成功！',
-      errorCreatingGroup: '创建组时出错'
+      errorCreatingGroup: '创建组时出错',
+      owner: '所有者',
+      member: '成员',
+      admin: '管理员',
     },
     tabs: {
       welcome: '欢迎使用管理面板。请选择菜单项开始使用。',

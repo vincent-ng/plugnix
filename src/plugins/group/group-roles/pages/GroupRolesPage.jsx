@@ -71,16 +71,16 @@ export default function GroupRolesPage() {
   };
 
   const handleSaveRole = async (payload) => {
-    const { name, display_name, description, permissions } = payload;
+    const { name, description, permissions } = payload;
     try {
       if (!editingRole) {
-        const created = await createRole(currentGroup.id, { name, display_name, description });
+        const created = await createRole(currentGroup.id, { name, description });
         if (permissions && permissions.length > 0) {
           await setRolePermissions(created.id, permissions);
         }
         toast.success(t('messages.createSuccess'));
       } else {
-        const updated = await updateRole(editingRole.id, { name, display_name, description });
+        const updated = await updateRole(editingRole.id, { name, description });
         await setRolePermissions(updated.id, permissions || []);
         toast.success(t('messages.updateSuccess'));
       }
@@ -105,7 +105,7 @@ export default function GroupRolesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -148,7 +148,7 @@ export default function GroupRolesPage() {
               <TableBody>
                 {filteredRoles.map(role => (
                   <TableRow key={role.id}>
-                    <TableCell className="font-medium">{role.display_name || role.name}</TableCell>
+                    <TableCell className="font-medium">{role.name}</TableCell>
                     <TableCell>{role.description}</TableCell>
                     <TableCell>{role.permissions_count || 0}</TableCell>
                     <TableCell>{new Date(role.created_at).toLocaleString()}</TableCell>

@@ -15,7 +15,7 @@ import { createGroup } from '@/framework/api/groups';
 import { toast } from 'sonner';
 
 export const CreateGroupDialog = ({ isOpen, onClose, onGroupCreated }) => {
-  const { t } = useTranslation(['group']);
+  const { t } = useTranslation();
   const [groupName, setGroupName] = useState('');
   const [groupDescription, setGroupDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -74,10 +74,10 @@ export const CreateGroupDialog = ({ isOpen, onClose, onGroupCreated }) => {
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
-              {t('group:cancel')}
+              {t('common:cancel')}
             </Button>
             <Button type="submit" disabled={isCreating}>
-              {isCreating ? t('group:creating') : t('group:create')}
+              {isCreating ? t('group:creating') : t('common:create')}
             </Button>
           </DialogFooter>
         </form>

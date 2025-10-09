@@ -43,7 +43,7 @@ export const useGroupProvider = () => {
 
   // 获取用户的组织列表
   const refreshUserGroups = async () => {
-    console.log('Fetching user groups for user:', user);
+    console.log('Refreshing user groups for user:', user);
     if (!user) {
       setLoading(false);
       resetGroup();
@@ -116,10 +116,6 @@ export const useGroupProvider = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    refreshUserGroups();
-  }, [user]);
 
   useEffect(() => {
     refreshUserGroups();

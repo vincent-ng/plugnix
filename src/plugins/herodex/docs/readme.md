@@ -93,7 +93,7 @@
 ### **6. 数据库设计**
 
 数据库结构已通过独立的SQL文件详细定义。核心表包括：`hdx_players`, `hdx_skills`, `hdx_player_skills`, `hdx_skill_dependencies`, `hdx_activity_log` 以及为每日汇报流程设计的 `hdx_daily_submissions` 和 `hdx_submission_attachments`。
-详细数据库设计请参考[数据库文档](database.md)。
+详细数据库设计请参考[数据库文档](supabase/init.sql)。
 
 ### **7. 技术栈**
 

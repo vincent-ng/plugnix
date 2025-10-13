@@ -132,6 +132,7 @@ dist-ssr
 vite.config.js.timestamp-*
 
 # Editor directories and files
+.trae/
 .vscode/*
 !.vscode/extensions.json
 .idea

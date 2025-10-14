@@ -1,5 +1,5 @@
 import React from 'react';
-import { useGroup } from '../contexts/GroupContext.jsx';
+import { useTenant } from '../contexts/TenantContext.jsx';
 
 /**
  * 权限控制组件
@@ -19,10 +19,10 @@ export const Authorized = ({
   fallback = null,
   loading = false
 }) => {
-  const { hasAnyPermission, hasAllPermissions, loading: groupLoading } = useGroup();
+  const { hasAnyPermission, hasAllPermissions, loading: tenantLoading } = useTenant();
 
   // 如果正在加载权限信息
-  if (groupLoading || loading) {
+  if (tenantLoading || loading) {
     return fallback;
   }
 

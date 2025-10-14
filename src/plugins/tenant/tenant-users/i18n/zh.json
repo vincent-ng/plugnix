@@ -1,13 +1,12 @@
 {
   "menu": {
-    "title": "组用户管理"
+    "title": "组织用户管理"
   },
   "page": {
-    "title": "组用户管理",
-    "description": "管理各个组内的用户成员"
+    "title": "组织用户管理",
+    "description": "管理各个组织内的用户成员"
   },
   "table": {
-    "group": "用户组",
     "user": "用户",
     "email": "邮箱",
     "role": "角色",
@@ -26,14 +25,16 @@
   },
   "dialog": {
     "addUser": {
-      "title": "添加用户到组",
-      "selectGroup": "选择用户组",
+      "title": "添加用户到组织",
+      "selectTenant": "选择组织",
       "selectUser": "选择用户",
       "userEmail": "用户邮箱",
       "emailPlaceholder": "请输入用户的邮箱地址",
-      "group": "所属组",
+      "tenant": "所属组织",
       "selectRole": "选择角色",
-      "rolePlaceholder": "请选择一个角色"
+      "rolePlaceholder": "请选择一个角色",
+      "userPlaceholder": "请选择一个用户",
+      "tenantPlaceholder": "请选择一个组织"
     },
     "editRole": {
       "title": "修改用户角色",
@@ -43,7 +44,7 @@
     },
     "removeUser": {
       "title": "移除用户",
-      "message": "确定要将用户 {user} 从组 {group} 中移除吗？",
+      "message": "确定要将用户 {user} 从组织 {group} 中移除吗？",
       "warning": "此操作不可撤销"
     }
   },
@@ -55,16 +56,15 @@
     "removeSuccess": "用户移除成功",
     "removeError": "移除用户失败",
     "loadError": "加载初始数据失败。",
-    "loadMembersError": "加载组成员失败。",
+    "loadMembersError": "加载组织成员失败。",
     "addFormInvalid": "请填写所有必填项。",
     "updateError": "更新角色失败。",
-    "noData": "该组内暂无用户。",
-    "selectGroupPrompt": "请先从上方选择一个组以查看其成员。",
-    "selectGroupFirst": "请先选择一个组，然后再添加用户。"
+    "noData": "该组织内暂无用户。",
+    "selectTenantPrompt": "请先从上方选择一个组织以查看其成员。",
+    "selectTenantFirst": "请先选择一个组织，然后再添加用户。"
   },
   "filters": {
     "searchPlaceholder": "按用户名称或邮箱搜索...",
-    "groupPlaceholder": "请选择一个组",
-    "allGroups": "所有组"
+    "tenantPlaceholder": "请选择一个组织"
   }
 }

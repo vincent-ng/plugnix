@@ -2,63 +2,63 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuthentication } from './AuthenticationContext';
 import { supabase } from '@/framework/lib/supabase';
 
-const GroupContext = createContext();
+const TenantContext = createContext();
 
-export const useGroup = () => {
-  const context = useContext(GroupContext);
+export const useTenant = () => {
+  const context = useContext(TenantContext);
   if (!context) {
-    throw new Error('useGroup must be used within a GroupProvider');
+    throw new Error('useTenant must be used within a TenantProvider');
   }
   return context;
 };
 
-export const useGroupProvider = () => {
+export const useTenantProvider = () => {
   const { user } = useAuthentication();
-  const [currentGroup, setCurrentGroup] = useState(null);
-  const [userGroups, setUserGroups] = useState([]);
+  const [currentTenant, setCurrentTenant] = useState(null);
+  const [userTenants, setUserTenants] = useState([]);
   const [userRole, setUserRole] = useState(null);
   const [userPermissions, setUserPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const resetGroup = () => {
-    setCurrentGroup(null);
+  const resetTenant = () => {
+    setCurrentTenant(null);
     setUserRole(null);
     setUserPermissions([]);
     if (user?.id) {
-      localStorage.removeItem(`currentGroup_${user.id}`);
+      localStorage.removeItem(`currentTenant_${user.id}`);
     }
   };
 
   // 切换当前组织
-  const switchGroup = (group) => {
-    setCurrentGroup(group);
-    setUserRole(group.role);
-    setUserPermissions(group.permissions || []);
+  const switchTenant = (tenant) => {
+    setCurrentTenant(tenant);
+    setUserRole(tenant.role);
+    setUserPermissions(tenant.permissions || []);
     
     // 保存到 localStorage
     if (user?.id) {
-      localStorage.setItem(`currentGroup_${user.id}`, group.id);
+      localStorage.setItem(`currentTenant_${user.id}`, tenant.id);
     }
   };
 
   // 获取用户的组织列表
-  const refreshUserGroups = async () => {
-    console.log('Refreshing user groups for user:', user);
+  const refreshUserTenants = async () => {
+    console.log('Refreshing user tenants for user:', user);
     if (!user) {
       setLoading(false);
-      resetGroup();
-      setUserGroups([]);
+      resetTenant();
+      setUserTenants([]);
       return;
     }
     
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('group_users')
+        .from('tenant_users')
         .select(`
-          group_id,
+          tenant_id,
           role_id,
-          groups (
+          tenants (
             id,
             name,
             description
@@ -79,46 +79,47 @@ export const useGroupProvider = () => {
 
       if (error) throw error;
 
-      const groups = data.map(item => ({
-        id: item.groups.id,
-        name: item.groups.name,
-        description: item.groups.description,
+      const tenants = data.map(item => ({
+        id: item.tenants.id,
+        name: item.tenants.name,
+        description: item.tenants.description,
         role: item.roles.name,
         permissions: item.roles?.role_permissions?.map(rp => rp.permissions?.name).filter(Boolean) || []
       }));
 
-      setUserGroups(groups);
+      console.log('Fetched user tenants:', data, tenants);
+      setUserTenants(tenants);
 
       // 尝试从 localStorage 恢复用户上次选择的组织
-      let selectedGroup = null;
+      let selectedTenant = null;
       if (user?.id) {
-        const savedGroupId = localStorage.getItem(`currentGroup_${user.id}`);
-        if (savedGroupId) {
-          selectedGroup = groups.find(g => g.id === savedGroupId);
+        const savedTenantId = localStorage.getItem(`currentTenant_${user.id}`);
+        if (savedTenantId) {
+          selectedTenant = tenants.find(t => t.id === savedTenantId);
         }
       }
 
       // 如果没有保存的组织或保存的组织不存在，使用第一个组织作为默认
-      if (!selectedGroup && groups.length > 0) {
-        selectedGroup = groups[0];
+      if (!selectedTenant && tenants.length > 0) {
+        selectedTenant = tenants[0];
       }
 
-      if (selectedGroup) {
-        switchGroup(selectedGroup);
+      if (selectedTenant) {
+        switchTenant(selectedTenant);
       } else {
-        resetGroup();
+        resetTenant();
       }
     } catch (error) {
-      console.error('Error fetching user groups:', error);
-      setUserGroups([]);
-      resetGroup();
+      console.error('Error fetching user tenants:', error);
+      setUserTenants([]);
+      resetTenant();
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    refreshUserGroups();
+    refreshUserTenants();
   }, [user]);
 
   // 获取用户在当前组织中的角色
@@ -142,30 +143,30 @@ export const useGroupProvider = () => {
   };
 
   return {
-    currentGroup,
-    userGroups,
+    currentTenant,
+    userTenants,
     userRole,
     userPermissions,
     loading,
-    setCurrentGroup: switchGroup,
-    switchGroup,
+    setCurrentTenant: switchTenant,
+    switchTenant,
     getCurrentUserRole,
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
-    refreshUserGroups
+    refreshUserTenants
   };
 }
 
 
-export const GroupProvider = ({ children, value }) => {
-  const groupState = useGroupProvider();
+export const TenantProvider = ({ children, value }) => {
+  const tenantState = useTenantProvider();
 
   return (
-    <GroupContext.Provider value={value || groupState}>
+    <TenantContext.Provider value={value || tenantState}>
       {children}
-    </GroupContext.Provider>
+    </TenantContext.Provider>
   );
 };
 
-export default GroupContext;
+export default TenantContext;

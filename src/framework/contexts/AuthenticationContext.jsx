@@ -67,35 +67,41 @@ export const AuthenticationProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      // 1. 注册用户
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // 注册用户并发送验证邮件（启用邮箱验证时不会立即登录）
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userData
+          data: userData,
+          emailRedirectTo: window.location.origin // 用户确认邮箱后返回到站点
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (error) throw error;
 
-      // 2. 注册成功后，立即登录
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signInError) throw signInError;
-
-      // 3. 更新用户状态
-      setUser(signInData.user);
-
-      console.log('注册并登录成功:', signInData.user);
-      return { success: true, data: signInData };
+      console.log('注册成功，已发送验证邮件:', data?.user);
+      return { success: true, requiresEmailConfirmation: true, data };
     } catch (error) {
-      console.error('注册或自动登录失败:', error.message);
+      console.error('注册失败:', error.message);
       return { success: false, error: error.message };
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 重发邮箱验证邮件
+  const resendVerificationEmail = async (email) => {
+    try {
+      const { data, error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: window.location.origin }
+      });
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error) {
+      console.error('重发验证邮件失败:', error.message);
+      return { success: false, error: error.message };
     }
   };
 
@@ -103,9 +109,9 @@ export const AuthenticationProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      // 清理用户相关的 localStorage 数据
+      // 清理用户相关的 localStorage 数据（兼容旧键名）
       if (user?.id) {
-        localStorage.removeItem(`currentGroup_${user.id}`);
+        localStorage.removeItem(`currentTenant_${user.id}`);
       }
 
       const { error } = await supabase.auth.signOut();
@@ -138,6 +144,7 @@ export const AuthenticationProvider = ({ children }) => {
     login,
     signIn: login, // 添加 signIn 别名
     register,
+    resendVerificationEmail,
     logout,
     signOut: logout // 添加 signOut 别名
   };

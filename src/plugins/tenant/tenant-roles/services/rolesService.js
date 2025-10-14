@@ -1,12 +1,12 @@
 import { supabase } from '@/framework/lib/supabase';
 
-// 加载当前组的角色列表（含权限计数）
-export const getGroupRoles = async (groupId) => {
+// 加载当前组织的角色列表（含权限计数）
+export const getTenantRoles = async (tenantId) => {
   try {
     const { data: roles, error } = await supabase
       .from('roles')
       .select('*')
-      .or(`group_id.eq.${groupId},group_id.is.null`)
+      .or(`tenant_id.eq.${tenantId},tenant_id.is.null`)
       .order('name');
 
     if (error) throw error;
@@ -32,22 +32,24 @@ export const getGroupRoles = async (groupId) => {
       permissions_count: permCountByRole[r.id] || 0,
     }));
   } catch (e) {
-    console.error('加载组角色失败:', e);
+    console.error('Load role failed:', e);
     throw e;
   }
 };
 
-export const createRole = async (groupId, role) => {
+export const createRoleWithPermissions = async (tenantId, role, permissionIds) => {
   try {
-    const { data, error } = await supabase
-      .from('roles')
-      .insert([{ ...role, group_id: groupId }])
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc('create_role_with_permissions', {
+      p_tenant_id: tenantId,
+      p_role_name: role.name,
+      p_role_description: role.description,
+      p_permission_ids: permissionIds,
+    });
+
     if (error) throw error;
     return data;
   } catch (e) {
-    console.error('创建角色失败:', e);
+    console.error('Create role with permissions failed:', e);
     throw e;
   }
 };
@@ -63,7 +65,7 @@ export const updateRole = async (roleId, updates) => {
     if (error) throw error;
     return data;
   } catch (e) {
-    console.error('更新角色失败:', e);
+    console.error('Update role failed:', e);
     throw e;
   }
 };
@@ -77,7 +79,7 @@ export const deleteRole = async (roleId) => {
     if (error) throw error;
     return true;
   } catch (e) {
-    console.error('删除角色失败:', e);
+    console.error('Delete role failed:', e);
     throw e;
   }
 };
@@ -90,7 +92,7 @@ export const getAvailablePermissions = async () => {
     if (error) throw error;
     return data || [];
   } catch (e) {
-    console.error('加载可用权限失败:', e);
+    console.error('Load available permissions failed:', e);
     throw e;
   }
 };
@@ -104,7 +106,7 @@ export const getRolePermissions = async (roleId) => {
     if (error) throw error;
     return (data || []).map(x => x.permission_id);
   } catch (e) {
-    console.error('加载角色权限失败:', e);
+    console.error('Load role permissions failed:', e);
     throw e;
   }
 };
@@ -128,7 +130,7 @@ export const setRolePermissions = async (roleId, permissionIds) => {
     }
     return true;
   } catch (e) {
-    console.error('更新角色权限失败:', e);
+    console.error('Set role permissions failed:', e);
     throw e;
   }
 };

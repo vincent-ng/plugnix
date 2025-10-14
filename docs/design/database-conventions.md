@@ -25,7 +25,7 @@
 
 *   `user_id`: `UUID` 类型, `DEFAULT auth.uid()`。它应引用 `auth.users(id)`。
 
-在统一权限模型下，此字段的主要作用是**审计和数据归属**（例如，在UI上显示“由...创建”），而不再是RLS策略中进行“所有权”判断的主要依据。权限检查完全由 `group_id` 和关联的权限函数处理。
+在统一权限模型下，此字段的主要作用是**审计和数据归属**（例如，在UI上显示“由...创建”），而不再是RLS策略中进行“所有权”判断的主要依据。权限检查完全由 `tenant_id` 和关联的权限函数处理。
 
 ### **2. 用户与权限**
 
@@ -39,39 +39,39 @@
 
 - [**权限系统设计**](./feature-permission-model.md)
 
-为减少前后端不一致的情况，项目采用统一策略：所有权限统一以 `db.<table>.<action>` 命名，并同时用于后端 RLS 校验与前端菜单/路由/按钮的显示与交互控制。历史上的 `ui.*` 仅用于纯视觉开关的场景，不再推荐作为权限名使用。
+为减少前后端不一致的情况，项目采用统一策略：所有权限统一以 `db.<table>.<action>` 命名，并同时用于后端 RLS 校验与前端菜单/路由/按钮的显示与交互控制。`ui.<plugin>.<element>` 仅用于纯视觉开关的场景。
 
-### **3. 统一权限模型：基于“用户组”与“系统组”的RLS策略**
+### **3. 统一权限模型：基于“组织”与“系统组织”的RLS策略**
 
-我们最终的权限模型是一个统一的、基于RBAC的机制，它通过“用户组”管理常规协作，通过一个特殊的“系统组”管理全局管理员权限。
+我们最终的权限模型是一个统一的、基于RBAC的机制，它通过“组织”管理常规协作，通过一个特殊的“系统组织”管理全局管理员权限。
 
-#### **核心思想：统一的组权限检查**
+#### **核心思想：统一的组织权限检查**
 
-*   所有受保护的数据都必须归属于一个用户组 (`group_id`)。
-*   权限检查的核心是调用 `check_group_permission(group_id, permission_name)` 函数。
+*   所有受保护的数据都必须归属于一个组织 (`tenant_id`)。
+*   权限检查的核心是调用 `check_tenant_permission(tenant_id, permission_name)` 函数。
 *   该函数内部封装了完整的权限检查逻辑：
-    1.  首先，检查用户在数据所属的用户组内是否拥有所需权限。
-    2.  如果否，则回退检查用户是否在“系统组”中拥有该权限（即是否为系统管理员）。
+    1.  首先，检查用户在数据所属的组织内是否拥有所需权限。
+    2.  如果否，则回退检查用户是否在“系统组织”中拥有该权限（即是否为系统管理员）。
 
 #### **实现模式**
 
-RLS策略的实现变得极其简单和统一，只需将权限判断完全委托给 `check_group_permission` 函数。
+RLS策略的实现变得极其简单和统一，只需将权限判断完全委托给 `check_tenant_permission` 函数。
 
 **示例：`posts` 表的 `UPDATE` 策略**
 
 ```sql
--- 创建一个统一的策略，权限检查完全由 check_group_permission 处理
-CREATE POLICY "Allow update based on group permission"
+-- 创建一个统一的策略，权限检查完全由 check_tenant_permission 处理
+CREATE POLICY "Allow update based on tenant permission"
 ON public.posts
 FOR UPDATE
 USING (
-  check_group_permission(posts.group_id, 'db.posts.update')
+  check_tenant_permission(posts.tenant_id, 'db.posts.update')
 );
 ```
 
 这个模型极大简化了策略的编写和维护。关于这个统一模型的完整设计，包括数据库结构、自动化函数和实现细节，请参阅：
 
-- [**设计文档：基于用户组的统一权限模型**](./feature-permission-group.md)
+- [**设计文档：基于组织的统一权限模型**](./feature-permission-model.md)
 
 ### **4. 细粒度的表管理函数 (RPC)**
 
@@ -87,14 +87,14 @@ USING (
 *   `setup_rbac_rls(p_table_name TEXT)`: 为指定表启用行级安全，并创建一套标准的、仅基于RBAC权限的增删查改策略。
 *   `teardown_rbac_rls(p_table_name TEXT)`: 从指定表上移除标准的RBAC策略，并禁用行级安全。
 
-**注意**: 这些辅助函数用于快速搭建基于“所有权”或简单RBAC的权限。在我们的统一权限模型中，我们推荐根据第3节的指导，手动创建基于 `check_group_permission` 的组合策略，以获得最佳的可维护性和扩展性。这些辅助函数可用于不需要集团功能的简单场景。
+**注意**: 这些辅助函数用于快速搭建基于“所有权”或简单RBAC的权限。在我们的统一权限模型中，我们推荐根据第3节的指导，手动创建基于 `check_tenant_permission` 的组合策略，以获得最佳的可维护性和扩展性。这些辅助函数可用于不需要组织功能的简单场景。
 
 ### **5. 核心辅助函数**
 
 以下是支撑整个权限和自动化体系的核心函数：
 
-*   `check_permission(permission_name TEXT)`: **[内部使用]** 检查当前用户是否在“系统组”中拥有指定权限。此函数主要被 `check_group_permission` 内部调用，一般不应在RLS策略中直接使用。
-*   `check_group_permission(p_group_id UUID, p_permission_name TEXT)`: 检查当前用户在指定的用户组内是否拥有指定权限，如果否，则自动回退检查其是否拥有系统级权限。这是所有RLS策略中进行权限判断的唯一入口点。
+*   `check_permission(permission_name TEXT)`: **[内部使用]** 检查当前用户是否在“系统组织”中拥有指定权限。此函数主要被 `check_tenant_permission` 内部调用，一般不应在RLS策略中直接使用。
+*   `check_tenant_permission(p_tenant_id UUID, p_permission_name TEXT)`: 检查当前用户在指定的组织内是否拥有指定权限，如果否，则自动回退检查其是否拥有系统级权限。这是所有RLS策略中进行权限判断的唯一入口点。
 *   `handle_updated_at()`: 一个触发器函数，用于自动更新 `updated_at` 字段。
 
 ### **6. 迁移文件组织与命名约定**
@@ -108,7 +108,7 @@ USING (
 
 示例路径：
 - 全局框架初始化：`supabase/migrations/20251011084243_init.sql`
-- 插件参考脚本：`src/plugins/group/docs/migrations/init.sql`
+- 插件参考脚本：`src/plugins/tenant/docs/migrations/init.sql`
 
 #### **6.2 命名规范**
 
@@ -123,14 +123,14 @@ USING (
 
 #### **6.4 归属与前缀约定**
 
-- 框架级别的通用函数与工具（如 `handle_updated_at`、`add_updated_at_trigger`、`setup_rbac_rls`、`check_group_permission`）应放入全局正式迁移中进行统一发布与维护。
-- 插件的业务表、视图与特定 RPC 函数建议采用插件前缀命名，以确保可读性与避免冲突：`<plugin>_<entity>`（例如：`group_members`、`herodex_monsters`）。
-- 权限命名保持统一格式：`db.<table>.<action>`，插件表同样遵循此规范。例如：`db.herodex_monsters.read`、`db.group_members.update`。
+- 框架级别的通用函数与工具（如 `handle_updated_at`、`add_updated_at_trigger`、`setup_rbac_rls`、`check_tenant_permission`）应放入全局正式迁移中进行统一发布与维护。
+    - 插件的业务表、视图与特定 RPC 函数建议采用插件前缀命名，以确保可读性与避免冲突：`<plugin>_<entity>`（例如：`tenant_members`、`herodex_monsters`）。
+    - 权限命名保持统一格式：`db.<table>.<action>`，插件表同样遵循此规范。例如：`db.herodex_monsters.read`、`db.tenant_members.update`。
 
 #### **6.5 执行顺序与依赖**
 
 - 执行顺序遵循时间戳：先框架迁移，后插件迁移。
-- 插件迁移如依赖框架函数（如 `check_group_permission`），必须确保依赖在此前的迁移中已发布。
+- 插件迁移如依赖框架函数（如 `check_tenant_permission`），必须确保依赖在此前的迁移中已发布。
 
 #### **6.6 回滚与清理**
 
@@ -143,8 +143,8 @@ USING (
 1. 在 `src/plugins/<plugin>/docs/migrations/` 中完成并验证 SQL 逻辑。
 2. 使用工具进行拷贝与命名（详见第 7 节）；或手工复制到 `supabase/migrations/` 并采用时间戳命名，按 6.3 的结构整理注释与幂等性。
 3. 在本地/CI 环境执行并验证：先运行框架初始化，再运行该插件迁移。
-4. 如需在生产环境应用，确保权限策略与 `group_id` 归属一致，策略统一使用：
-   - `USING (check_group_permission(<table>.group_id, 'db.<table>.<action>'))`
+4. 如需在生产环境应用，确保权限策略与 `tenant_id` 归属一致，策略统一使用：
+   - `USING (check_tenant_permission(<table>.tenant_id, 'db.<table>.<action>'))`
 
 ### **7. 插件迁移集成（plugnix-cli）**
 
@@ -153,7 +153,7 @@ USING (
 - 源位置：插件的参考迁移脚本始终位于 `src/plugins/<plugin>/docs/migrations/`，工具会扫描其中的 `.sql` 文件。
 - 拷贝与命名：工具会将上述脚本拷贝到 `supabase/migrations/`，并统一采用时间戳前缀命名，追加合理的 slug（通常来源于文件用途，如 `init`、`add_indexes`）。示例：`20251012091500_herodex_init.sql`。
 - 顺序与幂等：拷贝后的执行顺序以时间戳为准；脚本本身应遵循 6.3 的幂等原则，工具不修改脚本内容，仅拷贝与命名。
-- 依赖关系：插件迁移如依赖框架通用函数（如 `check_group_permission`、`handle_updated_at`），需保证这些函数在更早的框架迁移中已发布；工具不会注入依赖。
+- 依赖关系：插件迁移如依赖框架通用函数（如 `check_tenant_permission`、`handle_updated_at`），需保证这些函数在更早的框架迁移中已发布；工具不会注入依赖。
 - 冲突处理：若目标目录中存在相同 slug 或功能重叠的迁移，工具会避免直接覆盖（具体策略以工具实现为准），开发者可在拷贝后进行人工重命名或合并。
 - 灵活性：
   - 插件作者可以将参考迁移拆分为多个文件；工具将逐一拷贝并分别命名。

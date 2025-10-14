@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';
 import { registry } from '@/framework/api';
 import { Authorized } from '@/framework/components/Authorized';
-import { GroupSwitcher } from '@/framework/components/GroupSwitcher';
+import { TenantSwitcher } from '@/framework/components/TenantSwitcher';
 import { SidebarProvider } from '@components/ui/sidebar';
 import Logo from '../components/Logo.jsx';
 import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
@@ -49,7 +49,7 @@ const AdminLayoutContent = () => {
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             </Button>
             <Separator orientation="vertical" className="h-6" />
-            <GroupSwitcher />
+            <TenantSwitcher />
           </header>
           <main className="flex-1 overflow-y-auto p-4">
             {tabs.map(tab => {

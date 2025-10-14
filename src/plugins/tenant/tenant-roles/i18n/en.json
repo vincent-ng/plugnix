@@ -1,10 +1,10 @@
 {
   "menu": {
-    "title": "Group Roles"
+    "title": "Tenant Roles"
   },
   "page": {
-    "title": "Group Roles",
-    "description": "Create and edit roles within the current group, and manage role permissions"
+    "title": "Tenant Roles",
+    "description": "Create and edit roles within the current tenant, and manage role permissions"
   },
   "actions": {
     "createRole": "Create Role",
@@ -54,7 +54,7 @@
   "messages": {
     "loading": "Loading...",
     "noData": "No roles",
-    "selectGroupPrompt": "Please select a group from the top",
+    "selectTenantPrompt": "Please select a tenant from the top",
     "createSuccess": "Role created successfully",
     "updateSuccess": "Role updated successfully",
     "deleteSuccess": "Role deleted successfully",
@@ -68,9 +68,9 @@
     "db.permissions.insert": "Insert permissions",
     "db.permissions.update": "Update permissions",
     "db.permissions.delete": "Delete permissions",
-    "db.groups.select": "Select groups",
-    "db.groups.update": "Update groups",
-    "db.groups.delete": "Delete groups",
+    "db.tenants.select": "Select tenants",
+    "db.tenants.update": "Update tenants",
+    "db.tenants.delete": "Delete tenants",
     "db.roles.select": "Select roles",
     "db.roles.insert": "Insert roles",
     "db.roles.update": "Update roles",
@@ -78,9 +78,9 @@
     "db.role_permissions.select": "Select role permissions",
     "db.role_permissions.insert": "Assign permissions to role",
     "db.role_permissions.delete": "Revoke permissions from role",
-    "db.group_users.select": "Select group members",
-    "db.group_users.insert": "Add members to group",
-    "db.group_users.update": "Update member roles in group",
-    "db.group_users.delete": "Remove members from group"
+    "db.tenant_users.select": "Select tenant members",
+    "db.tenant_users.insert": "Add members to tenant",
+    "db.tenant_users.update": "Update member roles in tenant",
+    "db.tenant_users.delete": "Remove members from tenant"
   }
 }

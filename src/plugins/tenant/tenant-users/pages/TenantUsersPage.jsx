@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup } from '@/framework/contexts/GroupContext'; // 引入 useGroup
+import { useTenant } from '@/framework/contexts/TenantContext'; // 引入 useTenant
 import { Button } from '@/framework/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Input } from '@/framework/components/ui/input';
@@ -14,12 +14,12 @@ import { supabase } from '@/framework/lib/supabase';
 import { toast } from 'sonner';
 import Authorized from '@/framework/components/Authorized';
 
-const GroupUsersPage = () => {
-  const { t } = useTranslation('group-users');
-  const { currentGroup } = useGroup(); // 使用全局的 currentGroup
+const TenantUsersPage = () => {
+  const { t } = useTranslation('tenant-users');
+  const { currentTenant } = useTenant(); // 使用全局的 currentTenant
 
   // 状态管理
-  const [groupUsers, setGroupUsers] = useState([]);
+  const [tenantUsers, setTenantUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false); // 初始加载状态
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -33,7 +33,7 @@ const GroupUsersPage = () => {
 
   // 表单状态
   const [addUserForm, setAddUserForm] = useState({
-    groupId: '',
+    tenantId: '',
     userEmail: '',
     roleId: ''
   });
@@ -41,12 +41,12 @@ const GroupUsersPage = () => {
     roleId: ''
   });
 
-  // 当 currentGroup.id 变化时，加载组数据
+  // 当 currentTenant.id 变化时，加载数据
   useEffect(() => {
-    const groupId = currentGroup?.id;
+    const tenantId = currentTenant?.id;
 
-    if (!groupId) {
-      setGroupUsers([]);
+    if (!tenantId) {
+      setTenantUsers([]);
       setRoles([]);
       setLoading(false);
       return;
@@ -57,11 +57,10 @@ const GroupUsersPage = () => {
         const { data, error } = await supabase
           .from('roles')
           .select('*')
-          .eq('group_id', groupId)
+          .or(`tenant_id.eq.${tenantId},tenant_id.is.null`)
           .order('name');
-
         if (error) throw error;
-
+        console.log('Loaded roles:', data);
         setRoles(data || []);
       } catch (error) {
         console.error('Error loading roles data:', error);
@@ -71,30 +70,28 @@ const GroupUsersPage = () => {
     };
 
     setLoading(true);
-    Promise.all([loadRoles(), loadGroupMembers(groupId)]).finally(() => setLoading(false));
+    Promise.all([loadRoles(), loadTenantMembers(tenantId)]).finally(() => setLoading(false));
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentGroup?.id]);
+  }, [currentTenant?.id]);
 
-  const loadGroupMembers = async (groupId) => {
+  const loadTenantMembers = async (tenantId) => {
     try {
       setLoadingMembers(true);
-      const { data, error } = await supabase.rpc('get_group_members', { p_group_id: groupId });
-
+      const { data, error } = await supabase.rpc('get_tenant_members', { p_tenant_id: tenantId });
       if (error) throw error;
-
-      setGroupUsers(data || []);
+      setTenantUsers(data || []);
     } catch (error) {
-      console.error('Error loading group members:', error);
+      console.error('Error loading tenant members:', error);
       toast.error(error.message || t('messages.loadMembersError'));
-      setGroupUsers([]); // 出错时清空列表
+      setTenantUsers([]); // 出错时清空列表
     } finally {
       setLoadingMembers(false);
     }
   };
 
   // 过滤数据
-  const filteredGroupUsers = groupUsers.filter(item => {
+  const filteredTenantUsers = tenantUsers.filter(item => {
     return !searchTerm ||
       item.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.user_raw_user_meta_data?.name?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -102,23 +99,22 @@ const GroupUsersPage = () => {
 
   // 添加用户到组
   const handleAddUser = async () => {
-    if (!addUserForm.groupId || !addUserForm.userEmail || !addUserForm.roleId) {
+    if (!addUserForm.tenantId || !addUserForm.userEmail || !addUserForm.roleId) {
       toast.error(t('messages.addFormInvalid'));
       return;
     }
     try {
-      const { error } = await supabase.rpc('add_member_by_email', {
-        p_group_id: addUserForm.groupId,
+      const { error } = await supabase.rpc('add_member_to_tenant_by_email', {
+        p_tenant_id: addUserForm.tenantId,
         p_user_email: addUserForm.userEmail,
         p_role_id: addUserForm.roleId
       });
-
       if (error) throw error;
 
       toast.success(t('messages.addSuccess'));
       setAddUserDialog(false);
-      setAddUserForm({ groupId: currentGroup.id, userEmail: '', roleId: '' });
-      loadGroupMembers(currentGroup.id); // 重新加载当前组的成员
+      setAddUserForm({ tenantId: currentTenant.id, userEmail: '', roleId: '' });
+      loadTenantMembers(currentTenant.id); // 重新加载当前组织的成员
     } catch (error) {
       console.error('Error adding user:', error);
       toast.error(error.message || t('messages.addError'));
@@ -128,18 +124,18 @@ const GroupUsersPage = () => {
   // 修改用户角色
   const handleEditRole = async () => {
     try {
-      const { error } = await supabase
-        .from('group_users')
-        .update({ role_id: editRoleForm.roleId })
-        .match({ group_id: selectedItem.group_id, user_id: selectedItem.user_id });
 
+      const { error } = await supabase
+        .from('tenant_users')
+        .update({ role_id: editRoleForm.roleId })
+        .match({ tenant_id: selectedItem.tenant_id ?? currentTenant.id, user_id: selectedItem.user_id });
       if (error) throw error;
 
       toast.success(t('messages.updateSuccess'));
       setEditRoleDialog(false);
       setEditRoleForm({ roleId: '' });
       setSelectedItem(null);
-      loadGroupMembers(currentGroup.id); // 重新加载当前组的成员
+      loadTenantMembers(currentTenant.id); // 重新加载当前组织的成员
     } catch (error) {
       console.error('Error updating role:', error);
       toast.error(t('messages.updateError'));
@@ -150,16 +146,15 @@ const GroupUsersPage = () => {
   const handleRemoveUser = async () => {
     try {
       const { error } = await supabase
-        .from('group_users')
+        .from('tenant_users')
         .delete()
-        .match({ group_id: selectedItem.group_id, user_id: selectedItem.user_id });
-
+        .match({ tenant_id: selectedItem.tenant_id ?? currentTenant.id, user_id: selectedItem.user_id });
       if (error) throw error;
 
       toast.success(t('messages.removeSuccess'));
       setRemoveUserDialog(false);
       setSelectedItem(null);
-      loadGroupMembers(currentGroup.id); // 重新加载当前组的成员
+      loadTenantMembers(currentTenant.id); // 重新加载当前组织的成员
     } catch (error) {
       console.error('Error removing user:', error);
       toast.error(t('messages.removeError'));
@@ -168,12 +163,12 @@ const GroupUsersPage = () => {
 
   // 打开添加用户对话框
   const openAddUserDialog = () => {
-    if (!currentGroup) {
-      toast.error(t('messages.selectGroupPrompt'));
+    if (!currentTenant) {
+      toast.error(t('messages.selectTenantPrompt'));
       return;
     }
     setAddUserForm({
-      groupId: currentGroup.id || '',
+      tenantId: currentTenant.id || '',
       userEmail: '',
       roleId: ''
     });
@@ -215,10 +210,10 @@ const GroupUsersPage = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <UserCheck className="h-5 w-5" />
-              {currentGroup ? `${currentGroup.name} - ${t('page.title')}` : t('page.title')}
+              {currentTenant ? `${currentTenant.name} - ${t('page.title')}` : t('page.title')}
             </CardTitle>
-            <Authorized permission="ui.group-users.add">
-              <Button onClick={openAddUserDialog} disabled={!currentGroup}>
+            <Authorized permissions="db.tenant_users.insert">
+              <Button onClick={openAddUserDialog} disabled={!currentTenant}>
                 <Plus className="h-4 w-4 mr-2" />
                 {t('actions.addUser')}
               </Button>
@@ -262,20 +257,20 @@ const GroupUsersPage = () => {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : !currentGroup ? (
+                ) : !currentTenant ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      {t('messages.selectGroupPrompt')}
+                      {t('messages.selectTenantPrompt')}
                     </TableCell>
                   </TableRow>
-                ) : filteredGroupUsers.length === 0 ? (
+                ) : filteredTenantUsers.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       {t('messages.noData')}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredGroupUsers.map((item) => (
+                  filteredTenantUsers.map((item) => (
                     <TableRow key={item.user_id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -298,7 +293,7 @@ const GroupUsersPage = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Authorized permission="ui.group-users.edit-role">
+                          <Authorized permission="db.tenant_users.update">
                             <Button
                               variant="outline"
                               size="sm"
@@ -307,7 +302,7 @@ const GroupUsersPage = () => {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Authorized>
-                          <Authorized permission="ui.group-users.remove">
+                          <Authorized permission="ui.tenant-users.remove">
                             <Button
                               variant="outline"
                               size="sm"
@@ -335,7 +330,7 @@ const GroupUsersPage = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>{t('dialog.addUser.selectGroup')}</Label>
+              <Label>{t('dialog.addUser.selectTenant')}</Label>
             </div>
             <div>
               <Label htmlFor="user-email">{t('dialog.addUser.userEmail')}</Label>
@@ -355,7 +350,7 @@ const GroupUsersPage = () => {
                   <SelectValue placeholder={t('dialog.addUser.rolePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {roles.filter(role => role.group_id === addUserForm.groupId).map(role => (
+                  {roles.map(role => (
                     <SelectItem key={role.id} value={role.id}>
                       {role.name}
                     </SelectItem>
@@ -370,7 +365,7 @@ const GroupUsersPage = () => {
             </Button>
             <Button
               onClick={handleAddUser}
-              disabled={!addUserForm.groupId || !addUserForm.userEmail || !addUserForm.roleId}
+              disabled={!addUserForm.tenantId || !addUserForm.userEmail || !addUserForm.roleId}
             >
               {t('actions.save')}
             </Button>
@@ -400,7 +395,7 @@ const GroupUsersPage = () => {
                   <SelectValue placeholder={t('dialog.editRole.rolePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {roles.filter(role => role.group_id === selectedItem?.group_id).map(role => (
+                  {roles.map(role => (
                     <SelectItem key={role.id} value={role.id}>
                       {role.name}
                     </SelectItem>
@@ -431,7 +426,7 @@ const GroupUsersPage = () => {
             <DialogDescription>
               {t('dialog.removeUser.message', {
                 user: selectedItem?.user_email || 'Unknown User',
-                group: selectedItem?.group_name || 'Unknown Group'
+                group: selectedItem?.tenant_name || 'Unknown Tenant'
               })}
             </DialogDescription>
           </DialogHeader>
@@ -452,4 +447,4 @@ const GroupUsersPage = () => {
   );
 };
 
-export default GroupUsersPage;
+export default TenantUsersPage;

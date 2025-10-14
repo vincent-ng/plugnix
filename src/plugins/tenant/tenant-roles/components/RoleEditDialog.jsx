@@ -20,7 +20,7 @@ import { getAvailablePermissions, getRolePermissions } from '../services/rolesSe
 import { toast } from 'sonner';
 
 export default function RoleEditDialog({ open, onOpenChange, role = null, onSave, mode = 'edit' }) {
-  const { t } = useTranslation('group-roles');
+  const { t } = useTranslation('tenant-roles');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [availablePermissions, setAvailablePermissions] = useState([]);
@@ -219,7 +219,7 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
 }
 // 折叠分组的通用渲染组件，减少重复代码
 function PermissionSection({ value, icon: Icon, title, items = [], mode, selectedIds = [], onToggle }) {
-  const { t } = useTranslation('group-roles');
+  const { t } = useTranslation('tenant-roles');
 
   return (
     <AccordionItem value={value}>

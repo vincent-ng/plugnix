@@ -1,10 +1,10 @@
 {
   "menu": {
-    "title": "组角色管理"
+    "title": "组织角色管理"
   },
   "page": {
-    "title": "组角色管理",
-    "description": "在当前用户组内创建、编辑角色，并为角色分配权限"
+    "title": "组织角色管理",
+    "description": "在当前组织内创建、编辑角色，并为角色分配权限"
   },
   "actions": {
     "createRole": "新建角色",
@@ -54,7 +54,7 @@
   "messages": {
     "loading": "加载中...",
     "noData": "暂无角色",
-    "selectGroupPrompt": "请先在顶部选择一个用户组",
+    "selectTenantPrompt": "请先在顶部选择一个组织",
     "createSuccess": "角色创建成功",
     "updateSuccess": "角色更新成功",
     "deleteSuccess": "角色删除成功",
@@ -68,9 +68,9 @@
     "db.permissions.insert": "新增权限",
     "db.permissions.update": "更新权限",
     "db.permissions.delete": "删除权限",
-    "db.groups.select": "查询用户组",
-    "db.groups.update": "更新用户组",
-    "db.groups.delete": "删除用户组",
+    "db.tenants.select": "查询组织",
+    "db.tenants.update": "更新组织",
+    "db.tenants.delete": "删除组织",
     "db.roles.select": "查询角色",
     "db.roles.insert": "新增角色",
     "db.roles.update": "更新角色",
@@ -78,9 +78,9 @@
     "db.role_permissions.select": "查询角色权限",
     "db.role_permissions.insert": "为角色分配权限",
     "db.role_permissions.delete": "从角色收回权限",
-    "db.group_users.select": "查询组成员",
-    "db.group_users.insert": "添加组成员",
-    "db.group_users.update": "更新组成员角色",
-    "db.group_users.delete": "从组中移除成员"
+    "db.tenant_users.select": "查询组织成员",
+    "db.tenant_users.insert": "添加组织成员",
+    "db.tenant_users.update": "更新组织成员角色",
+    "db.tenant_users.delete": "从组织中移除成员"
   }
 }

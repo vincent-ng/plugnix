@@ -4,7 +4,7 @@ import { I18nextProvider } from 'react-i18next';
 
 // 框架核心
 import { AuthenticationProvider } from '@/framework/contexts/AuthenticationContext';
-import { GroupProvider } from '@/framework/contexts/GroupContext';
+import { TenantProvider } from '@/framework/contexts/TenantContext';
 import { ThemeProvider } from '@/framework/contexts/ThemeContext';
 import AdminLayout from '@/framework/layouts/AdminLayout';
 import PublicLayout from '@/framework/layouts/PublicLayout';
@@ -131,14 +131,14 @@ function App() {
     <ErrorBoundary>
       <I18nextProvider i18n={i18n}>
         <AuthenticationProvider>
-          <GroupProvider>
+          <TenantProvider>
             <ThemeProvider>
               <Router>
                 <DynamicRoutes />
                 <Toaster />
               </Router>
             </ThemeProvider>
-          </GroupProvider>
+          </TenantProvider>
         </AuthenticationProvider>
       </I18nextProvider>
     </ErrorBoundary>

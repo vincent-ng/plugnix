@@ -24,7 +24,9 @@
     "confirmPasswordPlaceholder": "请再次输入密码",
     "createButton": "创建账户",
     "alreadyHaveAccount": "已有账户？",
-    "signIn": "登录"
+    "signIn": "登录",
+    "resendEmail": "重发验证邮件",
+    "registerSuccess": "注册成功！请检查您的邮箱以验证账户。"
   },
   "common": {
     "loading": "加载中...",
@@ -36,8 +38,5 @@
     "registerFailed": "注册失败，请重试",
     "passwordMismatch": "密码不匹配",
     "passwordTooShort": "密码至少需要6个字符"
-  },
-  "success": {
-    "registerSuccess": "注册成功！请检查您的邮箱以验证账户。"
   }
 }

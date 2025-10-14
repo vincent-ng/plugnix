@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup } from '@/framework/contexts/GroupContext';
+import { useTenant } from '@/framework/contexts/TenantContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,19 +12,19 @@ import {
 import { Button } from '@/framework/components/ui/button';
 import { Badge } from '@/framework/components/ui/badge';
 import { ChevronDown, Building2, User, PlusCircle } from 'lucide-react';
-import { CreateGroupDialog } from './CreateGroupDialog';
+import { CreateTenantDialog } from './CreateTenantDialog';
 
-export const GroupSwitcher = ({ className }) => {
-  const { t } = useTranslation(['group', 'role']);
-  const { currentGroup, userGroups, setCurrentGroup, userRole, refreshUserGroups } = useGroup();
-  const [isCreateGroupOpen, setCreateGroupOpen] = useState(false);
+export const TenantSwitcher = ({ className }) => {
+  const { t } = useTranslation(['tenant', 'role']);
+  const { currentTenant, userTenants, setCurrentTenant, userRole, refreshUserTenants } = useTenant();
+  const [isCreateTenantOpen, setCreateTenantOpen] = useState(false);
 
-  const handleGroupSelect = (group) => {
-    setCurrentGroup(group);
+  const handleTenantSelect = (tenant) => {
+    setCurrentTenant(tenant);
   };
 
-  const handleGroupCreated = () => {
-    refreshUserGroups();
+  const handleTenantCreated = () => {
+    refreshUserTenants();
   };
 
   return (
@@ -33,15 +33,15 @@ export const GroupSwitcher = ({ className }) => {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={`w-[200px] justify-between ${className}`}>
             <div className="flex items-center gap-2">
-              {currentGroup ? (
+              {currentTenant ? (
                 <>
                   <Building2 className="h-4 w-4" />
-                  <span className="truncate">{currentGroup.name}</span>
+                  <span className="truncate">{currentTenant.name}</span>
                 </>
               ) : (
                 <>
                   <User className="h-4 w-4" />
-                  <span>{t('group:personalWorkspace')}</span>
+                  <span>{t('tenant:personalWorkspace')}</span>
                 </>
               )}
             </div>
@@ -49,46 +49,46 @@ export const GroupSwitcher = ({ className }) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[200px]" align="start">
-          <DropdownMenuLabel>{t('group:selectGroup')}</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('tenant:selectTenant')}</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
-          {userGroups.length === 0 ? (
+          {userTenants.length === 0 ? (
             <div className="p-2 text-sm text-muted-foreground text-center">
-              {t('group:noGroupsFound')}
+              {t('tenant:noTenantsFound')}
             </div>
           ) : (
-            userGroups.map((group) => (
+            userTenants.map((tenant) => (
               <DropdownMenuItem
-                key={group.id}
-                onClick={() => handleGroupSelect(group)}
+                key={tenant.id}
+                onClick={() => handleTenantSelect(tenant)}
                 className="flex items-center justify-between"
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4" />
-                  <span>{group.name}</span>
+                  <span>{tenant.name}</span>
                 </div>
-                {group.id === currentGroup?.id && (
+                {tenant.id === currentTenant?.id && (
                   <Badge variant="secondary" className="text-xs">
-                    {t(`group:${userRole?.toLowerCase()}`)}
+                    {t(`tenant:${userRole?.toLowerCase()}`)}
                   </Badge>
                 )}
               </DropdownMenuItem>
             ))
           )}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setCreateGroupOpen(true)}>
+          <DropdownMenuItem onSelect={() => setCreateTenantOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            <span>{t('group:createNewGroup')}</span>
+            <span>{t('tenant:createNewTenant')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <CreateGroupDialog
-        isOpen={isCreateGroupOpen}
-        onClose={() => setCreateGroupOpen(false)}
-        onGroupCreated={handleGroupCreated}
+      <CreateTenantDialog
+        isOpen={isCreateTenantOpen}
+        onClose={() => setCreateTenantOpen(false)}
+        onTenantCreated={handleTenantCreated}
       />
     </>
   );
 };
 
-export default GroupSwitcher;
+export default TenantSwitcher;

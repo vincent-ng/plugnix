@@ -1,6 +1,6 @@
 -- =====================================================================================
 -- ==                                                                                 ==
--- ==                Web Plugin Framework - Database Initialization Script            ==
+-- ==                Web Plugin Framework - Tenant-Based Init Script                 ==
 -- ==                                                                                 ==
 -- =====================================================================================
 --
@@ -17,8 +17,8 @@
 -- SECTION 1: CORE HELPER FUNCTIONS
 -- =====================================================================================
 
--- Function to get the well-known ID of the 'System' group.
-CREATE OR REPLACE FUNCTION get_system_group_id()
+-- Function to get the well-known ID of the 'System' tenant.
+CREATE OR REPLACE FUNCTION get_system_tenant_id()
 RETURNS UUID AS $$
 BEGIN
   RETURN '00000000-0000-0000-0000-000000000001';
@@ -34,49 +34,61 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to keep the redundant `tenant_id` in `role_permissions` in sync.
+CREATE OR REPLACE FUNCTION sync_role_permissions_tenant_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- On insert or update, copy the tenant_id from the associated role.
+  SELECT tenant_id INTO NEW.tenant_id
+  FROM public.roles
+  WHERE id = NEW.role_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- =====================================================================================
 -- SECTION 2: CORE PERMISSION FUNCTIONS
 -- =====================================================================================
 
 -- Function to check if the current user has a system-level permission.
--- It checks if the user has the permission via the dedicated 'System' group.
+-- It checks if the user has the permission via the dedicated 'System' tenant.
 CREATE OR REPLACE FUNCTION check_permission(permission_name TEXT)
 RETURNS BOOLEAN AS $$
 BEGIN
-  -- Delegate the check to the group permission function for the System group.
+  -- Delegate the check to the tenant permission function for the System tenant.
   -- The `with_system_fallback=false` argument prevents it from recursively checking
   -- system permissions again, thus avoiding an infinite loop.
-  RETURN check_group_permission(get_system_group_id(), permission_name, with_system_fallback := false);
+  RETURN check_tenant_permission(get_system_tenant_id(), permission_name, with_system_fallback := false);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to check if the current user has a specific permission for a resource,
--- either via group membership or a system-level permission (as a fallback).
+-- Function to check if the current user has a specific permission for a tenant,
+-- either via tenant membership or a system-level permission (as a fallback).
 -- This is the primary function for RLS policies.
-CREATE OR REPLACE FUNCTION check_group_permission(p_group_id UUID, p_permission_name TEXT, with_system_fallback BOOLEAN DEFAULT true)
+CREATE OR REPLACE FUNCTION check_tenant_permission(p_tenant_id UUID, p_permission_name TEXT, with_system_fallback BOOLEAN DEFAULT true)
 RETURNS BOOLEAN AS $$
 DECLARE
   v_has_permission BOOLEAN;
 BEGIN
-  -- 1. Check if the user has the permission directly within the specified group.
-  -- This single query joins group membership, roles, and permissions.
+  -- 1. Check if the user has the permission directly within the specified tenant.
+  -- This query joins tenant membership, roles, and permissions.
   SELECT EXISTS (
     SELECT 1
-    FROM public.group_users gu
-    JOIN public.role_permissions rp ON gu.role_id = rp.role_id
+    FROM public.tenant_users tu
+    JOIN public.role_permissions rp ON tu.role_id = rp.role_id
     JOIN public.permissions p ON rp.permission_id = p.id
-    WHERE gu.user_id = auth.uid()
-      AND gu.group_id = p_group_id
+    WHERE tu.user_id = auth.uid()
+      AND tu.tenant_id = p_tenant_id
       AND p.name = p_permission_name
   ) INTO v_has_permission;
 
-  -- 2. If permission is found in the group, return true immediately.
+  -- 2. If permission is found in the tenant, return true immediately.
   IF v_has_permission THEN
     RETURN TRUE;
   END IF;
 
-  -- 3. If no permission was found in the group, and if fallback is enabled,
+  -- 3. If no permission was found in the tenant, and if fallback is enabled,
   --    check for a system-level permission as an override.
   IF with_system_fallback THEN
     RETURN check_permission(p_permission_name);
@@ -84,6 +96,44 @@ BEGIN
 
   -- 4. If no fallback is checked, or if the system check fails, deny permission.
   RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to check if a user can grant a specific permission to a role.
+-- This is a critical security function for the `role_permissions` table.
+CREATE OR REPLACE FUNCTION can_grant_permission(p_role_id UUID, p_permission_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  v_tenant_id UUID;
+  v_permission_name TEXT;
+  v_is_system_permission BOOLEAN;
+BEGIN
+  -- 1. Get the tenant_id from the role.
+  SELECT tenant_id INTO v_tenant_id
+  FROM public.roles
+  WHERE id = p_role_id;
+
+  -- 2. If the role is a global template (tenant_id is NULL), only a system admin can modify it.
+  IF v_tenant_id IS NULL THEN
+    RETURN check_permission('system.rpc.invoke');
+  END IF;
+
+  -- 3. Get the name of the permission being granted.
+  SELECT name INTO v_permission_name
+  FROM public.permissions
+  WHERE id = p_permission_id;
+
+  -- 4. Check if the permission is a "system" permission.
+  v_is_system_permission := v_permission_name LIKE 'system.%';
+
+  -- 5. If it's a system permission, the current user must be a system admin.
+  -- We check this by seeing if they have the 'system.rpc.invoke' permission.
+  IF v_is_system_permission THEN
+    RETURN check_permission('system.rpc.invoke');
+  END IF;
+
+  -- 6. If it's not a system permission, the user must have the standard 'insert' permission for role_permissions.
+  RETURN check_tenant_permission(v_tenant_id, 'db.role_permissions.insert');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -95,23 +145,20 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Unified helper function to create a Row-Level Security (RLS) policy.
 -- It automatically handles the distinction between INSERT (WITH CHECK) and other actions (USING).
 -- If p_expression is not provided, it defaults to a standard check based on table and action name.
-CREATE OR REPLACE FUNCTION create_rls_policy(p_table text, p_action text, p_expression text DEFAULT NULL, p_group_id_column text DEFAULT 'group_id')
+CREATE OR REPLACE FUNCTION create_rls_policy(p_table text, p_action text, p_expression text DEFAULT NULL, p_tenant_id_column text DEFAULT 'tenant_id')
 RETURNS void AS $$
 DECLARE
-    policy_name text;
     command text;
     final_expression text;
     policy_template text;
     v_action_lower text := LOWER(p_action);
 BEGIN
-    policy_name := format('"Allow %s on %s"', p_action, p_table);
-
     -- Generate a default expression if not provided
     IF p_expression IS NULL THEN
-        -- Use the specified group_id column, defaulting to 'group_id'.
-        -- %I is used for safely quoting identifiers (like column names).
-        -- The ''::text'' cast is crucial to resolve the function signature in dynamic SQL.
-        final_expression := format('check_group_permission(%I, ''db.%s.%s''::text)', p_group_id_column, p_table, v_action_lower);
+        -- Use the specified tenant_id column, defaulting to 'tenant_id'.
+        -- %I safely quotes identifiers (like column names).
+        -- The ''::text'' cast resolves the function signature in dynamic SQL.
+        final_expression := format('check_tenant_permission(%I, ''db.%s.%s''::text)', p_tenant_id_column, p_table, v_action_lower);
     ELSE
         final_expression := p_expression;
     END IF;
@@ -153,43 +200,43 @@ CREATE TABLE permissions (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
-COMMENT ON COLUMN permissions.name IS 'e.g., "db.posts.create", "ui.dashboard.view"';
+COMMENT ON COLUMN permissions.name IS 'e.g., "db.tenants.create", "ui.dashboard.view"';
 ALTER TABLE permissions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access to permissions" ON permissions FOR SELECT USING (true);
 CREATE TRIGGER on_permissions_update BEFORE UPDATE ON permissions FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
--- Groups are the core of the new permission system.
--- Each group can have associated users and permissions.
-CREATE TABLE groups (
+-- Tenants are the core of the new permission system.
+-- Each tenant can have associated users and permissions.
+CREATE TABLE tenants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
-ALTER TABLE groups ENABLE ROW LEVEL SECURITY;
--- Policies for `groups` table
-SELECT create_rls_policy('groups', 'SELECT', p_group_id_column := 'id');
-SELECT create_rls_policy('groups', 'INSERT', p_group_id_column := 'id');
-SELECT create_rls_policy('groups', 'UPDATE', p_group_id_column := 'id');
-SELECT create_rls_policy('groups', 'DELETE', p_group_id_column := 'id');
-CREATE TRIGGER on_groups_update BEFORE UPDATE ON groups FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+-- Policies for `tenants` table
+SELECT create_rls_policy('tenants', 'SELECT', p_tenant_id_column := 'id');
+SELECT create_rls_policy('tenants', 'INSERT', p_tenant_id_column := 'id');
+SELECT create_rls_policy('tenants', 'UPDATE', p_tenant_id_column := 'id');
+SELECT create_rls_policy('tenants', 'DELETE', p_tenant_id_column := 'id');
+CREATE TRIGGER on_tenants_update BEFORE UPDATE ON tenants FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
--- Roles are defined within each group.
--- A group owner can create, modify, and delete roles within their group.
+-- Roles are defined within each tenant.
+-- A tenant owner can create, modify, and delete roles within their tenant.
 CREATE TABLE roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  group_id UUID REFERENCES groups(id) ON DELETE CASCADE,
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE (group_id, name)
+  UNIQUE (tenant_id, name)
 );
-COMMENT ON COLUMN roles.group_id IS 'The group this role belongs to. If NULL, this indicates it is a global role template.';
+COMMENT ON COLUMN roles.tenant_id IS 'The tenant this role belongs to. If NULL, this indicates it is a global role template.';
 ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
 -- Policies for `roles` table
-SELECT create_rls_policy('roles', 'SELECT', '(group_id IS NULL) OR (check_group_permission(group_id, ''db.roles.select''))');
+SELECT create_rls_policy('roles', 'SELECT', '(tenant_id IS NULL) OR (check_tenant_permission(tenant_id, ''db.roles.select''))');
 SELECT create_rls_policy('roles', 'INSERT');
 SELECT create_rls_policy('roles', 'UPDATE');
 SELECT create_rls_policy('roles', 'DELETE');
@@ -200,65 +247,72 @@ CREATE TRIGGER on_roles_update BEFORE UPDATE ON roles FOR EACH ROW EXECUTE FUNCT
 CREATE TABLE role_permissions (
   role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
   permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+  tenant_id UUID,
   PRIMARY KEY (role_id, permission_id)
 );
+COMMENT ON COLUMN role_permissions.tenant_id IS 'Redundant for performance, synced from roles.tenant_id via trigger.';
 ALTER TABLE role_permissions ENABLE ROW LEVEL SECURITY;
+CREATE TRIGGER on_role_permissions_sync_tenant_id
+  BEFORE INSERT OR UPDATE ON public.role_permissions
+  FOR EACH ROW EXECUTE FUNCTION sync_role_permissions_tenant_id();
 -- Policies for `role_permissions` table
-SELECT create_rls_policy('role_permissions', 'SELECT', '(SELECT check_group_permission(r.group_id, ''db.role_permissions.select'') FROM roles r WHERE r.id = role_id)');
-SELECT create_rls_policy('role_permissions', 'INSERT', '(SELECT check_group_permission(r.group_id, ''db.role_permissions.insert'') FROM roles r WHERE r.id = role_id)');
-SELECT create_rls_policy('role_permissions', 'DELETE', '(SELECT check_group_permission(r.group_id, ''db.role_permissions.delete'') FROM roles r WHERE r.id = role_id)');
+-- RLS policies for role_permissions
+-- Users can see permissions if they have select permissions for the tenant.
+SELECT create_rls_policy('role_permissions', 'SELECT', '(tenant_id IS NULL) OR (check_tenant_permission(tenant_id, ''db.role_permissions.select''))');
+SELECT create_rls_policy('role_permissions', 'INSERT', 'can_grant_permission(role_id, permission_id)');
+SELECT create_rls_policy('role_permissions', 'DELETE');
 
--- Junction table for the many-to-many relationship between users and groups, assigning a role.
--- Defines user membership and their role within a group.
-CREATE TABLE group_users (
-  group_id UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+-- Junction table for the many-to-many relationship between users and tenants, assigning a role.
+-- Defines user membership and their role within a tenant.
+CREATE TABLE tenant_users (
+  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT now(),
-  PRIMARY KEY (group_id, user_id)
+  PRIMARY KEY (tenant_id, user_id)
 );
-COMMENT ON TABLE group_users IS 'Assigns a user to a group with a specific role.';
-ALTER TABLE group_users ENABLE ROW LEVEL SECURITY;
--- Policies for `group_users` table
-SELECT create_rls_policy('group_users', 'SELECT');
-SELECT create_rls_policy('group_users', 'INSERT');
-SELECT create_rls_policy('group_users', 'UPDATE');
-SELECT create_rls_policy('group_users', 'DELETE');
+COMMENT ON TABLE tenant_users IS 'Assigns a user to a tenant with a specific role.';
+ALTER TABLE tenant_users ENABLE ROW LEVEL SECURITY;
+-- Policies for `tenant_users` table
+SELECT create_rls_policy('tenant_users', 'SELECT');
+SELECT create_rls_policy('tenant_users', 'INSERT');
+SELECT create_rls_policy('tenant_users', 'UPDATE');
+SELECT create_rls_policy('tenant_users', 'DELETE');
 
 
 -- =====================================================================================
--- SECTION 5: GROUP MANAGEMENT FUNCTIONS (RPC)
+-- SECTION 5: TENANT MANAGEMENT FUNCTIONS (RPC)
 -- =====================================================================================
 
--- Creates a new group and sets the calling user as its owner.
--- This function links the creator to the 'Owner' template role for the new group.
+-- Creates a new tenant and sets the calling user as its owner.
+-- This function links the creator to the 'Owner' template role for the new tenant.
 -- It does not copy the role or its permissions, ensuring efficiency.
-CREATE OR REPLACE FUNCTION create_group(p_group_name TEXT, p_group_description TEXT)
+CREATE OR REPLACE FUNCTION create_tenant(p_tenant_name TEXT, p_tenant_description TEXT)
 RETURNS UUID AS $$
 DECLARE
-  new_group_id UUID;
+  new_tenant_id UUID;
   owner_role_id UUID;
 BEGIN
   -- 1. Find the template 'Owner' role.
   SELECT id INTO owner_role_id
   FROM public.roles
-  WHERE name = 'Owner' AND group_id IS NULL;
+  WHERE name = 'Owner' AND tenant_id IS NULL;
 
   IF owner_role_id IS NULL THEN
     RAISE EXCEPTION 'Template role "Owner" not found. System may not be initialized correctly.';
   END IF;
 
-  -- 2. Create the new group.
-  INSERT INTO public.groups (name, description)
-  VALUES (p_group_name, p_group_description)
-  RETURNING id INTO new_group_id;
+  -- 2. Create the new tenant.
+  INSERT INTO public.tenants (name, description)
+  VALUES (p_tenant_name, p_tenant_description)
+  RETURNING id INTO new_tenant_id;
 
-  -- 3. Set the creator as the 'Owner' in the group_users table.
-  INSERT INTO public.group_users (group_id, user_id, role_id)
-  VALUES (new_group_id, auth.uid(), owner_role_id);
+  -- 3. Set the creator as the 'Owner' in the tenant_users table.
+  INSERT INTO public.tenant_users (tenant_id, user_id, role_id)
+  VALUES (new_tenant_id, auth.uid(), owner_role_id);
 
-  -- 4. Return the new group's ID.
-  RETURN new_group_id;
+  -- 4. Return the new tenant's ID.
+  RETURN new_tenant_id;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -270,7 +324,7 @@ RETURNS VOID AS $$
 DECLARE
   target_user_id UUID;
   admin_role_id UUID;
-  system_group_id UUID := get_system_group_id();
+  system_tenant_id UUID := get_system_tenant_id();
 BEGIN
   -- 1. Determine the target user ID.
   IF p_user_id IS NULL THEN
@@ -282,23 +336,23 @@ BEGIN
     target_user_id := p_user_id;
   END IF;
 
-  -- 2. Get the Admin role ID from the System group.
-  -- It's the first role created for the system group.
+  -- 2. Get the Admin role ID from the System tenant.
+  -- It's the first role created for the system tenant.
   SELECT id INTO admin_role_id
   FROM public.roles
-  WHERE group_id = system_group_id
+  WHERE tenant_id = system_tenant_id
   ORDER BY created_at
   LIMIT 1;
 
   IF admin_role_id IS NULL THEN
-    RAISE EXCEPTION 'Admin role not found for the System group. Initialization might be incomplete.';
+    RAISE EXCEPTION 'Admin role not found for the System tenant. Initialization might be incomplete.';
   END IF;
 
-  -- 3. Add the user to the System group with the Admin role.
-  -- Use ON CONFLICT to avoid errors if the user is already in the group.
-  INSERT INTO public.group_users (group_id, user_id, role_id)
-  VALUES (system_group_id, target_user_id, admin_role_id)
-  ON CONFLICT (group_id, user_id) DO UPDATE SET role_id = admin_role_id;
+  -- 3. Add the user to the System tenant with the Admin role.
+  -- Use ON CONFLICT to avoid errors if the user is already in the tenant.
+  INSERT INTO public.tenant_users (tenant_id, user_id, role_id)
+  VALUES (system_tenant_id, target_user_id, admin_role_id)
+  ON CONFLICT (tenant_id, user_id) DO UPDATE SET role_id = admin_role_id;
 
   RAISE NOTICE 'User % has been promoted to system administrator.', target_user_id;
 END;
@@ -329,7 +383,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 6.2 Row-Level Security (RLS) and Group Policies
+-- 6.2 Row-Level Security (RLS) and Tenant Policies
 CREATE OR REPLACE FUNCTION setup_rbac_rls(p_table_name TEXT)
 RETURNS VOID AS $$
 BEGIN
@@ -338,15 +392,15 @@ BEGIN
         RAISE EXCEPTION 'Permission denied';
     END IF;
 
-    -- 2. Ensure the table has a `group_id` column
+    -- 2. Ensure the table has a `tenant_id` column
     IF NOT EXISTS (
         SELECT 1
         FROM information_schema.columns
         WHERE table_schema = 'public'
           AND table_name = p_table_name
-          AND column_name = 'group_id'
+          AND column_name = 'tenant_id'
     ) THEN
-        RAISE EXCEPTION 'Table "public.%" must have a "group_id" column to use group-based policies.', p_table_name;
+        RAISE EXCEPTION 'Table "public.%" must have a "tenant_id" column to use tenant-based policies.', p_table_name;
     END IF;
 
     -- 3. Enable RLS
@@ -384,11 +438,11 @@ $$ LANGUAGE plpgsql;
 -- SECTION 7: INITIAL SYSTEM DATA & TEMPLATE ROLES
 -- =====================================================================================
 
--- Create the foundational 'System' group. This group is for managing admins and system-level permissions.
-INSERT INTO public.groups (id, name, description) VALUES (get_system_group_id(), 'System', 'Group for system-level administrators and permissions.');
+-- Create the foundational 'System' tenant. This tenant is for managing admins and system-level permissions.
+INSERT INTO public.tenants (id, name, description) VALUES (get_system_tenant_id(), 'System', 'Tenant for system-level administrators and permissions.');
 
 -- Define the core permissions required for the system.
--- Some are for admins (via the System group), others are for role-based assignment within user groups.
+-- Some are for admins (via the System tenant), others are for role-based assignment within user tenants.
 INSERT INTO permissions (name, description) VALUES
   -- System-level permissions for admins
   ('system.rpc.invoke', 'permissions.system.rpc.invoke'),
@@ -397,10 +451,10 @@ INSERT INTO permissions (name, description) VALUES
   ('db.permissions.update', 'permissions.db.permissions.update'),
   ('db.permissions.delete', 'permissions.db.permissions.delete'),
 
-  -- Group management permissions (can be assigned to roles)
-  ('db.groups.select', 'permissions.db.groups.select'),
-  ('db.groups.update', 'permissions.db.groups.update'),
-  ('db.groups.delete', 'permissions.db.groups.delete'),
+  -- Tenant management permissions (can be assigned to roles)
+  ('db.tenants.select', 'permissions.db.tenants.select'),
+  ('db.tenants.update', 'permissions.db.tenants.update'),
+  ('db.tenants.delete', 'permissions.db.tenants.delete'),
 
   -- Role management permissions (can be assigned to roles)
   ('db.roles.select', 'permissions.db.roles.select'),
@@ -413,48 +467,48 @@ INSERT INTO permissions (name, description) VALUES
   ('db.role_permissions.insert', 'permissions.db.role_permissions.insert'),
   ('db.role_permissions.delete', 'permissions.db.role_permissions.delete'),
 
-  -- Group membership permissions (can be assigned to roles)
-  ('db.group_users.select', 'permissions.db.group_users.select'),
-  ('db.group_users.insert', 'permissions.db.group_users.insert'),
-  ('db.group_users.update', 'permissions.db.group_users.update'),
-  ('db.group_users.delete', 'permissions.db.group_users.delete');
+  -- Tenant membership permissions (can be assigned to roles)
+  ('db.tenant_users.select', 'permissions.db.tenant_users.select'),
+  ('db.tenant_users.insert', 'permissions.db.tenant_users.insert'),
+  ('db.tenant_users.update', 'permissions.db.tenant_users.update'),
+  ('db.tenant_users.delete', 'permissions.db.tenant_users.delete');
 
--- Insert template roles (group_id is NULL). These are read-only templates for user-created groups.
+-- Insert template roles (tenant_id is NULL). These are read-only templates for user-created tenants.
 INSERT INTO public.roles (name, description) VALUES
-('Owner', 'Has all permissions for a group.'),
-('Member', 'Can view content and participate in a group.');
+('Owner', 'Has all permissions for a tenant.'),
+('Member', 'Can view content and participate in a tenant.');
 
--- Create the 'Admin' role within the 'System' group.
-INSERT INTO public.roles (group_id, name, description)
-VALUES (get_system_group_id(), 'Admin', 'System Administrator with full permissions.');
+-- Create the 'Admin' role within the 'System' tenant.
+INSERT INTO public.roles (tenant_id, name, description)
+VALUES (get_system_tenant_id(), 'Admin', 'System Administrator with full permissions.');
 
--- Assign all existing permissions to the 'Admin' role in the 'System' group.
+-- Assign all existing permissions to the 'Admin' role in the 'System' tenant.
 INSERT INTO public.role_permissions (role_id, permission_id)
 SELECT
-  (SELECT id FROM public.roles WHERE group_id = get_system_group_id()),
+  (SELECT id FROM public.roles WHERE tenant_id = get_system_tenant_id()),
   p.id
 FROM public.permissions p;
 
 -- Assign permissions to the 'Owner' template role.
--- The Owner gets all permissions related to managing their group.
+-- The Owner gets all permissions related to managing their tenant.
 INSERT INTO public.role_permissions (role_id, permission_id)
 SELECT
-  (SELECT id FROM public.roles WHERE name = 'Owner' AND group_id IS NULL),
+  (SELECT id FROM public.roles WHERE name = 'Owner' AND tenant_id IS NULL),
   p.id
 FROM public.permissions p
-WHERE p.name LIKE 'db.groups.%'
+WHERE p.name LIKE 'db.tenants.%'
    OR p.name LIKE 'db.roles.%'
    OR p.name LIKE 'db.role_permissions.%'
-   OR p.name LIKE 'db.group_users.%';
+   OR p.name LIKE 'db.tenant_users.%';
 
 -- Assign permissions to the 'Member' template role.
--- Members can only see basic information about the group.
+-- Members can only see basic information about the tenant.
 INSERT INTO public.role_permissions (role_id, permission_id)
 SELECT
-  (SELECT id FROM public.roles WHERE name = 'Member' AND group_id IS NULL),
+  (SELECT id FROM public.roles WHERE name = 'Member' AND tenant_id IS NULL),
   p.id
 FROM public.permissions p
-WHERE p.name = 'db.groups.select';
+WHERE p.name = 'db.tenants.select';
 
 
 -- =====================================================================================
@@ -468,34 +522,33 @@ CREATE OR REPLACE FUNCTION teardown_framework()
 RETURNS VOID AS $$
 BEGIN
   -- 1. Drop tables. The CASCADE option will also remove policies, triggers, and constraints.
-  DROP TABLE IF EXISTS public.group_users CASCADE;
+  DROP TABLE IF EXISTS public.tenant_users CASCADE;
   DROP TABLE IF EXISTS public.role_permissions CASCADE;
   DROP TABLE IF EXISTS public.roles CASCADE;
-  DROP TABLE IF EXISTS public.groups CASCADE;
+  DROP TABLE IF EXISTS public.tenants CASCADE;
   DROP TABLE IF EXISTS public.permissions CASCADE;
 
   -- 2. Drop all functions created by this script.
-  -- Note: We must specify the function signature (argument types) for a unique match.
-  DROP FUNCTION IF EXISTS public.handle_updated_at();
-  DROP FUNCTION IF EXISTS public.create_rls_policy(text, text, text, text);
-  DROP FUNCTION IF EXISTS public.drop_rls_policy(text, text);
-  DROP FUNCTION IF EXISTS public.check_permission(text);
-  DROP FUNCTION IF EXISTS public.check_group_permission(uuid, text, boolean);
-  DROP FUNCTION IF EXISTS public.create_group(text);
-  DROP FUNCTION IF EXISTS public.promote_user_to_admin(uuid);
-  DROP FUNCTION IF EXISTS public.add_updated_at_trigger(text);
-  DROP FUNCTION IF EXISTS public.remove_updated_at_trigger(text);
-  DROP FUNCTION IF EXISTS public.setup_rbac_rls(text);
-  DROP FUNCTION IF EXISTS public.teardown_rbac_rls(text);
+  DROP FUNCTION IF EXISTS check_permission(TEXT);
+  DROP FUNCTION IF EXISTS can_grant_permission(UUID, UUID);
+  DROP FUNCTION IF EXISTS check_tenant_permission(UUID, TEXT, BOOLEAN);
+  DROP FUNCTION IF EXISTS create_rls_policy(TEXT, TEXT, TEXT, TEXT);
+  DROP FUNCTION IF EXISTS drop_rls_policy(TEXT, TEXT);
+  DROP FUNCTION IF EXISTS add_updated_at_trigger(TEXT);
+  DROP FUNCTION IF EXISTS remove_updated_at_trigger(TEXT);
+  DROP FUNCTION IF EXISTS setup_rbac_rls(TEXT);
+  DROP FUNCTION IF EXISTS teardown_rbac_rls(TEXT);
+  DROP FUNCTION IF EXISTS create_tenant(TEXT);
+  DROP FUNCTION IF EXISTS promote_user_to_admin(UUID);
+  DROP FUNCTION IF EXISTS get_system_tenant_id();
+  DROP FUNCTION IF EXISTS sync_role_permissions_tenant_id();
+  DROP FUNCTION IF EXISTS can_grant_permission(UUID, TEXT);
+  DROP FUNCTION IF EXISTS handle_updated_at();
+  DROP FUNCTION IF EXISTS check_permission(TEXT);
+  DROP FUNCTION IF EXISTS check_tenant_permission(UUID, TEXT);
+  DROP FUNCTION IF EXISTS teardown_framework();
 
-  RAISE NOTICE 'Framework resources have been torn down.';
+  -- 3. Notices
+  RAISE NOTICE 'Tenant-based framework teardown complete. You can re-run the init script.';
 END;
 $$ LANGUAGE plpgsql;
-
--- To run the teardown, uncomment the following line and execute it in your SQL editor:
--- SELECT teardown_framework();
-
-
--- =====================================================================================
--- ==                                END OF SCRIPT                                    ==
--- =====================================================================================

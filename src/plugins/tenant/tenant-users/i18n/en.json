@@ -1,13 +1,12 @@
 {
   "menu": {
-    "title": "Group Users"
+    "title": "Tenant Users"
   },
   "page": {
-    "title": "Group Users Management",
-    "description": "Manage users within groups"
+    "title": "Tenant Users Management",
+    "description": "Manage users within tenants"
   },
   "table": {
-    "group": "Group",
     "user": "User",
     "email": "Email",
     "role": "Role",
@@ -26,14 +25,16 @@
   },
   "dialog": {
     "addUser": {
-      "title": "Add User to Group",
-      "selectGroup": "Select Group",
+      "title": "Add User to Tenant",
+      "selectTenant": "Select Tenant",
       "selectUser": "Select User",
       "userEmail": "User Email",
       "emailPlaceholder": "Enter the user's email address",
-      "group": "Group",
+      "tenant": "Tenant",
       "selectRole": "Select Role",
-      "rolePlaceholder": "Please select a role"
+      "rolePlaceholder": "Please select a role",
+      "userPlaceholder": "Please select a user",
+      "tenantPlaceholder": "Please select a tenant"
     },
     "editRole": {
       "title": "Edit User Role",
@@ -43,35 +44,27 @@
     },
     "removeUser": {
       "title": "Remove User",
-      "message": "Are you sure you want to remove user {user} from group {group}?",
+      "message": "Are you sure you want to remove user {user} from tenant {group}?",
       "warning": "This action cannot be undone"
     }
   },
   "messages": {
     "loading": "Loading...",
-    "noData": "No data available",
-    "addSuccess": "User added successfully",
-    "addError": "Failed to add user",
-    "updateSuccess": "Role updated successfully",
-    "updateError": "Failed to update role",
-    "removeSuccess": "User removed successfully",
-    "removeError": "Failed to remove user",
     "loadError": "Failed to load initial data.",
-    "loadMembersError": "Failed to load group members.",
-    "addSuccess": "User added to group successfully!",
+    "loadMembersError": "Failed to load tenant members.",
+    "addSuccess": "User added to tenant successfully!",
     "addError": "Failed to add user.",
     "addFormInvalid": "Please fill in all required fields.",
     "updateSuccess": "User role updated successfully!",
     "updateError": "Failed to update role.",
-    "removeSuccess": "User removed from group successfully.",
+    "removeSuccess": "User removed from tenant successfully.",
     "removeError": "Failed to remove user.",
-    "noData": "No users in this group yet.",
-    "selectGroupPrompt": "Please select a group above to view its members.",
-    "selectGroupFirst": "Please select a group before adding a user."
+    "noData": "No users in this tenant yet.",
+    "selectTenantPrompt": "Please select a tenant above to view its members.",
+    "selectTenantFirst": "Please select a tenant before adding a user."
   },
   "filters": {
     "searchPlaceholder": "Search by user name or email...",
-    "groupPlaceholder": "Select a group",
-    "allGroups": "All Groups"
+    "tenantPlaceholder": "Select a tenant"
   }
 }

@@ -21,6 +21,7 @@ export function RegisterForm({
   success,
   onSubmit,
   onChange,
+  onResendEmail,
   ...props
 }) {
   const { t } = useTranslation('auth');
@@ -95,6 +96,13 @@ export function RegisterForm({
               {success && (
                 <div className="text-green-600 text-sm text-center">
                   {success}
+                </div>
+              )}
+              {success && onResendEmail && (
+                <div className="mt-2 text-center">
+                  <Button type="button" variant="outline" onClick={onResendEmail}>
+                    {t('register.resendEmail')}
+                  </Button>
                 </div>
               )}
               

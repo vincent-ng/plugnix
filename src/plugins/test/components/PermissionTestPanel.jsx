@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup } from '@/framework/contexts/GroupContext';
+import { useTenant } from '@/framework/contexts/TenantContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Badge } from '@/framework/components/ui/badge';
 import { Button } from '@/framework/components/ui/button';
@@ -14,9 +14,9 @@ export default function PermissionTestPanel() {
   const {
     hasPermission,
     userPermissions,
-    currentGroup,
+    currentTenant,
     userRole
-  } = useGroup();
+  } = useTenant();
 
   const [permissionToCheck, setPermissionToCheck] = useState('ui.test.show-special-feature');
   const [checkResult, setCheckResult] = useState(null);
@@ -65,7 +65,7 @@ export default function PermissionTestPanel() {
             <div>
               <h5 className="font-medium mb-2">当前身份</h5>
               <div className="space-y-1 text-sm">
-                <p><span className="font-medium">当前组织:</span> {currentGroup?.name || '未加入任何组织'}</p>
+                <p><span className="font-medium">当前组织:</span> {currentTenant?.name || '未加入任何组织'}</p>
                 <p><span className="font-medium">组织内角色:</span> {userRole || '无角色'}</p>
               </div>
             </div>

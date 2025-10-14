@@ -24,7 +24,9 @@
     "confirmPasswordPlaceholder": "Confirm your password",
     "createButton": "Create account",
     "alreadyHaveAccount": "Already have an account?",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "resendEmail": "Resend verification email",
+    "registerSuccess": "Registration successful! Please check your email to verify your account."
   },
   "common": {
     "loading": "Loading...",
@@ -36,8 +38,5 @@
     "registerFailed": "Registration failed, please try again",
     "passwordMismatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 6 characters"
-  },
-  "success": {
-    "registerSuccess": "Registration successful! Please check your email to verify your account."
   }
 }

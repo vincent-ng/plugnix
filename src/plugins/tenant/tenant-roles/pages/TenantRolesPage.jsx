@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGroup } from '@/framework/contexts/GroupContext';
+import { useTenant } from '@/framework/contexts/TenantContext';
 import Authorized from '@/framework/components/Authorized';
 import { Button } from '@/framework/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/framework/components/ui/card';
@@ -10,11 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Plus, Search, Edit, Trash2, Shield, MoreHorizontal, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import RoleEditDialog from '../components/RoleEditDialog';
-import { createRole, deleteRole, getGroupRoles, setRolePermissions, updateRole } from '../services/rolesService';
+import { createRoleWithPermissions, deleteRole, getTenantRoles, setRolePermissions, updateRole } from '../services/rolesService';
 
-export default function GroupRolesPage() {
-  const { t } = useTranslation('group-roles');
-  const { currentGroup, hasPermission } = useGroup();
+export default function TenantRolesPage() {
+  const { t } = useTranslation('tenant-roles');
+  const { currentTenant, hasPermission } = useTenant();
 
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,14 +24,14 @@ export default function GroupRolesPage() {
   const [dialogMode, setDialogMode] = useState('edit');
 
   useEffect(() => {
-    if (!currentGroup) return;
+    if (!currentTenant) return;
     loadRoles();
-  }, [currentGroup]);
+  }, [currentTenant]);
 
   const loadRoles = async () => {
     setLoading(true);
     try {
-      const data = await getGroupRoles(currentGroup.id);
+      const data = await getTenantRoles(currentTenant.id);
       setRoles(data);
     } catch (error) {
       toast.error(t('messages.error'), { description: error.message });
@@ -74,10 +74,7 @@ export default function GroupRolesPage() {
     const { name, description, permissions } = payload;
     try {
       if (!editingRole) {
-        const created = await createRole(currentGroup.id, { name, description });
-        if (permissions && permissions.length > 0) {
-          await setRolePermissions(created.id, permissions);
-        }
+        await createRoleWithPermissions(currentTenant.id, { name, description }, permissions);
         toast.success(t('messages.createSuccess'));
       } else {
         const updated = await updateRole(editingRole.id, { name, description });
@@ -87,7 +84,6 @@ export default function GroupRolesPage() {
       await loadRoles();
     } catch (error) {
       toast.error(t('messages.error'), { description: error.message });
-      throw error; // 让对话框内保持一致的错误处理
     }
   };
 
@@ -96,10 +92,10 @@ export default function GroupRolesPage() {
     (r.description || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!currentGroup) {
+  if (!currentTenant) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-muted-foreground">{t('messages.selectGroupPrompt')}</div>
+        <div className="text-muted-foreground">{t('messages.selectTenantPrompt')}</div>
       </div>
     );
   }
@@ -157,7 +153,7 @@ export default function GroupRolesPage() {
                         const canEdit = hasPermission('db.roles.update');
                         const canDelete = hasPermission('db.roles.delete');
                         const canViewPerms = hasPermission('db.role_permissions.select');
-                        const isTemplateRole = role.group_id == null; // 模板角色为只读
+                        const isTemplateRole = (role.tenant_id) == null; // 模板角色为只读（兼容过渡期）
 
                         if (!(canEdit || canDelete || canViewPerms)) {
                           return <span className="text-muted-foreground">—</span>;

@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from "@/framework/contexts/AuthenticationContext.jsx";
 import { RegisterForm } from '../components/register-form';
 
 const RegisterPage = () => {
   const { t } = useTranslation('auth');
-  const { register } = useAuthentication();
-  const navigate = useNavigate();
+  const { register, resendVerificationEmail } = useAuthentication();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,14 +31,14 @@ const RegisterPage = () => {
 
     // 验证密码匹配
     if (formData.password !== formData.confirmPassword) {
-      setError(t('passwordMismatch'));
+      setError(t('errors.passwordMismatch'));
       setLoading(false);
       return;
     }
 
     // 验证密码长度
     if (formData.password.length < 6) {
-      setError(t('passwordTooShort'));
+      setError(t('errors.passwordTooShort'));
       setLoading(false);
       return;
     }
@@ -51,30 +49,23 @@ const RegisterPage = () => {
       });
       
       if (result.success) {
-        try {
-          // 注册成功，创建默认群组
-          const groupName = `${formData.email.split('@')[0]}'s Group`;
-          const { error: rpcError } = await supabase.rpc('create_group', { p_group_name: groupName });
-          if (rpcError) {
-            console.error('创建群组失败:', rpcError);
-            // 即便创建群组失败，也只在控制台打印错误，不影响用户登录流程
-          }
-        } catch (e) {
-          console.error('调用create_group RPC时出错:', e);
-        }
-
-        setSuccess(t('registerSuccess'));
-        // 延迟跳转到登录页面
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        // 提示用户前往邮箱完成验证
+        setSuccess(t('register.registerSuccess'));
       } else {
-        setError(result.error || t('registerFailed'));
+        setError(result.error || t('errors.registerFailed'));
       }
     } catch (err) {
-      setError(t('registerFailed'));
+      setError(t('errors.registerFailed'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!formData.email) return;
+    const { success, error } = await resendVerificationEmail(formData.email);
+    if (!success) {
+      setError(error || t('errors.registerFailed'));
     }
   };
 
@@ -88,6 +79,7 @@ const RegisterPage = () => {
           success={success}
           onSubmit={handleSubmit}
           onChange={handleChange}
+          onResendEmail={handleResendEmail}
         />
       </div>
     </div>

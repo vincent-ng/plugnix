@@ -11,25 +11,25 @@ import {
 } from '@/framework/components/ui/dialog';
 import { Input } from '@/framework/components/ui/input';
 import { Label } from '@/framework/components/ui/label';
-import { createGroup } from '@/framework/api/groups';
+import { createTenant } from '@/framework/api/tenants';
 import { toast } from 'sonner';
 
-export const CreateGroupDialog = ({ isOpen, onClose, onGroupCreated }) => {
+export const CreateTenantDialog = ({ isOpen, onClose, onTenantCreated }) => {
   const { t } = useTranslation();
-  const [groupName, setGroupName] = useState('');
-  const [groupDescription, setGroupDescription] = useState('');
+  const [tenantName, setTenantName] = useState('');
+  const [tenantDescription, setTenantDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsCreating(true);
     try {
-      await createGroup(groupName, groupDescription);
-      toast.success(t('group:groupCreatedSuccessfully'));
-      onGroupCreated();
+      await createTenant(tenantName, tenantDescription);
+      toast.success(t('tenant:tenantCreatedSuccessfully'));
+      onTenantCreated();
       onClose();
     } catch (error) {
-      toast.error(t('group:errorCreatingGroup'), {
+      toast.error(t('tenant:errorCreatingTenant'), {
         description: error.message,
       });
     } finally {
@@ -42,32 +42,32 @@ export const CreateGroupDialog = ({ isOpen, onClose, onGroupCreated }) => {
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{t('group:createGroup')}</DialogTitle>
+            <DialogTitle>{t('tenant:createTenant')}</DialogTitle>
             <DialogDescription>
-              {t('group:createGroupDescription')}
+              {t('tenant:createTenantDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                {t('group:groupName')}
+                {t('tenant:tenantName')}
               </Label>
               <Input
                 id="name"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
+                value={tenantName}
+                onChange={(e) => setTenantName(e.target.value)}
                 className="col-span-3"
                 required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">
-                {t('group:groupDescription')}
+                {t('tenant:tenantDescription')}
               </Label>
               <Input
                 id="description"
-                value={groupDescription}
-                onChange={(e) => setGroupDescription(e.target.value)}
+                value={tenantDescription}
+                onChange={(e) => setTenantDescription(e.target.value)}
                 className="col-span-3"
               />
             </div>
@@ -77,7 +77,7 @@ export const CreateGroupDialog = ({ isOpen, onClose, onGroupCreated }) => {
               {t('common:cancel')}
             </Button>
             <Button type="submit" disabled={isCreating}>
-              {isCreating ? t('group:creating') : t('common:create')}
+              {isCreating ? t('tenant:creating') : t('common:create')}
             </Button>
           </DialogFooter>
         </form>

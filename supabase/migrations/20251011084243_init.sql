@@ -287,19 +287,34 @@ SELECT create_rls_policy('tenant_users', 'DELETE');
 -- Creates a new tenant and sets the calling user as its owner.
 -- This function links the creator to the 'Owner' template role for the new tenant.
 -- It does not copy the role or its permissions, ensuring efficiency.
-CREATE OR REPLACE FUNCTION create_tenant(p_tenant_name TEXT, p_tenant_description TEXT)
+CREATE OR REPLACE FUNCTION create_tenant(p_tenant_name TEXT, p_tenant_description TEXT DEFAULT NULL)
 RETURNS UUID AS $$
 DECLARE
   new_tenant_id UUID;
   owner_role_id UUID;
 BEGIN
+  -- 0. Validate the input parameter.
+  IF p_tenant_name IS NULL OR trim(p_tenant_name) = '' THEN
+    RAISE EXCEPTION 'db.tenantNameEmpty';
+  END IF;
+
+  -- Check for duplicate tenant names for the current user.
+  IF EXISTS (
+    SELECT 1
+    FROM public.tenants t
+    JOIN public.tenant_users tu ON t.id = tu.tenant_id
+    WHERE tu.user_id = auth.uid() AND t.name = p_tenant_name
+  ) THEN
+    RAISE EXCEPTION 'db.tenantNameExists';
+  END IF;
+
   -- 1. Find the template 'Owner' role.
   SELECT id INTO owner_role_id
   FROM public.roles
   WHERE name = 'Owner' AND tenant_id IS NULL;
 
   IF owner_role_id IS NULL THEN
-    RAISE EXCEPTION 'Template role "Owner" not found. System may not be initialized correctly.';
+    RAISE EXCEPTION 'db.tenantOwnerRoleNotFound';
   END IF;
 
   -- 2. Create the new tenant.
@@ -345,7 +360,7 @@ BEGIN
   LIMIT 1;
 
   IF admin_role_id IS NULL THEN
-    RAISE EXCEPTION 'Admin role not found for the System tenant. Initialization might be incomplete.';
+    RAISE EXCEPTION 'db.systemAdminRoleNotFound';
   END IF;
 
   -- 3. Add the user to the System tenant with the Admin role.

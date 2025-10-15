@@ -32,7 +32,7 @@ AS $$
 BEGIN
     -- Security Check: Only allow members of the tenant to see other members.
     IF NOT is_tenant_member(p_tenant_id) THEN
-        RAISE EXCEPTION 'User is not a member of this tenant and cannot view its members.';
+        RAISE EXCEPTION 'db.tenantMemberNotMember';
     END IF;
 
     RETURN QUERY
@@ -74,7 +74,7 @@ BEGIN
     -- Here, we'll reuse the is_tenant_member check, assuming only members can add others.
     -- You could replace this with a more specific permission check if needed.
     IF NOT is_tenant_member(p_tenant_id) THEN
-        RAISE EXCEPTION 'User does not have permission to add members to this tenant.';
+        RAISE EXCEPTION 'db.tenantMemberNoPermission';
     END IF;
 
     -- Find the user_id from the provided email
@@ -82,7 +82,7 @@ BEGIN
 
     -- If user not found, raise an error
     IF v_user_id IS NULL THEN
-        RAISE EXCEPTION 'User with email % not found.', p_user_email;
+        RAISE EXCEPTION 'db.tenantMemberEmailNotFound';
     END IF;
 
     -- Insert the new member into the tenant_users table
@@ -103,7 +103,7 @@ DECLARE
     v_permission_id UUID;
 BEGIN
     IF p_role_name IS NULL OR TRIM(p_role_name) = '' THEN
-        RAISE EXCEPTION 'Role name (p_role_name) cannot be null or empty.';
+        RAISE EXCEPTION 'db.roleNameEmpty';
     END IF;
 
     -- 1. Create the new role
@@ -120,7 +120,7 @@ BEGIN
             INSERT INTO public.role_permissions (role_id, permission_id)
             VALUES (v_role.id, v_permission_id);
         ELSE
-            RAISE EXCEPTION 'User does not have permission to grant permission %s', v_permission_id;
+            RAISE EXCEPTION 'db.rolePermissionNoPermission';
         END IF;
         END LOOP;
     END IF;

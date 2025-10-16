@@ -137,6 +137,27 @@ export const createPluginAPI = () => {
       // 可以在这里添加权限验证逻辑
       return registry.registerPermission(permissionObject);
     },
+
+    /**
+     * 注册Provider
+     * @param {Object} providerObject - Provider配置对象
+     * @param {string} providerObject.name - Provider名称，必须唯一
+     * @param {React.Component} providerObject.component - Provider组件
+     * @param {Object} [providerObject.props] - 传递给Provider的props
+     * @param {number} [providerObject.order] - Provider排序权重，数字越小越靠前
+     * @param {Array<string>} [providerObject.dependencies] - 依赖的其他Provider名称
+     * @example registerProvider({ 
+     *   name: 'MyProvider', 
+     *   component: MyProvider, 
+     *   props: { initialValue: 'test' },
+     *   order: 10,
+     *   dependencies: ['AuthenticationProvider']
+     * });
+     */
+    registerProvider: (providerObject) => {
+      // 可以在这里添加Provider验证逻辑
+      return registry.registerProvider(providerObject);
+    },
     
   };
 };

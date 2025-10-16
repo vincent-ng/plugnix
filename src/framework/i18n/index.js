@@ -8,10 +8,10 @@ import zhTranslations from './zh.json';
 // 框架默认翻译 - 按照i18next的resources格式组织
 const frameworkTranslations = {
   en: {
-    translation: enTranslations
+    ...enTranslations
   },
   zh: {
-    translation: zhTranslations
+    ...zhTranslations
   }
 };
 

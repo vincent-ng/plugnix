@@ -9,6 +9,7 @@ class Registry {
     this.userMenuItems = [];
     this.i18nNamespaces = new Map();
     this.permissions = new Map();
+    this.providers = [];
   }
 
   // 统一的菜单项注册方法
@@ -60,6 +61,35 @@ class Registry {
     console.log(`Permission registered: ${permission.name}`);
   }
 
+  // 注册Provider
+  registerProvider(providerObject) {
+    if (!providerObject.name || !providerObject.component) {
+      throw new Error('Provider must have a name and component');
+    }
+    
+    const provider = {
+      name: providerObject.name,
+      component: providerObject.component,
+      props: providerObject.props || {},
+      order: providerObject.order || 999,
+      dependencies: providerObject.dependencies || []
+    };
+    
+    // 检查是否已存在同名Provider
+    const existingIndex = this.providers.findIndex(p => p.name === provider.name);
+    if (existingIndex !== -1) {
+      // 替换现有Provider
+      this.providers[existingIndex] = provider;
+      console.log(`Provider replaced: ${provider.name}`);
+    } else {
+      // 按order排序插入
+      insertSorted(this.providers, provider);
+      console.log(`Provider registered: ${provider.name}`);
+    }
+    
+    return provider;
+  }
+
   // 获取所有注册的路由
   getRoutes() {
     return this.routes;
@@ -106,6 +136,16 @@ class Registry {
   // 获取特定权限
   getPermission(name) {
     return this.permissions.get(name);
+  }
+
+  // 获取所有注册的Provider
+  getProviders() {
+    return this.providers;
+  }
+
+  // 获取特定Provider
+  getProvider(name) {
+    return this.providers.find(p => p.name === name);
   }
 
 }

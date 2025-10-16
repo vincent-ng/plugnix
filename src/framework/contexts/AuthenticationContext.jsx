@@ -29,6 +29,12 @@ export const AuthenticationProvider = ({ children }) => {
         // when the session is refreshed but the user is the same.
         setUser(currentUser => {
           if (currentUser?.id !== newUser?.id) {
+            // 发送认证状态变化事件
+            eventBus.emit('auth:state-changed', { 
+              user: newUser, 
+              event: _event,
+              session 
+            });
             return newUser;
           }
           return currentUser; // Keep the old state to prevent re-renders
@@ -136,7 +142,6 @@ export const AuthenticationProvider = ({ children }) => {
 
     return unsubscribe; // 在组件卸载时取消订阅
   }, [logout]); // 添加 logout 作为依赖
-
 
   const value = {
     user,

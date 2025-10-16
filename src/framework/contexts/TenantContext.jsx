@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuthentication } from './AuthenticationContext';
 import { supabase } from '@/framework/lib/supabase';
+import eventBus from '@/framework/lib/eventBus';
 
 const TenantContext = createContext();
 
@@ -13,12 +13,37 @@ export const useTenant = () => {
 };
 
 export const useTenantProvider = () => {
-  const { user } = useAuthentication();
+  const [user, setUser] = useState(null);
   const [currentTenant, setCurrentTenant] = useState(null);
   const [userTenants, setUserTenants] = useState([]);
   const [userRole, setUserRole] = useState(null);
   const [userPermissions, setUserPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // 监听认证状态变化事件
+  useEffect(() => {
+    const unsubscribeAuthChange = eventBus.on('auth:state-changed', (data) => {
+      console.log('TenantContext received auth state change:', data);
+      setUser(data.user);
+    });
+
+    // 初始获取当前用户
+    const getCurrentUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+      } catch (error) {
+        console.error('Error getting current user:', error);
+        setUser(null);
+      }
+    };
+
+    getCurrentUser();
+
+    return () => {
+      unsubscribeAuthChange();
+    };
+  }, []);
 
   const resetTenant = () => {
     setCurrentTenant(null);

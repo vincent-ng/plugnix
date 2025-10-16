@@ -1,11 +1,8 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 
 // 框架核心
-import { AuthenticationProvider } from '@/framework/contexts/AuthenticationContext';
-import { TenantProvider } from '@/framework/contexts/TenantContext';
-import { ThemeProvider } from '@/framework/contexts/ThemeContext';
 import AdminLayout from '@/framework/layouts/AdminLayout';
 import PublicLayout from '@/framework/layouts/PublicLayout';
 import Authorized from '@/framework/components/Authorized';
@@ -125,21 +122,56 @@ const DynamicRoutes = () => {
   );
 };
 
+// 动态Provider组件 - 用于渲染所有注册的Provider
+const DynamicProviders = ({ children }) => {
+  const providers = registry.getProviders();
+  
+  if (providers.length === 0) {
+    return <>{children}</>;
+  }
+  
+  // 按照依赖关系排序Provider
+  const sortedProviders = [...providers].sort((a, b) => {
+    // 首先按照order排序
+    if (a.order !== b.order) {
+      return a.order - b.order;
+    }
+    
+    // 如果order相同，按照依赖关系排序
+    // 如果b依赖a，则a应该在b前面
+    if (a.dependencies.includes(b.name)) {
+      return 1;
+    }
+    // 如果a依赖b，则b应该在a前面
+    if (b.dependencies.includes(a.name)) {
+      return -1;
+    }
+    
+    return 0;
+  });
+  
+  // 嵌套渲染所有Provider
+  return sortedProviders.reduce((acc, provider) => {
+    const ProviderComponent = provider.component;
+    return (
+      <ProviderComponent {...provider.props}>
+        {acc}
+      </ProviderComponent>
+    );
+  }, children);
+};
+
 // 主应用组件
 function App() {
   return (
     <ErrorBoundary>
       <I18nextProvider i18n={i18n}>
-        <AuthenticationProvider>
-          <TenantProvider>
-            <ThemeProvider>
-              <Router>
-                <DynamicRoutes />
-                <Toaster />
-              </Router>
-            </ThemeProvider>
-          </TenantProvider>
-        </AuthenticationProvider>
+        <DynamicProviders>
+          <Router>
+            <DynamicRoutes />
+            <Toaster />
+          </Router>
+        </DynamicProviders>
       </I18nextProvider>
     </ErrorBoundary>
   );

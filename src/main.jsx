@@ -1,15 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { registry, registryApi } from '@/framework/api';
+import { addPluginTranslations } from '@/framework/i18n';
+import { registerCoreProviders } from '@/framework/core-providers';
+import importAllPlugins from '@/plugins';
+import '@/index.css';
 import App from './App.jsx';
-import './index.css';
-
-import { registry, registryApi } from './framework/api';
-import { addPluginTranslations } from './framework/i18n';
-import importAllPlugins from './plugins'; // 导入异步插件加载器
 
 // 异步初始化应用
 const initializeApp = async () => {
   try {
+    // 注册核心Provider
+    registerCoreProviders();
+    
     // 动态加载所有插件
     const allPlugins = await importAllPlugins();
     

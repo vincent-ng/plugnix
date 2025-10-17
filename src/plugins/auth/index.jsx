@@ -8,11 +8,14 @@ import zh from './i18n/zh.json';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 
+// 导入认证Provider（使用框架契约）
+import { AuthenticationProvider } from './providers/AuthenticationProvider.jsx';
+
 // 导出页面组件
 export { LoginPage, RegisterPage };
 
 // 注册函数
-export default function registerAuthModule({ registerI18nNamespace, registerMenuItem, registerRoute }) {
+export default function registerAuthModule({ registerI18nNamespace, registerMenuItem, registerRoute, registerProvider }) {
   // 注册国际化资源
   registerI18nNamespace('auth', { en, zh });
   
@@ -37,6 +40,14 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
     separator: 'front',
     order: 9999 // 确保登出按钮在最后
   }, 'user');
+
+  // 注册认证Provider - 提供用户认证功能
+  registerProvider({
+    name: 'AuthenticationProvider',
+    component: AuthenticationProvider,
+    order: 10,
+    description: 'Provides user authentication features including login, registration, and logout'
+  });
 
   console.log('Auth module routes, i18n and user menu registered successfully');
 }

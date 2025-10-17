@@ -1,7 +1,53 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/framework/lib/supabase';
-import eventBus from '@/framework/lib/eventBus';
+import { createContext, useContext } from 'react';
 
+/**
+ * 如何开发自定义 TenantProvider（组织提供者）
+ *
+ * 本文件仅提供组织契约（Context + Hook），具体 Provider 由插件实现并通过注册系统注入。
+ *
+ * 开发步骤：
+ * 1) 在你的插件目录下实现 Provider，并使用框架的 TenantContext 契约：
+ *    
+ *    import TenantContext from '@/framework/contexts/TenantContext.jsx';
+ *    
+ *    export const TenantProvider = ({ children }) => {
+ *      // 这里编写你的组织逻辑（如：获取用户组织列表、切换当前组织等）
+ *      const value = {
+ *        currentTenant,  // 当前组织对象或 null
+ *        tenants,        // 用户可用组织列表
+ *        loading,        // 加载状态布尔值
+ *        switchTenant,   // (tenantId) => Promise<void>
+ *        loadUserTenants // () => Promise<void>（可选）
+ *        // 根据需要补充更多字段/方法（如 roles、permissions 等）
+ *      };
+ *      return (
+ *        <TenantContext.Provider value={value}>
+ *          {children}
+ *        </TenantContext.Provider>
+ *      );
+ *    };
+ *
+ * 2) 在插件入口（如 plugins/your-plugin/index.js）中注册该 Provider：
+ *    
+ *    import { registryApi } from '@/framework/api';
+ *    import { TenantProvider } from '@/plugins/your-plugin/TenantProvider.jsx';
+ *    
+ *    registryApi.registerProvider({
+ *      name: 'TenantProvider',
+ *      component: TenantProvider,
+ *      order: 20, // 通常依赖认证，应放在认证之后
+ *      dependencies: ['AuthenticationProvider'],
+ *    });
+ *
+ * 3) 运行时由 App.jsx 的 DynamicProviders 自动按顺序嵌套渲染，无需手动包裹。
+ *
+ * 约定与注意事项：
+ * - 框架内通用组件（如 TenantSwitcher）使用 useTenant()，请提供至少 currentTenant、tenants、loading、switchTenant。
+ * - 如你的组织模型包含权限与角色，可在 value 中扩展字段，并在相关插件中消费。
+ * - 通过 dependencies 声明与认证的依赖关系，确保渲染顺序正确。
+ */
+
+// 组织上下文契约：仅定义 Context 与 Hook，具体实现由插件提供
 const TenantContext = createContext();
 
 export const useTenant = () => {
@@ -10,188 +56,6 @@ export const useTenant = () => {
     throw new Error('useTenant must be used within a TenantProvider');
   }
   return context;
-};
-
-export const useTenantProvider = () => {
-  const [user, setUser] = useState(null);
-  const [currentTenant, setCurrentTenant] = useState(null);
-  const [userTenants, setUserTenants] = useState([]);
-  const [userRole, setUserRole] = useState(null);
-  const [userPermissions, setUserPermissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // 监听认证状态变化事件
-  useEffect(() => {
-    const unsubscribeAuthChange = eventBus.on('auth:state-changed', (data) => {
-      console.log('TenantContext received auth state change:', data);
-      setUser(data.user);
-    });
-
-    // 初始获取当前用户
-    const getCurrentUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (error) {
-        console.error('Error getting current user:', error);
-        setUser(null);
-      }
-    };
-
-    getCurrentUser();
-
-    return () => {
-      unsubscribeAuthChange();
-    };
-  }, []);
-
-  const resetTenant = () => {
-    setCurrentTenant(null);
-    setUserRole(null);
-    setUserPermissions([]);
-    if (user?.id) {
-      localStorage.removeItem(`currentTenant_${user.id}`);
-    }
-  };
-
-  // 切换当前组织
-  const switchTenant = (tenant) => {
-    setCurrentTenant(tenant);
-    setUserRole(tenant.role);
-    setUserPermissions(tenant.permissions || []);
-    
-    // 保存到 localStorage
-    if (user?.id) {
-      localStorage.setItem(`currentTenant_${user.id}`, tenant.id);
-    }
-  };
-
-  // 获取用户的组织列表
-  const refreshUserTenants = async () => {
-    console.log('Refreshing user tenants for user:', user);
-    if (!user) {
-      setLoading(false);
-      resetTenant();
-      setUserTenants([]);
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('tenant_users')
-        .select(`
-          tenant_id,
-          role_id,
-          tenants (
-            id,
-            name,
-            description
-          ),
-          roles (
-            id,
-            name,
-            role_permissions (
-              permissions (
-                id,
-                name,
-                description
-              )
-            )
-          )
-        `)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-
-      const tenants = data.map(item => ({
-        id: item.tenants.id,
-        name: item.tenants.name,
-        description: item.tenants.description,
-        role: item.roles.name,
-        permissions: item.roles?.role_permissions?.map(rp => rp.permissions?.name).filter(Boolean) || []
-      }));
-
-      console.log('Fetched user tenants:', data, tenants);
-      setUserTenants(tenants);
-
-      // 尝试从 localStorage 恢复用户上次选择的组织
-      let selectedTenant = null;
-      if (user?.id) {
-        const savedTenantId = localStorage.getItem(`currentTenant_${user.id}`);
-        if (savedTenantId) {
-          selectedTenant = tenants.find(t => t.id === savedTenantId);
-        }
-      }
-
-      // 如果没有保存的组织或保存的组织不存在，使用第一个组织作为默认
-      if (!selectedTenant && tenants.length > 0) {
-        selectedTenant = tenants[0];
-      }
-
-      if (selectedTenant) {
-        switchTenant(selectedTenant);
-      } else {
-        resetTenant();
-      }
-    } catch (error) {
-      console.error('Error fetching user tenants:', error);
-      setUserTenants([]);
-      resetTenant();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    refreshUserTenants();
-  }, [user]);
-
-  // 获取用户在当前组织中的角色
-  const getCurrentUserRole = () => {
-    return userRole;
-  };
-
-  // 检查用户是否有特定权限
-  const hasPermission = (permissionName) => {
-    return userPermissions.includes(permissionName);
-  };
-
-  // 检查用户是否有任一权限
-  const hasAnyPermission = (permissionNames) => {
-    return permissionNames.some(name => hasPermission(name));
-  };
-
-  // 检查用户是否有所有权限
-  const hasAllPermissions = (permissionNames) => {
-    return permissionNames.every(name => hasPermission(name));
-  };
-
-  return {
-    currentTenant,
-    userTenants,
-    userRole,
-    userPermissions,
-    loading,
-    setCurrentTenant: switchTenant,
-    switchTenant,
-    getCurrentUserRole,
-    hasPermission,
-    hasAnyPermission,
-    hasAllPermissions,
-    refreshUserTenants
-  };
-}
-
-
-export const TenantProvider = ({ children, value }) => {
-  const tenantState = useTenantProvider();
-
-  return (
-    <TenantContext.Provider value={value || tenantState}>
-      {children}
-    </TenantContext.Provider>
-  );
 };
 
 export default TenantContext;

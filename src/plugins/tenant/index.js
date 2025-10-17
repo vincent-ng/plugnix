@@ -2,6 +2,9 @@
 import TenantRolesPage from './tenant-roles/pages/TenantRolesPage.jsx';
 import TenantUsersPage from './tenant-users/pages/TenantUsersPage.jsx';
 
+// 导入组织Provider（使用框架契约）
+import { TenantProvider } from './providers/TenantProvider.jsx';
+
 // 导入国际化资源（沿用原目录结构）
 import zhRoles from './tenant-roles/i18n/zh.json';
 import enRoles from './tenant-roles/i18n/en.json';
@@ -13,7 +16,8 @@ export default function registerTenantPlugin({
   registerMenuItem,
   registerRoute,
   registerI18nNamespace,
-  registerPermission
+  registerPermission,
+  registerProvider
 }) {
   // 注册国际化命名空间（tenant-*）
   registerI18nNamespace('tenant-roles', { zh: zhRoles, en: enRoles });
@@ -65,7 +69,14 @@ export default function registerTenantPlugin({
     permissions: ['db.roles.select'],
   });
 
-
+  // 注册组织Provider - 提供多组织支持（通过事件总线与认证解耦）
+  registerProvider({
+    name: 'TenantProvider',
+    component: TenantProvider,
+    order: 20,
+    dependencies: ['AuthenticationProvider'],
+    description: 'Provides multi-tenant support by listening to authentication state changes via event bus'
+  });
 
   console.log('Tenant plugin registered successfully');
 }

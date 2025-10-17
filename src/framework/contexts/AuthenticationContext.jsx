@@ -1,7 +1,54 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/framework/lib/supabase.js';
-import eventBus from '@/framework/lib/eventBus';
+import { createContext, useContext } from 'react';
 
+/**
+ * 如何开发自定义 AuthenticationProvider（认证提供者）
+ *
+ * 本文件仅提供认证契约（Context + Hook），具体 Provider 由插件实现并通过注册系统注入。
+ *
+ * 开发步骤：
+ * 1) 在你的插件目录下实现 Provider，并使用框架的 AuthenticationContext 契约：
+ *    
+ *    import AuthenticationContext from '@/framework/contexts/AuthenticationContext.jsx';
+ *    
+ *    export const AuthenticationProvider = ({ children }) => {
+ *      // 这里编写你的认证逻辑（如：读取 session、登录/登出等）
+ *      const value = {
+ *        user,          // 当前用户对象或 null
+ *        loading,       // 加载状态布尔值
+ *        login,         // (credentials) => Promise<void>
+ *        logout,        // () => Promise<void>
+ *        register,      // (form) => Promise<void>（可选）
+ *        refresh,       // () => Promise<void>（可选）
+ *        // 根据需要补充更多字段/方法
+ *      };
+ *      return (
+ *        <AuthenticationContext.Provider value={value}>
+ *          {children}
+ *        </AuthenticationContext.Provider>
+ *      );
+ *    };
+ *
+ * 2) 在插件入口（如 plugins/your-plugin/index.js）中注册该 Provider：
+ *    
+ *    import { registryApi } from '@/framework/api';
+ *    import { AuthenticationProvider } from '@/plugins/your-plugin/AuthenticationProvider.jsx';
+ *    
+ *    registryApi.registerProvider({
+ *      name: 'AuthenticationProvider',
+ *      component: AuthenticationProvider,
+ *      order: 10, // 控制渲染顺序（数字越小越靠外层）
+ *    });
+ *
+ * 3) 运行时由 App.jsx 的 DynamicProviders 自动按顺序嵌套渲染，无需手动包裹。
+ *
+ * 约定与注意事项：
+ * - 框架内通用组件（如 UserNav、Authorized）使用 useAuthentication()，请提供至少 user 与 loading 两个字段。
+ * - 如你的 Provider 依赖其他 Provider，可在注册时通过 dependencies 指定：
+ *   dependencies: ['SomeOtherProvider']。
+ * - 请避免在框架内直接实现具体 Provider，以保持插件可插拔和依赖倒置。
+ */
+
+// 认证上下文契约：仅定义 Context 与 Hook，具体实现由插件提供
 const AuthenticationContext = createContext({});
 
 export const useAuthentication = () => {
@@ -10,155 +57,6 @@ export const useAuthentication = () => {
     throw new Error('useAuthentication must be used within an AuthenticationProvider');
   }
   return context;
-};
-
-export const AuthenticationProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // 检查用户会话
-  useEffect(() => {
-    setLoading(true);
-
-    // onAuthStateChange fires immediately with the current session, so we don't need a separate getUser call.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        const newUser = session?.user ?? null;
-
-        // Only update state if the user ID is different. This prevents re-renders
-        // when the session is refreshed but the user is the same.
-        setUser(currentUser => {
-          if (currentUser?.id !== newUser?.id) {
-            // 发送认证状态变化事件
-            eventBus.emit('auth:state-changed', { 
-              user: newUser, 
-              event: _event,
-              session 
-            });
-            return newUser;
-          }
-          return currentUser; // Keep the old state to prevent re-renders
-        });
-
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const login = async (email, password) => {
-    try {
-      setLoading(true);
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      setUser(data.user);
-      console.log('登录成功:', data.user);
-      return { error: null }; // 登录成功，无错误
-    } catch (error) {
-      console.error('登录失败:', error.message);
-      return { error: { message: error.message } }; // 返回错误对象
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (email, password, userData = {}) => {
-    try {
-      setLoading(true);
-
-      // 注册用户并发送验证邮件（启用邮箱验证时不会立即登录）
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: userData,
-          emailRedirectTo: window.location.origin // 用户确认邮箱后返回到站点
-        }
-      });
-
-      if (error) throw error;
-
-      console.log('注册成功，已发送验证邮件:', data?.user);
-      return { success: true, requiresEmailConfirmation: true, data };
-    } catch (error) {
-      console.error('注册失败:', error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 重发邮箱验证邮件
-  const resendVerificationEmail = async (email) => {
-    try {
-      const { data, error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
-        options: { emailRedirectTo: window.location.origin }
-      });
-      if (error) throw error;
-      return { success: true, data };
-    } catch (error) {
-      console.error('重发验证邮件失败:', error.message);
-      return { success: false, error: error.message };
-    }
-  };
-
-  const logout = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      // 清理用户相关的 localStorage 数据（兼容旧键名）
-      if (user?.id) {
-        localStorage.removeItem(`currentTenant_${user.id}`);
-      }
-
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      setUser(null);
-      console.log('登出成功');
-      return { success: true };
-    } catch (error) {
-      console.error('登出失败:', error.message);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  }, [user]); // 添加 user 作为依赖
-
-  // 从事件总线监听登出事件
-  useEffect(() => {
-    const unsubscribe = eventBus.on('auth:logout', () => {
-      logout();
-    });
-
-    return unsubscribe; // 在组件卸载时取消订阅
-  }, [logout]); // 添加 logout 作为依赖
-
-  const value = {
-    user,
-    loading,
-    login,
-    signIn: login, // 添加 signIn 别名
-    register,
-    resendVerificationEmail,
-    logout,
-    signOut: logout // 添加 signOut 别名
-  };
-
-  return (
-    <AuthenticationContext.Provider value={value}>
-      {children}
-    </AuthenticationContext.Provider>
-  );
 };
 
 export default AuthenticationContext;

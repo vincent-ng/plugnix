@@ -1,4 +1,4 @@
-import eventBus from '@/framework/lib/eventBus';
+import SignOutMenuItem from './components/SignOutMenuItem.jsx';
 
 // 认证模块的翻译资源
 import en from './i18n/en.json';
@@ -34,9 +34,7 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
   registerMenuItem({
     label: 'auth:common.signOut',
     icon: 'LogOut',
-    onClick: () => {
-      eventBus.emit('auth:logout');
-    },
+    menuItemComponent: SignOutMenuItem,
     separator: 'front',
     order: 9999 // 确保登出按钮在最后
   }, 'user');

@@ -24,7 +24,6 @@
     "learnMore": "了解更多",
     "or": "或者",
     "createAccount": "创建新账户",
-    "backToHome": "← 返回首页",
     "language": "语言",
     "switchLanguage": "切换语言",
     "myAccount": "我的账户",
@@ -37,7 +36,13 @@
     "copyright": "© 2024 插件框架。保留所有权利。",
     "privacyPolicy": "隐私政策",
     "termsOfService": "服务条款",
-    "gotoConsole": "控制台"
+    "gotoConsole": "控制台",
+    "errorSource": "来源",
+    "unknownError": "未知错误",
+    "appCrashedTitle": "应用出现错误",
+    "reload": "重新加载",
+    "notFound": "页面未找到",
+    "backToHome": "返回首页"
   },
   "navigation": {
     "dashboard": "仪表板",

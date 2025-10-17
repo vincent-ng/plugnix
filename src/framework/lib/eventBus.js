@@ -3,7 +3,11 @@ const eventBus = {
     console.log(`[EventBus] Registering listener for event: ${event}`);
     const handler = (e) => {
       console.log(`[EventBus] Handling event: ${event}`, e.detail);
-      callback(e.detail);
+      try {
+        callback(e.detail);
+      } catch (err) {
+        console.error(`[EventBus] Listener error for event: ${event}`, err);
+      }
     };
     document.addEventListener(event, handler);
     // 返回一个取消订阅的函数

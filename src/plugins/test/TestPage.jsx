@@ -10,11 +10,17 @@ import { ExternalLink } from 'lucide-react';
 import PermissionTestPanel from './components/PermissionTestPanel';
 
 const TestPage = () => {
-  const { t } = useTranslation('test');
   const navigate = useNavigate();
+  const { t } = useTranslation('test');
   const [counter, setCounter] = useState(0);
   const [inputValue, setInputValue] = useState('');
   const [textareaValue, setTextareaValue] = useState('');
+  const [shouldCrash, setShouldCrash] = useState(false);
+
+  // 点击按钮后在下一次渲染阶段抛出错误，确保被 ErrorBoundary 捕获
+  if (shouldCrash) {
+    throw new Error('TestPage: 手动触发错误用于 ErrorBoundary 测试');
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-8">
@@ -22,10 +28,10 @@ const TestPage = () => {
         <h1 className="text-4xl font-bold text-foreground mb-6 text-center">
           {t('title')}
         </h1>
-        
+
         {/* URL导航功能按钮 */}
         <div className="flex justify-center mb-8">
-          <Button 
+          <Button
             onClick={() => navigate('/test/url-navigation')}
             className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
           >
@@ -33,17 +39,17 @@ const TestPage = () => {
             {t('urlNavigation.buttonText')}
           </Button>
         </div>
-        
+
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="basic">{t('tabs.basic')}</TabsTrigger>
             <TabsTrigger value="state">{t('tabs.state')}</TabsTrigger>
             <TabsTrigger value="animation">{t('tabs.animation')}</TabsTrigger>
             <TabsTrigger value="permission">{t('tabs.permission')}</TabsTrigger>
+            <TabsTrigger value="error">{t('errorBoundary.tab')}</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="basic" className="mt-6">
-        
             {/* 颜色测试 */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">{t('colorTest')}</h2>
@@ -54,7 +60,7 @@ const TestPage = () => {
                 <div className="bg-yellow-500 text-white p-4 rounded-lg text-center">{t('colors.yellow')}</div>
               </div>
             </div>
-            
+
             {/* 按钮测试 */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">{t('buttonTest')}</h2>
@@ -73,26 +79,26 @@ const TestPage = () => {
                 </button>
               </div>
             </div>
-            
+
             {/* 卡片测试 */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">{t('cardTest')}</h2>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6">
-                   <h3 className="text-xl font-semibold mb-2">{t('cards.card1.title')}</h3>
-                   <p className="text-muted-foreground">{t('cards.card1.content')}</p>
-                 </div>
-                 <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6">
-                   <h3 className="text-xl font-semibold mb-2">{t('cards.card2.title')}</h3>
-                   <p className="text-muted-foreground">{t('cards.card2.content')}</p>
-                 </div>
-                 <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6">
-                   <h3 className="text-xl font-semibold mb-2">{t('cards.card3.title')}</h3>
-                   <p className="text-muted-foreground">{t('cards.card3.content')}</p>
-                 </div>
+                  <h3 className="text-xl font-semibold mb-2">{t('cards.card1.title')}</h3>
+                  <p className="text-muted-foreground">{t('cards.card1.content')}</p>
+                </div>
+                <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6">
+                  <h3 className="text-xl font-semibold mb-2">{t('cards.card2.title')}</h3>
+                  <p className="text-muted-foreground">{t('cards.card2.content')}</p>
+                </div>
+                <div className="bg-card text-card-foreground rounded-lg shadow-lg p-6">
+                  <h3 className="text-xl font-semibold mb-2">{t('cards.card3.title')}</h3>
+                  <p className="text-muted-foreground">{t('cards.card3.content')}</p>
+                </div>
               </div>
             </div>
-            
+
             {/* 表单测试 */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">{t('formTest')}</h2>
@@ -102,8 +108,8 @@ const TestPage = () => {
                     <label className="block text-sm font-medium text-foreground mb-1">
                       {t('username')}
                     </label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
                       placeholder={t('usernamePlaceholder')}
                     />
@@ -112,14 +118,14 @@ const TestPage = () => {
                     <label className="block text-sm font-medium text-foreground mb-1">
                       {t('password')}
                     </label>
-                    <input 
-                      type="password" 
+                    <input
+                      type="password"
                       className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
                       placeholder={t('passwordPlaceholder')}
                     />
                   </div>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-2 px-4 rounded transition-colors"
                   >
                     {t('submit')}
@@ -128,9 +134,8 @@ const TestPage = () => {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="state" className="mt-6">
-        
             {/* 状态保持测试 */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">{t('stateTest.title')}</h2>
@@ -169,7 +174,7 @@ const TestPage = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* 计数器测试 */}
                   <div>
                     <h3 className="text-lg font-medium mb-3">{t('stateTest.counterTest')}</h3>
@@ -189,7 +194,7 @@ const TestPage = () => {
                       {t('stateTest.counterDescription')}
                     </p>
                   </div>
-                  
+
                   {/* 说明文字 */}
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                     <p className="text-sm text-blue-800 dark:text-blue-200">
@@ -200,7 +205,7 @@ const TestPage = () => {
               </Card>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="animation" className="mt-6">
             {/* 动画测试 */}
             <div className="mb-8">
@@ -219,7 +224,7 @@ const TestPage = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* 响应式测试 */}
             <div className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">{t('responsiveTest')}</h2>
@@ -227,32 +232,74 @@ const TestPage = () => {
                 <p className="mb-4">{t('responsiveDescription')}</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-white bg-opacity-20 p-4 rounded">
-                     <h4 className="font-bold">{t('responsive.mobile')}</h4>
-                     <p className="text-sm">{t('responsive.oneColumn')}</p>
-                   </div>
-                   <div className="bg-white bg-opacity-20 p-4 rounded">
-                     <h4 className="font-bold">{t('responsive.tablet')}</h4>
-                     <p className="text-sm">{t('responsive.twoColumns')}</p>
-                   </div>
-                   <div className="bg-white bg-opacity-20 p-4 rounded">
-                     <h4 className="font-bold">{t('responsive.desktop')}</h4>
-                     <p className="text-sm">{t('responsive.fourColumns')}</p>
-                   </div>
-                   <div className="bg-white bg-opacity-20 p-4 rounded">
-                     <h4 className="font-bold">{t('responsive.large')}</h4>
-                     <p className="text-sm">{t('responsive.fourColumns')}</p>
-                   </div>
+                    <h4 className="font-bold">{t('responsive.mobile')}</h4>
+                    <p className="text-sm">{t('responsive.oneColumn')}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 p-4 rounded">
+                    <h4 className="font-bold">{t('responsive.tablet')}</h4>
+                    <p className="text-sm">{t('responsive.twoColumns')}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 p-4 rounded">
+                    <h4 className="font-bold">{t('responsive.desktop')}</h4>
+                    <p className="text-sm">{t('responsive.fourColumns')}</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 p-4 rounded">
+                    <h4 className="font-bold">{t('responsive.large')}</h4>
+                    <p className="text-sm">{t('responsive.fourColumns')}</p>
+                  </div>
                 </div>
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="permission" className="mt-6">
             <PermissionTestPanel />
           </TabsContent>
+
+          <TabsContent value="error" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('errorBoundary.tab')}</CardTitle>
+                <CardDescription>
+                  {t('errorBoundary.renderDesc')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-4">
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShouldCrash(true)}
+                  >
+                    {t('errorBoundary.renderButton')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => { throw new Error('TestPage: 事件处理阶段抛错（不被错误边界捕获）'); }}
+                  >
+                    {t('errorBoundary.handlerButton')}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setTimeout(() => {
+                        throw new Error('TestPage: 异步抛错（不被错误边界捕获）');
+                      }, 0);
+                    }}
+                  >
+                    {t('errorBoundary.asyncButton')}
+                  </Button>
+                </div>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>{t('errorBoundary.renderDesc')}</p>
+                  <p>{t('errorBoundary.handlerDesc')}</p>
+                  <p>{t('errorBoundary.asyncDesc')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
-        </div>
       </div>
+    </div>
   );
 };
 

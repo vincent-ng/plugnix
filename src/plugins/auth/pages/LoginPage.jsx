@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from "@/framework/contexts/AuthenticationContext.jsx";
-import { LoginForm } from '../components/login-form';
+import { LoginForm } from '../components/LoginForm.jsx';
 
 const LoginPage = () => {
   const { t } = useTranslation('auth');

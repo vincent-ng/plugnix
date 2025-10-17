@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/framework/lib/supabase.js';
 import eventBus from '@/framework/lib/eventBus';
-import AuthenticationContext from '@/framework/contexts/AuthenticationContext.jsx';
+import AuthenticationContext, { AUTH_STATE_CHANGED, AUTH_LOGOUT } from '@/framework/contexts/AuthenticationContext.jsx';
 
 export const AuthenticationProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -21,7 +21,7 @@ export const AuthenticationProvider = ({ children }) => {
         setUser(currentUser => {
           if (currentUser?.id !== newUser?.id) {
             // 发送认证状态变化事件
-            eventBus.emit('auth:state-changed', { 
+            eventBus.emit(AUTH_STATE_CHANGED, { 
               user: newUser, 
               event: _event,
               session 
@@ -125,9 +125,9 @@ export const AuthenticationProvider = ({ children }) => {
     }
   }, [user]); // 添加 user 作为依赖
 
-  // 从事件总线监听登出事件
+  // 从事件总线监听登出事件，这个事件暂时还没有插件或框架调用，先留着
   useEffect(() => {
-    const unsubscribe = eventBus.on('auth:logout', () => {
+    const unsubscribe = eventBus.on(AUTH_LOGOUT, () => {
       logout();
     });
 

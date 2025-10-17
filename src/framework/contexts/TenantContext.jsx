@@ -13,12 +13,16 @@ import { createContext, useContext } from 'react';
  *    export const TenantProvider = ({ children }) => {
  *      // 这里编写你的组织逻辑（如：获取用户组织列表、切换当前组织等）
  *      const value = {
- *        currentTenant,  // 当前组织对象或 null
- *        tenants,        // 用户可用组织列表
- *        loading,        // 加载状态布尔值
- *        switchTenant,   // (tenantId) => Promise<void>
- *        loadUserTenants // () => Promise<void>（可选）
- *        // 根据需要补充更多字段/方法（如 roles、permissions 等）
+ *        currentTenant,    // 当前组织对象或 null
+ *        userTenants,      // 用户可用组织列表
+ *        loading,          // 加载状态布尔值
+ *        switchTenant,     // (tenant) => void
+ *        refreshUserTenants, // () => Promise<void>（可选）
+ *        userRole,         // 当前用户在组织中的角色（可选）
+ *        userPermissions,  // 当前用户的权限列表（可选）
+ *        hasPermission,    // (permissionName) => boolean
+ *        hasAnyPermission, // (permissionNames) => boolean
+ *        hasAllPermissions // (permissionNames) => boolean
  *      };
  *      return (
  *        <TenantContext.Provider value={value}>
@@ -54,6 +58,15 @@ export const useTenant = () => {
   const context = useContext(TenantContext);
   if (!context) {
     throw new Error('useTenant must be used within a TenantProvider');
+  }
+
+  // 开发模式下进行最小契约校验
+  if (import.meta.env?.DEV) {
+    const requiredKeys = ['currentTenant', 'userTenants', 'loading', 'switchTenant', 'hasAnyPermission', 'hasAllPermissions'];
+    const missing = requiredKeys.filter(k => !(k in context));
+    if (missing.length > 0) {
+      console.warn('[TenantContext] Missing fields in provider value:', missing);
+    }
   }
   return context;
 };

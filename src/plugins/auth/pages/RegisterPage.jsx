@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from "@/framework/contexts/AuthenticationContext.jsx";
-import { RegisterForm } from '../components/register-form';
+import { RegisterForm } from '../components/RegisterForm.jsx';
 
 const RegisterPage = () => {
   const { t } = useTranslation('auth');

@@ -27,7 +27,7 @@ export default {
         content: 'This is the first card content, used to display some information or operations.'
       },
       card2: {
-        title: 'Card Title 2', 
+        title: 'Card Title 2',
         content: 'This is the second card content, showcasing different information.'
       },
       card3: {
@@ -49,7 +49,7 @@ export default {
     responsiveDescription: 'This container will behave differently on different screen sizes:',
     responsive: {
       mobile: 'Mobile',
-      tablet: 'Tablet', 
+      tablet: 'Tablet',
       desktop: 'Desktop',
       large: 'Large',
       oneColumn: '1 column',
@@ -78,82 +78,91 @@ export default {
       instruction: 'How to test: Fill out the inputs above, change the counter, then switch to another tab and come back. All values should be preserved.'
     },
     permission: {
-        title: 'Permission System Demo',
-        description: 'Demonstrate basic features of the permission system',
-        uiPermission: 'UI Permission Control',
-        specialFeature: 'Special Feature',
-        specialFeatureDesc: 'This content is only visible to users with the ui.test.show-special-feature permission',
-        dbPermission: 'Database Permission Control',
-        createPost: 'Create Post (requires db.posts.create permission)',
-        fallbackContent: 'Fallback Content When No Permission',
-        noPermissionMessage: 'You do not have permission to access this feature',
-        adminFunction: 'Admin Function'
+      title: 'Permission System Demo',
+      description: 'Demonstrate basic features of the permission system',
+      uiPermission: 'UI Permission Control',
+      specialFeature: 'Special Feature',
+      specialFeatureDesc: 'This content is only visible to users with the ui.test.show-special-feature permission',
+      dbPermission: 'Database Permission Control',
+      createPost: 'Create Post (requires db.posts.create permission)',
+      fallbackContent: 'Fallback Content When No Permission',
+      noPermissionMessage: 'You do not have permission to access this feature',
+      adminFunction: 'Admin Function'
+    },
+    urlNavigation: {
+      buttonText: 'URL Navigation Test',
+      title: 'URL Navigation & Component Rendering',
+      backToTest: 'Back to Test Page',
+      predefined: {
+        title: 'Predefined Examples',
+        description: 'Click the buttons below to navigate to different components'
       },
-      urlNavigation: {
-        buttonText: 'URL Navigation Test',
-        title: 'URL Navigation & Component Rendering',
-        backToTest: 'Back to Test Page',
-        predefined: {
-          title: 'Predefined Examples',
-          description: 'Click the buttons below to navigate to different components'
+      custom: {
+        title: 'Custom URL Navigation',
+        description: 'Enter any URL to navigate to it',
+        inputLabel: 'URL or Path',
+        inputPlaceholder: 'e.g., /dashboard or https://example.com',
+        navigateButton: 'Navigate',
+        examples: {
+          title: 'Examples:'
+        }
+      },
+      examples: {
+        dashboard: 'Dashboard Component',
+        dashboardDesc: 'Shows a sample dashboard with statistics',
+        profile: 'Profile Component',
+        profileDesc: 'Displays user profile information',
+        settings: 'Settings Component',
+        settingsDesc: 'Shows application settings panel'
+      },
+      components: {
+        default: {
+          title: 'Default Component',
+          description: 'This is the default component that renders when no specific component is requested',
+          content: 'You can pass URL parameters to control what component gets rendered on this page.',
+          sourceUrl: 'Source URL'
         },
-        custom: {
-          title: 'Custom URL Navigation',
-          description: 'Enter any URL to navigate to it',
-          inputLabel: 'URL or Path',
-          inputPlaceholder: 'e.g., /dashboard or https://example.com',
-          navigateButton: 'Navigate',
-          examples: {
-            title: 'Examples:'
+        dashboard: {
+          title: 'Dashboard Overview',
+          description: 'A sample dashboard showing key metrics and statistics',
+          stats: {
+            users: 'Total Users',
+            orders: 'Orders',
+            revenue: 'Revenue'
           }
         },
-        examples: {
-          dashboard: 'Dashboard Component',
-          dashboardDesc: 'Shows a sample dashboard with statistics',
-          profile: 'Profile Component',
-          profileDesc: 'Displays user profile information',
-          settings: 'Settings Component',
-          settingsDesc: 'Shows application settings panel'
+        profile: {
+          title: 'User Profile',
+          description: 'User profile information and settings',
+          fields: {
+            name: 'Full Name',
+            role: 'Role'
+          }
         },
-        components: {
-          default: {
-            title: 'Default Component',
-            description: 'This is the default component that renders when no specific component is requested',
-            content: 'You can pass URL parameters to control what component gets rendered on this page.',
-            sourceUrl: 'Source URL'
+        settings: {
+          title: 'Application Settings',
+          description: 'Configure your application preferences',
+          options: {
+            notifications: 'Email Notifications',
+            notificationsDesc: 'Receive email notifications for important updates',
+            darkMode: 'Dark Mode',
+            darkModeDesc: 'Switch between light and dark themes'
           },
-          dashboard: {
-            title: 'Dashboard Overview',
-            description: 'A sample dashboard showing key metrics and statistics',
-            stats: {
-              users: 'Total Users',
-              orders: 'Orders',
-              revenue: 'Revenue'
-            }
-          },
-          profile: {
-            title: 'User Profile',
-            description: 'User profile information and settings',
-            fields: {
-              name: 'Full Name',
-              role: 'Role'
-            }
-          },
-          settings: {
-            title: 'Application Settings',
-            description: 'Configure your application preferences',
-            options: {
-              notifications: 'Email Notifications',
-              notificationsDesc: 'Receive email notifications for important updates',
-              darkMode: 'Dark Mode',
-              darkModeDesc: 'Switch between light and dark themes'
-            },
-            actions: {
-              toggle: 'Toggle'
-            }
+          actions: {
+            toggle: 'Toggle'
           }
         }
       }
+    },
+    errorBoundary: {
+      tab: 'Error Boundary Tests',
+      renderButton: 'Trigger render-phase error',
+      handlerButton: 'Trigger event handler error',
+      asyncButton: 'Trigger async error (setTimeout)',
+      renderDesc: 'This error is thrown during render and is caught by the nearest error boundary.',
+      handlerDesc: 'Errors in event handlers are not caught by error boundaries; use try/catch.',
+      asyncDesc: 'Async errors (setTimeout, promises) are not caught; use global handling or state-driven render.'
+    }
   },
   zh: {
     title: 'Tailwind CSS 样式测试页面',
@@ -205,7 +214,7 @@ export default {
     responsive: {
       mobile: '移动端',
       tablet: '平板端',
-      desktop: '桌面端', 
+      desktop: '桌面端',
       large: '大屏幕',
       oneColumn: '1列',
       twoColumns: '2列',
@@ -233,81 +242,90 @@ export default {
       instruction: '测试方法：填写上面的输入框，改变计数器，然后切换到其他标签页再回来。所有数值都应该被保留。'
     },
     permission: {
-        title: '权限系统演示',
-        description: '演示权限系统的基本功能',
-        uiPermission: 'UI权限控制',
-        specialFeature: '特殊功能',
-        specialFeatureDesc: '这个内容只有拥有 ui.test.show-special-feature 权限的用户才能看到',
-        dbPermission: '数据库权限控制',
-        createPost: '创建文章 (需要 db.posts.create 权限)',
-        fallbackContent: '无权限时的回退内容',
-        noPermissionMessage: '您没有访问此功能的权限',
-        adminFunction: '管理员功能'
+      title: '权限系统演示',
+      description: '演示权限系统的基本功能',
+      uiPermission: 'UI权限控制',
+      specialFeature: '特殊功能',
+      specialFeatureDesc: '这个内容只有拥有 ui.test.show-special-feature 权限的用户才能看到',
+      dbPermission: '数据库权限控制',
+      createPost: '创建文章 (需要 db.posts.create 权限)',
+      fallbackContent: '无权限时的回退内容',
+      noPermissionMessage: '您没有访问此功能的权限',
+      adminFunction: '管理员功能'
+    },
+    urlNavigation: {
+      buttonText: 'URL导航测试',
+      title: 'URL导航与组件渲染',
+      backToTest: '返回测试页面',
+      predefined: {
+        title: '预定义示例',
+        description: '点击下方按钮导航到不同的组件'
       },
-      urlNavigation: {
-        buttonText: 'URL导航测试',
-        title: 'URL导航与组件渲染',
-        backToTest: '返回测试页面',
-        predefined: {
-          title: '预定义示例',
-          description: '点击下方按钮导航到不同的组件'
+      custom: {
+        title: '自定义URL导航',
+        description: '输入任意URL进行导航',
+        inputLabel: 'URL或路径',
+        inputPlaceholder: '例如：/dashboard 或 https://example.com',
+        navigateButton: '导航',
+        examples: {
+          title: '示例：'
+        }
+      },
+      examples: {
+        dashboard: '仪表板组件',
+        dashboardDesc: '显示包含统计数据的示例仪表板',
+        profile: '个人资料组件',
+        profileDesc: '显示用户个人资料信息',
+        settings: '设置组件',
+        settingsDesc: '显示应用程序设置面板'
+      },
+      components: {
+        default: {
+          title: '默认组件',
+          description: '这是在没有请求特定组件时渲染的默认组件',
+          content: '您可以通过URL参数来控制此页面渲染哪个组件。',
+          sourceUrl: '来源URL'
         },
-        custom: {
-          title: '自定义URL导航',
-          description: '输入任意URL进行导航',
-          inputLabel: 'URL或路径',
-          inputPlaceholder: '例如：/dashboard 或 https://example.com',
-          navigateButton: '导航',
-          examples: {
-            title: '示例：'
+        dashboard: {
+          title: '仪表板概览',
+          description: '显示关键指标和统计数据的示例仪表板',
+          stats: {
+            users: '总用户数',
+            orders: '订单数',
+            revenue: '收入'
           }
         },
-        examples: {
-          dashboard: '仪表板组件',
-          dashboardDesc: '显示包含统计数据的示例仪表板',
-          profile: '个人资料组件',
-          profileDesc: '显示用户个人资料信息',
-          settings: '设置组件',
-          settingsDesc: '显示应用程序设置面板'
+        profile: {
+          title: '用户资料',
+          description: '用户资料信息和设置',
+          fields: {
+            name: '全名',
+            role: '角色'
+          }
         },
-        components: {
-          default: {
-            title: '默认组件',
-            description: '这是在没有请求特定组件时渲染的默认组件',
-            content: '您可以通过URL参数来控制此页面渲染哪个组件。',
-            sourceUrl: '来源URL'
+        settings: {
+          title: '应用程序设置',
+          description: '配置您的应用程序偏好设置',
+          options: {
+            notifications: '邮件通知',
+            notificationsDesc: '接收重要更新的邮件通知',
+            darkMode: '深色模式',
+            darkModeDesc: '在浅色和深色主题之间切换'
           },
-          dashboard: {
-            title: '仪表板概览',
-            description: '显示关键指标和统计数据的示例仪表板',
-            stats: {
-              users: '总用户数',
-              orders: '订单数',
-              revenue: '收入'
-            }
-          },
-          profile: {
-            title: '用户资料',
-            description: '用户资料信息和设置',
-            fields: {
-              name: '全名',
-              role: '角色'
-            }
-          },
-          settings: {
-            title: '应用程序设置',
-            description: '配置您的应用程序偏好设置',
-            options: {
-              notifications: '邮件通知',
-              notificationsDesc: '接收重要更新的邮件通知',
-              darkMode: '深色模式',
-              darkModeDesc: '在浅色和深色主题之间切换'
-            },
-            actions: {
-              toggle: '切换'
-            }
+          actions: {
+            toggle: '切换'
           }
         }
       }
+    },
+    errorBoundary: {
+      tab: '错误边界测试',
+      renderButton: '触发渲染阶段错误',
+      handlerButton: '触发事件处理错误（不被边界捕获）',
+      asyncButton: '触发异步错误（setTimeout）',
+      renderDesc: '该错误在渲染期间抛出，可被最近的错误边界捕获。',
+      handlerDesc: '事件处理中的错误不会被错误边界捕获，请使用 try/catch。',
+      asyncDesc: '异步错误（setTimeout、Promise）不会被错误边界捕获；可通过状态驱动在渲染期抛错或使用全局错误处理。'
+    }
   }
 };

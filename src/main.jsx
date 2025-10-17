@@ -11,11 +11,11 @@ import App from './App.jsx';
 const initializeApp = async () => {
   try {
     // 注册核心Provider
-    registerCoreProviders();
-    
+    registerCoreProviders(registryApi);
+
     // 动态加载所有插件
     const allPlugins = await importAllPlugins();
-    
+
     // 执行所有插件的注册逻辑
     allPlugins.forEach(registerFunc => {
       registerFunc(registryApi);

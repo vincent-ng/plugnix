@@ -41,7 +41,8 @@ export const createPluginAPI = () => {
      * @property {string|Array<string>} [permissions] - 查看该菜单项所需的权限。
      * @property {string} [className] - 自定义 CSS 类名。
      * @property {Function} [onClick] - 点击事件处理函数。
-     * @property {React.Component} [component] - 用于渲染菜单项的自定义组件。
+     * @property {React.Component} [component] - 路由页面组件（与 `path` 一起使用时自动注册路由）。
+     * @property {React.Component} [menuItemComponent] - 菜单项自定义渲染组件（适用于 `user` 菜单）。
      * @property {'front'|'end'|'both'} [separator] - 在菜单项前后添加分隔线。
      */
     /**

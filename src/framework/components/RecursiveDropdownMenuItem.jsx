@@ -15,6 +15,12 @@ export function RecursiveDropdownMenuItem({ item }) {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
 
+  // 统一语义：route 使用 `component`；菜单项自定义渲染使用 `menuItemComponent`
+  if (item.menuItemComponent) {
+    const Component = item.menuItemComponent;
+    return <Component item={item} />;
+  }
+
   const handleClick = () => {
     if (item.onClick) {
       item.onClick();

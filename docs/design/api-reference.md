@@ -14,7 +14,8 @@
             *   `key` (字符串) - 菜单项的唯一标识。
             *   `label` (字符串) - 菜单项显示文本，支持i18n键值。
             *   `path` (字符串, 可选) - 菜单项链接路径。
-            *   `component` (React组件, 可选) - 如果提供，将自动注册为路由，并可用于渲染自定义菜单项。
+            *   `component` (React组件, 可选) - 当同时提供 `path` 时用于注册路由页面组件。
+            *   `menuItemComponent` (React组件, 可选) - 用于渲染菜单项的自定义组件（适用于 `user` 菜单需要使用 Context 的场景）。
             *   `icon` (字符串|React组件，可选) - 菜单项图标。
             *   `order` (数字，可选) - 菜单项排序权重，数字越小越靠前。
             *   `className` (字符串，可选) - 自定义CSS类名 (主要用于 `user` 菜单)。
@@ -27,7 +28,7 @@
         *   注册管理菜单项: `registerMenuItem({ key: 'users', label: 'User Management', path: '/admin/users', component: UserPage, icon: UserIcon, order: 20 }, 'admin');`
         *   注册公共菜单项: `registerMenuItem({ key: 'about', label: 'About Us', path: '/about', component: AboutPage, order: 50 }, 'public');`
         *   注册用户菜单项: `registerMenuItem({ key: 'profile', label: 'Profile', path: '/profile', component: ProfilePage, order: 10 }, 'user');`
-        *   注册自定义组件用户菜单项: `registerMenuItem({ key: 'signOut', component: SignOutMenuItem, order: 999 }, 'user');`
+        *   注册自定义组件用户菜单项: `registerMenuItem({ key: 'signOut', menuItemComponent: SignOutMenuItem, order: 999 }, 'user');`
 
 *   **`registerI18nNamespace(pluginName, translations)`**
     *   **功能**: 为插件注册国际化（i18n）翻译资源。

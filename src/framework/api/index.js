@@ -115,6 +115,23 @@ export const createPluginAPI = () => {
     },
 
     /**
+     * @typedef {Object} NavbarItemConfig
+     * @description 导航栏插槽项配置对象。
+     * @property {string} key - 唯一标识。
+     * @property {React.Component} component - 要渲染的组件。
+     * @property {number} [order] - 排序权重，越小越靠前。
+     * @property {string|Array<string>} [permissions] - 查看该项所需的权限。
+     */
+    /**
+     * 注册一个导航栏插槽项到指定位置（后台或公共）。
+     * @param {NavbarItemConfig} navbarItemObject - 插槽项配置对象。
+     * @param {'admin' | 'public'} position - 要注册的导航栏位置。
+     */
+    registerNavbarItem: (navbarItemObject, position) => {
+      return registry.registerNavbarItem(navbarItemObject, position);
+    },
+
+    /**
      * 注册国际化翻译资源
      * @param {string} pluginName - 插件唯一名称，用作命名空间
      * @param {Object} translations - 翻译资源对象

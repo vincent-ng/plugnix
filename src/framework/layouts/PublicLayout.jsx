@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
 import { useAuthentication } from "@/framework/contexts/AuthenticationContext.jsx";
 import { registry } from '@/framework/api';
+import { Authorized } from '@/framework/components/Authorized';
 import { Button } from '@components/ui/button';
 import { Badge } from '@components/ui/badge';
 import { Card, CardContent } from '@components/ui/card';
@@ -25,6 +26,17 @@ import {
   Moon,
   Sun,
 } from 'lucide-react';
+
+const NavbarItemsRenderer = ({ items }) => {
+  return items.map((item) => {
+    const Comp = item.component;
+    return (
+      <Authorized permissions={item.permissions} key={item.key}>
+        <Comp />
+      </Authorized>
+    );
+  });
+};
 
 const PublicLayout = () => {
   const menuItems = registry.getPublicMenuItems();
@@ -62,6 +74,7 @@ function DesktopNav({ menuItems }) {
   const { t } = useTranslation('common');
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const navbarItems = registry.getPublicNavbarItems();
 
   const isActiveRoute = (path) => location.pathname === path;
   const getNavLinkClassName = (isActive) =>
@@ -90,6 +103,8 @@ function DesktopNav({ menuItems }) {
             <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-8 h-8">
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </Button>
+            <Separator orientation="vertical" className="h-6 hidden sm:block" />
+            <NavbarItemsRenderer items={navbarItems} />
             <AuthButton isMobile={false} />
             <MobileNav menuItems={menuItems} />
           </div>

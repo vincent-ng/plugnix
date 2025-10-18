@@ -32,16 +32,16 @@ export const TenantSwitcher = ({ className }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className={`w-[200px] justify-between ${className}`}>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
               {currentTenant ? (
                 <>
-                  <Building2 className="h-4 w-4" />
+                  <Building2 className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate">{currentTenant.name}</span>
                 </>
               ) : (
                 <>
-                  <User className="h-4 w-4" />
-                  <span>{t('tenant:personalWorkspace')}</span>
+                  <User className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">{t('tenant:personalWorkspace')}</span>
                 </>
               )}
             </div>

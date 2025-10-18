@@ -10,6 +10,8 @@ class Registry {
     this.i18nNamespaces = new Map();
     this.permissions = new Map();
     this.providers = [];
+    this.adminNavbarItems = [];
+    this.publicNavbarItems = [];
   }
 
   // 统一的菜单项注册方法
@@ -29,6 +31,20 @@ class Registry {
         throw new Error(`Invalid menu item position: ${position}`);
     }
     insertSorted(targetArray, menuItem);
+  }
+
+  // 注册导航栏插槽项（按 order 排序）
+  registerNavbarItem(navbarItem, position) {
+    switch (position) {
+      case 'admin':
+        insertSorted(this.adminNavbarItems, navbarItem);
+        break;
+      case 'public':
+        insertSorted(this.publicNavbarItems, navbarItem);
+        break;
+      default:
+        throw new Error(`Invalid navbar position: ${position}`);
+    }
   }
 
   // 注册路由
@@ -117,9 +133,18 @@ class Registry {
     return this.publicMenuItems;
   }
 
-  // 新增：获取所有注册的用户菜单项
+  // 获取所有注册的用户菜单项
   getUserMenuItems() {
     return this.userMenuItems;
+  }
+
+  // 获取导航栏插槽项（不区分左右）
+  getAdminNavbarItems() {
+    return this.adminNavbarItems;
+  }
+
+  getPublicNavbarItems() {
+    return this.publicNavbarItems;
   }
 
   // 获取所有国际化命名空间
@@ -127,7 +152,6 @@ class Registry {
     return this.i18nNamespaces;
   }
 
-  // 获取所有注册的组件
   // 获取所有注册的权限
   getPermissions() {
     return this.permissions;

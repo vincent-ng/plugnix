@@ -5,6 +5,11 @@ import TenantUsersPage from './tenant-users/pages/TenantUsersPage.jsx';
 // 导入组织Provider（使用框架契约）
 import { TenantProvider } from './providers/TenantProvider.jsx';
 
+// 导入通用组件
+import { TenantSwitcher } from './components/TenantSwitcher.jsx';
+export { TenantSwitcher } from './components/TenantSwitcher.jsx';
+export { CreateTenantDialog } from './components/CreateTenantDialog.jsx';
+
 // 导入国际化资源（沿用原目录结构）
 import zhRoles from './tenant-roles/i18n/zh.json';
 import enRoles from './tenant-roles/i18n/en.json';
@@ -17,7 +22,8 @@ export default function registerTenantPlugin({
   registerRoute,
   registerI18nNamespace,
   registerPermission,
-  registerProvider
+  registerProvider,
+  registerNavbarItem,
 }) {
   // 注册国际化命名空间（tenant-*）
   registerI18nNamespace('tenant-roles', { zh: zhRoles, en: enRoles });
@@ -77,6 +83,20 @@ export default function registerTenantPlugin({
     dependencies: ['AuthenticationProvider'],
     description: 'Provides multi-tenant support by listening to authentication state changes via event bus'
   });
+
+  // 将 TenantSwitcher 注册到导航栏右侧插槽
+  registerNavbarItem({
+    key: 'tenant-switcher',
+    component: TenantSwitcher,
+    order: 10,
+  }, 'public');
+
+  // 将 TenantSwitcher 注册到后台导航栏右侧插槽
+  registerNavbarItem({
+    key: 'tenant-switcher',
+    component: TenantSwitcher,
+    order: 10,
+  }, 'admin');
 
   console.log('Tenant plugin registered successfully');
 }

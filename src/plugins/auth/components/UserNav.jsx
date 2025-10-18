@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
-import { RecursiveDropdownMenuItem } from './RecursiveDropdownMenuItem.jsx';
+import { RecursiveDropdownMenuItem } from '@/framework/components/RecursiveDropdownMenuItem.jsx';
 
 export const UserNav = () => {
   const { t } = useTranslation('common');

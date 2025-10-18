@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
-import { useAuthentication } from "@/framework/contexts/AuthenticationContext.jsx";
 import { registry } from '@/framework/api';
 import { Authorized } from '@/framework/components/Authorized';
 import { Button } from '@components/ui/button';
@@ -19,7 +18,6 @@ import {
 } from '@components/ui/navigation-menu';
 import Logo from '../components/Logo.jsx';
 import SocialLinks from '../components/SocialLinks.jsx';
-import { UserNav } from '@/framework/components/UserNav.jsx';
 import { LanguageSwitcher } from '@/framework/components/LanguageSwitcher.jsx';
 import {
   Menu,
@@ -56,19 +54,6 @@ const PublicLayout = () => {
   );
 };
 
-function AuthButton({ isMobile }) {
-  const { t } = useTranslation('common');
-  const { user } = useAuthentication();
-  const navigate = useNavigate();
-
-  const handleLoginClick = () => navigate('/login');
-
-  if (!user) {
-    return <Button onClick={handleLoginClick} className={isMobile ? "w-full" : ''}>{t('login')}</Button>;
-  }
-
-  return <UserNav />;
-}
 
 function DesktopNav({ menuItems }) {
   const { t } = useTranslation('common');
@@ -105,7 +90,6 @@ function DesktopNav({ menuItems }) {
             </Button>
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
             <NavbarItemsRenderer items={navbarItems} />
-            <AuthButton isMobile={false} />
             <MobileNav menuItems={menuItems} />
           </div>
         </div>
@@ -160,7 +144,6 @@ function MobileNav({ menuItems }) {
               <span className="text-sm font-medium text-foreground">{t('socialLinks')}</span>
               <SocialLinks />
             </div>
-            <AuthButton isMobile={true} />
           </div>
         </div>
       </SheetContent>

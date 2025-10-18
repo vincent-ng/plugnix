@@ -8,7 +8,6 @@ import { SidebarProvider } from '@components/ui/sidebar';
 import Logo from '../components/Logo.jsx';
 import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
 import { Button } from '@components/ui/button';
-import { UserNav } from '@/framework/components/UserNav.jsx';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
 import { LanguageSwitcher } from '@/framework/components/LanguageSwitcher.jsx';
 import { Separator } from '@components/ui/separator';
@@ -127,9 +126,6 @@ const DesktopSidebar = ({ menuItems, renderMenuItem }) => {
             )} />
           </nav>
         </div>
-        <div className="mt-auto p-4">
-          <UserNav />
-        </div>
       </div>
     </div>
   );
@@ -149,9 +145,6 @@ const MobileNav = ({ menuItems, renderMenuItem }) => {
           <Logo title="Plugnix" subtitle="Admin" linkTo="/" />
           <RecursiveAccordionMenu menuItems={menuItems} renderItem={renderMenuItem} />
         </nav>
-        <div className="mt-auto">
-          <UserNav />
-        </div>
       </SheetContent>
     </Sheet>
   );

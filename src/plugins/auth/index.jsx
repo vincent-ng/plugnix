@@ -1,4 +1,5 @@
-import SignOutMenuItem from './components/SignOutMenuItem.jsx';
+import { SignOutMenuItem } from './components/SignOutMenuItem.jsx';
+import { UserNav } from './components/UserNav.jsx';
 
 // 认证模块的翻译资源
 import en from './i18n/en.json';
@@ -15,7 +16,7 @@ import { AuthenticationProvider } from './providers/AuthenticationProvider.jsx';
 export { LoginPage, RegisterPage };
 
 // 注册函数
-export default function registerAuthModule({ registerI18nNamespace, registerMenuItem, registerRoute, registerProvider }) {
+export default function registerAuthModule({ registerI18nNamespace, registerMenuItem, registerRoute, registerProvider, registerNavbarItem }) {
   // 注册国际化资源
   registerI18nNamespace('auth', { en, zh });
   
@@ -47,5 +48,18 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
     description: 'Provides user authentication features including login, registration, and logout'
   });
 
-  console.log('Auth module routes, i18n and user menu registered successfully');
+  // 注册 UserNav 到后台和公共导航栏（统一显示登录/头像入口）
+  registerNavbarItem({
+    key: 'user-nav',
+    component: UserNav,
+    order: 100,
+  }, 'admin');
+
+  registerNavbarItem({
+    key: 'user-nav',
+    component: UserNav,
+    order: 100,
+  }, 'public');
+
+  console.log('Auth module routes, i18n, user menu and navbar item registered successfully');
 }

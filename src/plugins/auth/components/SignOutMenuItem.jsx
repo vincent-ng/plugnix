@@ -8,7 +8,7 @@ import {
 import IconRenderer from '@/framework/components/IconRenderer.jsx';
 
 // 用户菜单中的“退出登录”项：直接使用上下文调用 logout
-export default function SignOutMenuItem({ item }) {
+export function SignOutMenuItem({ item }) {
   const { t } = useTranslation('common');
   const { logout } = useAuthentication();
 

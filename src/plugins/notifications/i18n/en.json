@@ -1,0 +1,32 @@
+{
+  "notificationCenter": {
+    "title": "Notification Center",
+    "noNotifications": "No notifications",
+    "markAllAsRead": "Mark all as read",
+    "clear": "Clear",
+    "markAsRead": "Mark as read",
+    "delete": "Delete",
+    "viewDetails": "View Details",
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minute ago",
+      "minutesAgo_plural": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hour ago",
+      "hoursAgo_plural": "{{count}} hours ago",
+      "daysAgo": "{{count}} day ago",
+      "daysAgo_plural": "{{count}} days ago"
+    }
+  },
+  "tenant": {
+    "addedToOrg": {
+      "title": "Added to Organization",
+      "message": "An administrator has added you to the '{orgName}' organization."
+    }
+  },
+  "permission": {
+    "roleChanged": {
+      "title": "Your role has been changed",
+      "message": "Your role has been changed from '{oldRole}' to '{newRole}'."
+    }
+  }
+}

@@ -82,11 +82,6 @@ const DynamicRoutes = () => {
   );
 };
 
-// 简单排序工具：按 order 字段排序
-const sortProviders = (providers) => {
-  return [...providers].sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
-};
-
 // 动态Provider组件 - 用于渲染所有注册的Provider
 const DynamicProviders = ({ children }) => {
   const providers = registry.getProviders();

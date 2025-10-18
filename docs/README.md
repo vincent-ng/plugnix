@@ -143,6 +143,7 @@
 - [**权限管理插件**](design/plugin-permission-management.md) - “权限管理”插件的设计与实现。
 - [**数据库安全插件**](design/plugin-admin-db-security.md) - “数据库安全”插件，用于管理RLS策略和安全函数。
 - [**多标签页功能**](design/feature-multi-tab.md) - 后台管理界面的多Tab导航功能设计。
+- [**通知中心**](design/feature-notification-center.md) - 系统通知功能的设计与实现。
 
 ### UI/UX
 - [**颜色系统指南**](design/guide-color-system.md) - 框架颜色变量使用规范，确保主题一致性。

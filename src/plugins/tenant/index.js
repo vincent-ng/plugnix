@@ -88,14 +88,14 @@ export default function registerTenantPlugin({
   registerNavbarItem({
     key: 'tenant-switcher',
     component: TenantSwitcher,
-    order: 10,
+    order: 20,
   }, 'public');
 
   // 将 TenantSwitcher 注册到后台导航栏右侧插槽
   registerNavbarItem({
     key: 'tenant-switcher',
     component: TenantSwitcher,
-    order: 10,
+    order: 20,
   }, 'admin');
 
   console.log('Tenant plugin registered successfully');

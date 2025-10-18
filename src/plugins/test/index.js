@@ -2,6 +2,7 @@ import translations from './translations.js';
 import TestPage from './TestPage.jsx';
 import TestDbAutomation from './TestDbAutomation.jsx';
 import UrlNavigationPage from './UrlNavigationPage.jsx';
+import NotificationTestPage from './NotificationTestPage.jsx';
 
 // 注册test插件的函数
 const registerTestPlugin = ({ registerMenuItem, registerRoute, registerI18nNamespace }) => {
@@ -36,6 +37,14 @@ const registerTestPlugin = ({ registerMenuItem, registerRoute, registerI18nNames
       component: TestDbAutomation,
       name: 'Database Automation Test Page',
       icon: '🧪',
+      order: 80
+    }, {
+      key: 'test-notifications',
+      label: 'test:notificationTest.title',
+      path: '/test/notifications',
+      component: NotificationTestPage,
+      name: 'Notification Test Page',
+      icon: '🔔',
       order: 80
     }]
   }, 'public');

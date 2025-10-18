@@ -154,6 +154,47 @@ export default {
         }
       }
     },
+    notificationTest: {
+      title: 'Notification Center Test',
+      description: 'Use this page to test the notification center functionality. Sent notifications will appear in the notification bell in the top right corner.',
+      level: 'Notification Level',
+      source: 'Source',
+      message: 'Message Content',
+      includeActionButton: 'Include Action Button',
+      sendNotification: 'Send Notification',
+      sendMultipleNotifications: 'Send Multiple Test Notifications',
+      placeholder: {
+        selectLevel: 'Select notification level',
+        source: 'Notification source',
+        title: 'Notification title',
+        message: 'Notification message content'
+      },
+      levels: {
+        info: 'Info',
+        success: 'Success',
+        warning: 'Warning',
+        error: 'Error'
+      },
+      testNotifications: {
+        info: {
+          title: 'Test Info Notification',
+          message: 'This is an example of an info notification'
+        },
+        success: {
+          title: 'Test Success Notification',
+          message: 'The operation has been completed successfully'
+        },
+        warning: {
+          title: 'Test Warning Notification',
+          message: 'Please note, this may require your attention'
+        },
+        error: {
+          title: 'Test Error Notification',
+          message: 'An error has occurred, please check your operation'
+        }
+      },
+      eventReceived: 'View details event received, ID: {{id}}'
+    },
     errorBoundary: {
       tab: 'Error Boundary Tests',
       renderButton: 'Trigger render-phase error',
@@ -317,6 +358,47 @@ export default {
           }
         }
       }
+    },
+    notificationTest: {
+      title: '通知中心测试',
+      description: '使用此页面测试通知中心功能。发送的通知将显示在右上角的通知铃铛中。',
+      level: '通知级别',
+      source: '来源',
+      message: '消息内容',
+      includeActionButton: '包含操作按钮',
+      sendNotification: '发送通知',
+      sendMultipleNotifications: '发送多个测试通知',
+      placeholder: {
+        selectLevel: '选择通知级别',
+        source: '通知来源',
+        title: '通知标题',
+        message: '通知消息内容'
+      },
+      levels: {
+        info: '信息',
+        success: '成功',
+        warning: '警告',
+        error: '错误'
+      },
+      testNotifications: {
+        info: {
+          title: '测试信息通知',
+          message: '这是一个信息通知的示例'
+        },
+        success: {
+          title: '测试成功通知',
+          message: '操作已成功完成'
+        },
+        warning: {
+          title: '测试警告通知',
+          message: '请注意，这可能需要您的关注'
+        },
+        error: {
+          title: '测试错误通知',
+          message: '发生了一个错误，请检查您的操作'
+        }
+      },
+      eventReceived: '收到查看详情事件，ID: {{id}}'
     },
     errorBoundary: {
       tab: '错误边界测试',

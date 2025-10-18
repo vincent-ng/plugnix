@@ -30,6 +30,21 @@
         *   注册用户菜单项: `registerMenuItem({ key: 'profile', label: 'Profile', path: '/profile', component: ProfilePage, order: 10 }, 'user');`
         *   注册自定义组件用户菜单项: `registerMenuItem({ key: 'signOut', menuItemComponent: SignOutMenuItem, order: 999 }, 'user');`
 
+*   **`registerNavbarItem(navbarItemObject, position)`**
+    *   **功能**: 在指定位置注册一个导航栏插槽项。导航栏插槽项是显示在导航栏中的自定义组件，可以用于添加搜索框、通知按钮、用户信息等。
+    *   **参数**:
+        *   `navbarItemObject` (对象) - 包含导航栏项信息的对象。
+            *   `key` (字符串，必需) - 导航栏项的唯一标识。
+            *   `component` (React组件，必需) - 要渲染的组件。
+            *   `order` (数字，可选) - 导航栏项排序权重，数字越小越靠前。
+            *   `permissions` (字符串|字符串数组，可选) - 查看该项所需的权限。
+        *   `position` (字符串) - 导航栏项的注册位置。必须是以下值之一：
+            *   `'admin'`: 后台管理界面的导航栏。
+            *   `'public'`: 公共页面的导航栏。
+    *   **示例**:
+        *   注册后台导航栏项: `registerNavbarItem({ key: 'search', component: SearchBox, order: 10 }, 'admin');`
+        *   注册公共导航栏项: `registerNavbarItem({ key: 'notification', component: NotificationButton, order: 20, permissions: ['user.read'] }, 'public');`
+
 *   **`registerI18nNamespace(pluginName, translations)`**
     *   **功能**: 为插件注册国际化（i18n）翻译资源。
     *   **参数**:

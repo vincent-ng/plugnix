@@ -15,7 +15,7 @@ import { createTenant } from '@/framework/api/tenants';
 import { toast } from 'sonner';
 
 export const CreateTenantDialog = ({ isOpen, onClose, onTenantCreated }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['tenant', 'common']);
   const [tenantName, setTenantName] = useState('');
   const [tenantDescription, setTenantDescription] = useState('');
   const [isCreating, setIsCreating] = useState(false);

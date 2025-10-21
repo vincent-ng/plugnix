@@ -32,7 +32,7 @@ import {
 } from './test-cases';
 
 const TestDbAutomation = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['common', 'tenant']);
   const { user } = useAuthentication();
   const { currentTenant } = useTenant();
   const [testResults, setTestResults] = useState([]);

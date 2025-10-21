@@ -15,6 +15,8 @@ import zhRoles from './tenant-roles/i18n/zh.json';
 import enRoles from './tenant-roles/i18n/en.json';
 import zhUsers from './tenant-users/i18n/zh.json';
 import enUsers from './tenant-users/i18n/en.json';
+import zhTenant from './i18n/zh.json';
+import enTenant from './i18n/en.json';
 
 // 插件注册函数 - 符合框架规范
 export default function registerTenantPlugin({
@@ -26,6 +28,7 @@ export default function registerTenantPlugin({
   registerNavbarItem,
 }) {
   // 注册国际化命名空间（tenant-*）
+  registerI18nNamespace('tenant', { zh: zhTenant, en: enTenant });
   registerI18nNamespace('tenant-roles', { zh: zhRoles, en: enRoles });
   registerI18nNamespace('tenant-users', { zh: zhUsers, en: enUsers });
 

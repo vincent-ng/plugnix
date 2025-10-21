@@ -1,11 +1,10 @@
 import React from 'react';
-import { Outlet, useNavigate, useMatch } from 'react-router-dom';
+import { useNavigate, useMatch } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';
-import { registry } from '@/framework/api';
+import { registryApi } from '@/framework/api';
 import { Authorized } from '@/framework/components/Authorized';
 import { SidebarProvider } from '@components/ui/sidebar';
-import Logo from '../components/Logo.jsx';
 import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
 import { Button } from '@components/ui/button';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
@@ -15,11 +14,12 @@ import { Sun, Menu } from 'lucide-react';
 import { RecursiveAccordionMenu } from '@/framework/components/RecursiveAccordionMenu.jsx';
 import IconRenderer from '@/framework/components/IconRenderer.jsx';
 import TabBar from "@/framework/components/TabBar.jsx";
+import { DefaultLogo } from '@/framework/components/Logo.jsx';
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }) => {
   return (
     <TabProvider>
-      <AdminLayoutContent />
+      <AdminLayoutContent>{children}</AdminLayoutContent>
     </TabProvider>
   );
 };
@@ -35,12 +35,12 @@ const NavbarItemsRenderer = ({ items }) => {
   });
 };
 
-const AdminLayoutContent = () => {
+const AdminLayoutContent = ({ children }) => {
   const { tabs, isTabActive } = useTabs();
   const { toggleTheme } = useTheme();
 
-  const menuItems = registry.getAdminMenuItems();
-  const navbarItems = registry.getAdminNavbarItems();
+  const menuItems = registryApi.getAdminMenuItems();
+  const navbarItems = registryApi.getAdminNavbarItems();
 
   const renderMenuItem = (item) => <MenuItem item={item} />;
 
@@ -49,7 +49,7 @@ const AdminLayoutContent = () => {
       <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
         <DesktopSidebar menuItems={menuItems} renderMenuItem={renderMenuItem} />
         <div className="flex flex-col">
-          <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[48px] lg:px-6">
+          <header className="flex h-16 items-center gap-4 border-b bg-muted/40 px-4 lg:px-6">
             <MobileNav menuItems={menuItems} renderMenuItem={renderMenuItem} />
             <div className="flex-1">
               {tabs.length > 0 && <TabBar />}
@@ -62,8 +62,8 @@ const AdminLayoutContent = () => {
             <NavbarItemsRenderer items={navbarItems} />
           </header>
           <main className="flex-1 overflow-y-auto p-4">
-            {tabs.map(tab => {
-              const route = registry.findRoute(tab.path);
+            {tabs.length > 0 && tabs.map(tab => {
+              const route = registryApi.findRoute(tab.path);
               if (!route) return null;
               const Element = route.component;
               return (
@@ -74,7 +74,7 @@ const AdminLayoutContent = () => {
                 </div>
               );
             })}
-            {tabs.length === 0 && <Outlet />}
+            {tabs.length === 0 && children}
           </main>
         </div>
       </div>
@@ -114,8 +114,8 @@ const DesktopSidebar = ({ menuItems, renderMenuItem }) => {
   return (
     <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex h-14 items-center border-b px-4 lg:h-[48px] lg:px-6">
-          <Logo title="Plugnix" subtitle="Admin" linkTo="/" />
+        <div className="flex h-16 items-center border-b px-4 lg:px-6">
+          <DefaultLogo layout="admin" />
         </div>
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
@@ -142,7 +142,7 @@ const MobileNav = ({ menuItems, renderMenuItem }) => {
       </SheetTrigger>
       <SheetContent side="left" className="flex flex-col">
         <nav className="grid gap-2 text-lg font-medium">
-          <Logo title="Plugnix" subtitle="Admin" linkTo="/" />
+          <DefaultLogo layout="admin" />
           <RecursiveAccordionMenu menuItems={menuItems} renderItem={renderMenuItem} />
         </nav>
       </SheetContent>

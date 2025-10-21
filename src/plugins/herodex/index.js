@@ -46,6 +46,7 @@ export default function registerHerodexPlugin({
     label: 'herodex:admin.title',
     icon: '⚔️',
     order: 10,
+    position: 'admin',
     children: [{
       key: 'herodex-admin-dashboard',
       label: 'herodex:admin.dashboard',
@@ -63,8 +64,8 @@ export default function registerHerodexPlugin({
       label: 'herodex:admin.skills',
       path: '/admin/herodex/skills',
       component: AdminSkillManagement,
-    }]
-  }, 'admin');
+    }],
+  });
 
   // 注册玩家端路由和菜单
   registerMenuItem({
@@ -72,6 +73,7 @@ export default function registerHerodexPlugin({
     label: 'herodex:player.title',
     icon: '🗡️',
     order: 5,
+    position: 'public',
     children: [{
       key: 'herodex-player-dashboard',
       label: 'herodex:player.dashboard',
@@ -90,7 +92,6 @@ export default function registerHerodexPlugin({
       path: '/herodex/skills',
       component: PlayerSkillTree,
     }]
-  }, 'public');
+  });
 
-  console.log('Herodex plugin registered successfully');
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { registry, registryApi } from '@/framework/api';
+import { registryApi } from '@/framework/api';
 import { addPluginTranslations } from '@/framework/i18n';
 import { registerCoreProviders } from '@/framework/core-providers';
 import importAllPlugins from '@/plugins';
@@ -22,7 +22,7 @@ const initializeApp = async () => {
     });
 
     // 插件注册完成后，将注册的翻译资源添加到i18n实例
-    const i18nNamespaces = registry.getI18nNamespaces();
+    const i18nNamespaces = registryApi.getI18nNamespaces();
     i18nNamespaces.forEach((translations, pluginName) => {
       addPluginTranslations(pluginName, translations);
     });

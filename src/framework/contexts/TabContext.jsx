@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { registry } from '../api';
+import { registryApi } from '../api';
 import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 
 const TabContext = createContext();
@@ -40,7 +40,7 @@ export const TabProvider = ({ children }) => {
         switchTab(existingTab);
       }
     } else {
-      const route = registry.findRoute(path);
+      const route = registryApi.findRoute(path);
       if (route) {
         const newTab = { path, label, component: route.component };
         setTabs(prevTabs => [...prevTabs, newTab]);

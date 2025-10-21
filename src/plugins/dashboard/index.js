@@ -13,7 +13,8 @@ export default function register({ registerMenuItem, registerI18nNamespace }) {
     component: DashboardPage,
     icon: LayoutDashboard,
     order: 0,
-  }, 'admin');
+    position: 'admin'
+  });
 
   registerMenuItem({
     key: 'dashboard',
@@ -22,5 +23,6 @@ export default function register({ registerMenuItem, registerI18nNamespace }) {
     component: DashboardPage,
     icon: LayoutDashboard,
     order: 0,
-  }, 'user');
+    position: 'user'
+  });
 }

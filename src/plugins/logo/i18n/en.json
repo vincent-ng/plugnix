@@ -1,0 +1,10 @@
+{
+  "public": {
+    "title": "Plugnix",
+    "subtitle": "Modern Web Platform"
+  },
+  "admin": {
+    "title": "Plugnix Admin",
+    "subtitle": "Management Dashboard"
+  }
+}

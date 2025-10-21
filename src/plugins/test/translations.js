@@ -1,7 +1,7 @@
 // Test插件的翻译文件
 export default {
   en: {
-    title: 'Tailwind CSS Style Test Page',
+    title: 'Test Page',
     colorTest: 'Color Test',
     buttonTest: 'Button Test',
     cardTest: 'Card Test',
@@ -206,7 +206,7 @@ export default {
     }
   },
   zh: {
-    title: 'Tailwind CSS 样式测试页面',
+    title: '测试页',
     colorTest: '颜色测试',
     buttonTest: '按钮测试',
     cardTest: '卡片测试',

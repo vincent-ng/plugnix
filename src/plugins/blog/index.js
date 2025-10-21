@@ -66,18 +66,20 @@ export default function registerBlogPlugin({ registerMenuItem, registerRoute, re
     path: '/admin/blog',
     component: BlogListPage,
     icon: '📝',
-    order: 1
-  }, 'admin');
+    order: 1,
+    position: 'admin'
+  });
 
   registerRoute({
     path: '/admin/blog/create',
     component: CreateBlogPage,
+    layout: 'admin'
   });
 
   registerRoute({
     path: '/admin/blog/:id',
     component: BlogDetailPage,
+    layout: 'admin'
   });
 
-  console.log('Blog plugin registered successfully');
 }

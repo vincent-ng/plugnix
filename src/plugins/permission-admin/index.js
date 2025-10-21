@@ -26,8 +26,9 @@ export default function registerPermissionAdminPlugin({
     path: '/admin/permissions',
     component: PermissionAdminPage,
     permission: 'ui.permission-admin.view',
-    order: 100 // 较高的排序值，使其出现在核心功能区域
-  }, 'admin');
+    order: 100, // 较高的排序值，使其出现在核心功能区域
+    position: 'admin'
+  });
 
   // 5. 声明此插件进行管理操作所需的后端DB权限
   const tables = ['roles', 'permissions', 'role_permissions', 'user_roles'];
@@ -42,5 +43,4 @@ export default function registerPermissionAdminPlugin({
     });
   });
 
-  console.log('Permission Admin plugin registered successfully');
 }

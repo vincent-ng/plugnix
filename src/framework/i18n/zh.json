@@ -1,9 +1,5 @@
 {
   "common": {
-    "appPublicTitle": "Plugnix",
-    "appPublicSubtitle": "插件驱动的Web框架",
-    "appAdminTitle": "Plugnix后台",
-    "appAdminSubtitle": "插件管理控制台",
     "loading": "加载中...",
     "error": "错误",
     "success": "成功",
@@ -52,5 +48,18 @@
   "tabs": {
     "welcome": "欢迎使用管理面板。请选择菜单项开始使用。",
     "noTabsOpen": "当前没有打开的标签页"
+  },
+  "errors": {
+    "menuItemPositionRequired": "菜单项必须具有position属性",
+    "invalidMenuItemPosition": "无效的菜单项位置：{position}。必须是'admin'、'public'或'user'",
+    "navbarItemPositionRequired": "导航栏项必须具有position属性",
+    "invalidNavbarItemPosition": "无效的导航栏位置：{position}。必须是'admin'或'public'",
+    "layoutComponentRequired": "布局必须具有组件",
+    "layoutPositionRequired": "布局必须具有position属性",
+    "invalidLayoutPosition": "无效的布局位置：{position}。必须是'admin'或'public'",
+    "logoComponentRequired": "Logo必须具有组件",
+    "pluginNameAndTranslationsRequired": "需要插件名称和翻译",
+    "permissionNameRequired": "权限必须具有名称",
+    "providerNameAndComponentRequired": "提供者必须具有名称和组件"
   }
 }

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
-import { registry } from '@/framework/api';
+import { registryApi } from '@/framework/api';
 import { Authorized } from '@/framework/components/Authorized';
 import { Button } from '@components/ui/button';
 import { Badge } from '@components/ui/badge';
@@ -16,7 +16,6 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@components/ui/navigation-menu';
-import Logo from '../components/Logo.jsx';
 import SocialLinks from '../components/SocialLinks.jsx';
 import { LanguageSwitcher } from '@/framework/components/LanguageSwitcher.jsx';
 import {
@@ -24,6 +23,7 @@ import {
   Moon,
   Sun,
 } from 'lucide-react';
+import { DefaultLogo } from '@/framework/components/Logo.jsx';
 
 const NavbarItemsRenderer = ({ items }) => {
   return items.map((item) => {
@@ -36,8 +36,8 @@ const NavbarItemsRenderer = ({ items }) => {
   });
 };
 
-const PublicLayout = () => {
-  const menuItems = registry.getPublicMenuItems();
+const PublicLayout = ({ children }) => {
+  const menuItems = registryApi.getPublicMenuItems();
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
@@ -45,7 +45,7 @@ const PublicLayout = () => {
       <main className="flex-1 relative">
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="relative z-10">
-            <Outlet />
+            {children}
           </div>
         </div>
       </main>
@@ -59,7 +59,7 @@ function DesktopNav({ menuItems }) {
   const { t } = useTranslation('common');
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
-  const navbarItems = registry.getPublicNavbarItems();
+  const navbarItems = registryApi.getPublicNavbarItems();
 
   const isActiveRoute = (path) => location.pathname === path;
   const getNavLinkClassName = (isActive) =>
@@ -69,7 +69,7 @@ function DesktopNav({ menuItems }) {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Logo title={t('appPublicTitle')} subtitle={t('appPublicSubtitle')} linkTo="/" />
+          <DefaultLogo layout="public" />
 
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
@@ -134,7 +134,7 @@ function MobileNav({ menuItems }) {
       <SheetContent side="right" className="w-80">
         <div className="flex flex-col h-full">
           <div className="pb-6 border-b border-border">
-            <Logo title={t('appPublicTitle')} subtitle={t('appPublicSubtitle')} />
+            <DefaultLogo layout="public" />
           </div>
           <nav className="flex-1 py-6">
             <RecursiveAccordionMenu menuItems={menuItems} renderItem={renderMobileMenuItem} />
@@ -160,7 +160,7 @@ function Footer({ menuItems }) {
           <Card className="col-span-1 md:col-span-2 border-0 shadow-none bg-transparent">
             <CardContent className="p-0">
               <div className="mb-4">
-                <Logo title={t('appPublicTitle')} subtitle={t('appPublicSubtitle')} />
+                <DefaultLogo layout="public" />
               </div>
               <p className="text-sm text-muted-foreground max-w-md">{t('appDescription')}</p>
             </CardContent>

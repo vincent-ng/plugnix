@@ -26,14 +26,15 @@ export default function registerNotificationsModule({ registerI18nNamespace, reg
     key: 'notification-bell',
     component: NotificationBell,
     order: 10,
-  }, 'admin');
+    position: 'admin'
+  });
 
   // 注册通知铃铛到公共布局导航栏
   registerNavbarItem({
     key: 'notification-bell',
     component: NotificationBell,
     order: 10,
-  }, 'public');
+    position: 'public'
+  });
 
-  console.log('Notifications module registered successfully');
 }

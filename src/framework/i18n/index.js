@@ -46,7 +46,7 @@ export const addPluginTranslations = (pluginName, translations) => {
       i18n.addResourceBundle(lang, pluginName, translations[lang]);
     }
   });
-  console.log(`Available namespaces:`, i18n.options.ns);
+  // console.log(`Available namespaces:`, i18n.options.ns);
 };
 
 export default i18n;

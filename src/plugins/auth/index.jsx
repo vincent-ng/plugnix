@@ -23,12 +23,14 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
   // 注册路由
   registerRoute({
     path: '/login',
-    component: LoginPage
+    component: LoginPage,
+    layout: 'public'
   });
   
   registerRoute({
     path: '/register', 
-    component: RegisterPage
+    component: RegisterPage,
+    layout: 'public'
   });
   
   // 注册登出菜单项
@@ -37,8 +39,9 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
     icon: 'LogOut',
     menuItemComponent: SignOutMenuItem,
     separator: 'front',
-    order: 9999 // 确保登出按钮在最后
-  }, 'user');
+    order: 9999, // 确保登出按钮在最后
+    position: 'user'
+  });
 
   // 注册认证Provider - 提供用户认证功能
   registerProvider({
@@ -53,13 +56,14 @@ export default function registerAuthModule({ registerI18nNamespace, registerMenu
     key: 'user-nav',
     component: UserNav,
     order: 100,
-  }, 'admin');
+    position: 'admin'
+  });
 
   registerNavbarItem({
     key: 'user-nav',
     component: UserNav,
     order: 100,
-  }, 'public');
+    position: 'public'
+  });
 
-  console.log('Auth module routes, i18n, user menu and navbar item registered successfully');
 }

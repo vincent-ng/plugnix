@@ -8,7 +8,8 @@ export default function registerPluginProfile({ registerMenuItem, registerI18nNa
     path: '/profile',
     icon: 'User',
     component: ProfilePage,
-  }, 'user');
+    position: 'user'
+  });
 
   registerI18nNamespace('profile', { en, zh });
 }

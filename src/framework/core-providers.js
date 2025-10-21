@@ -32,5 +32,4 @@ export function registerCoreProviders({ registerProvider }) {
     description: '提供主题切换功能，支持明暗主题切换'
   });
 
-  console.log('Core providers registered');
 }

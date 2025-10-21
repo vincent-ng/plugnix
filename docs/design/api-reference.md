@@ -4,10 +4,22 @@
 
 *   **`registerRoute(routeObject)`**
     *   **功能**: 注册一个新路由。
-    *   **参数**: `routeObject` (对象) - 包含路由信息的对象，例如 `{ path: '/my-plugin', component: MyPluginPage }`。
-    *   **示例**: `registerRoute({ path: '/about', component: AboutPage });`
+    *   **参数**: `routeObject` (对象) - 包含路由信息的对象。
+        *   `path` (字符串，必需) - 路由路径。
+        *   `component` (React组件，必需) - 路由对应的React组件。
+        *   `permissions` (字符串|字符串数组，可选) - 访问该路由所需的权限。
+        *   `layout` (字符串，可选) - 路由使用的布局类型，可以是 `'admin'` 或 `'public'`，默认为 `'public'`。
+    *   **示例**:
+        ```javascript
+        registerRoute({
+          path: '/admin/users/:id/edit',
+          component: UserEditPage,
+          permissions: ['db.user.edit'],
+          layout: 'admin'
+        });
+        ```
 
-*   **`registerMenuItem(menuItemObject, position)`**
+*   **`registerMenuItem(menuItemObject)`**
     *   **功能**: 在指定位置注册一个新菜单项。如果 `menuItemObject` 同时包含 `path` 和 `component` 属性，该函数还会自动注册一个对应的路由。
     *   **参数**:
         *   `menuItemObject` (对象) - 包含菜单项信息的对象。
@@ -17,20 +29,46 @@
             *   `component` (React组件, 可选) - 当同时提供 `path` 时用于注册路由页面组件。
             *   `menuItemComponent` (React组件, 可选) - 用于渲染菜单项的自定义组件（适用于 `user` 菜单需要使用 Context 的场景）。
             *   `icon` (字符串|React组件，可选) - 菜单项图标。
+            *   `children` (数组，可选) - 子菜单项数组，用于创建可折叠的菜单组。
             *   `order` (数字，可选) - 菜单项排序权重，数字越小越靠前。
             *   `className` (字符串，可选) - 自定义CSS类名 (主要用于 `user` 菜单)。
             *   `onClick` (函数，可选) - 点击事件处理函数 (主要用于 `user` 菜单)。
-        *   `position` (字符串) - 菜单项的注册位置。必须是以下值之一：
-            *   `'admin'`: 后台管理界面的主菜单。
-            *   `'public'`: 公共页面的导航菜单。
-            *   `'user'`: 用户下拉菜单。
+            *   `permissions` (字符串|字符串数组，可选) - 查看该菜单项所需的权限。
+            *   `separator` (字符串，可选) - 在菜单项前后添加分隔线，可以是 `'front'`、`'end'` 或 `'both'`。
+            *   `position` (字符串，可选) - 菜单项的注册位置，默认为 `'public'`。必须是以下值之一：
+                *   `'admin'`: 后台管理界面的主菜单。
+                *   `'public'`: 公共页面的导航菜单。
+                *   `'user'`: 用户下拉菜单。
     *   **示例**:
-        *   注册管理菜单项: `registerMenuItem({ key: 'users', label: 'User Management', path: '/admin/users', component: UserPage, icon: UserIcon, order: 20 }, 'admin');`
-        *   注册公共菜单项: `registerMenuItem({ key: 'about', label: 'About Us', path: '/about', component: AboutPage, order: 50 }, 'public');`
-        *   注册用户菜单项: `registerMenuItem({ key: 'profile', label: 'Profile', path: '/profile', component: ProfilePage, order: 10 }, 'user');`
-        *   注册自定义组件用户菜单项: `registerMenuItem({ key: 'signOut', menuItemComponent: SignOutMenuItem, order: 999 }, 'user');`
+        *   注册管理菜单项: `registerMenuItem({ key: 'users', label: 'User Management', path: '/admin/users', component: UserPage, icon: UserIcon, order: 20, position: 'admin' });`
+        *   注册公共菜单项: `registerMenuItem({ key: 'about', label: 'About Us', path: '/about', component: AboutPage, order: 50, position: 'public' });`
+        *   注册用户菜单项: `registerMenuItem({ key: 'profile', label: 'Profile', path: '/profile', component: ProfilePage, order: 10, position: 'user' });`
+        *   注册自定义组件用户菜单项: `registerMenuItem({ key: 'signOut', menuItemComponent: SignOutMenuItem, order: 999, position: 'user' });`
+        *   注册带分组的菜单:
+            ```javascript
+            registerMenuItem({
+              key: 'settings',
+              label: 'Settings',
+              icon: '⚙️',
+              position: 'admin',
+              children: [
+                {
+                  key: 'general',
+                  label: 'General',
+                  path: '/admin/settings/general',
+                  component: GeneralSettingsPage,
+                },
+                {
+                  key: 'account',
+                  label: 'Account',
+                  path: '/admin/settings/account',
+                  component: AccountSettingsPage,
+                }
+              ]
+            });
+            ```
 
-*   **`registerNavbarItem(navbarItemObject, position)`**
+*   **`registerNavbarItem(navbarItemObject)`**
     *   **功能**: 在指定位置注册一个导航栏插槽项。导航栏插槽项是显示在导航栏中的自定义组件，可以用于添加搜索框、通知按钮、用户信息等。
     *   **参数**:
         *   `navbarItemObject` (对象) - 包含导航栏项信息的对象。
@@ -38,12 +76,12 @@
             *   `component` (React组件，必需) - 要渲染的组件。
             *   `order` (数字，可选) - 导航栏项排序权重，数字越小越靠前。
             *   `permissions` (字符串|字符串数组，可选) - 查看该项所需的权限。
-        *   `position` (字符串) - 导航栏项的注册位置。必须是以下值之一：
-            *   `'admin'`: 后台管理界面的导航栏。
-            *   `'public'`: 公共页面的导航栏。
+            *   `position` (字符串，可选) - 导航栏项的注册位置，默认为 `'public'`。必须是以下值之一：
+                *   `'admin'`: 后台管理界面的导航栏。
+                *   `'public'`: 公共页面的导航栏。
     *   **示例**:
-        *   注册后台导航栏项: `registerNavbarItem({ key: 'search', component: SearchBox, order: 10 }, 'admin');`
-        *   注册公共导航栏项: `registerNavbarItem({ key: 'notification', component: NotificationButton, order: 20, permissions: ['user.read'] }, 'public');`
+        *   注册后台导航栏项: `registerNavbarItem({ key: 'search', component: SearchBox, order: 10, position: 'admin' });`
+        *   注册公共导航栏项: `registerNavbarItem({ key: 'notification', component: NotificationButton, order: 20, permissions: ['user.read'], position: 'public' });`
 
 *   **`registerI18nNamespace(pluginName, translations)`**
     *   **功能**: 为插件注册国际化（i18n）翻译资源。
@@ -58,3 +96,44 @@
         *   `name` (字符串，必需) - 权限名称，用于权限检查。
         *   `description` (字符串，可选) - 权限描述。
     *   **示例**: `registerPermission({ name: 'ui.blog.create', description: '创建博客文章' });`
+
+*   **`registerProvider(providerObject)`**
+    *   **功能**: 注册一个React Provider组件，用于向应用提供全局状态或上下文。
+    *   **参数**: `providerObject` (对象) - 包含Provider信息的对象
+        *   `name` (字符串，必需) - Provider名称，必须唯一。
+        *   `component` (React组件，必需) - Provider组件。
+        *   `props` (对象，可选) - 传递给Provider的props。
+        *   `order` (数字，可选) - Provider排序权重，数字越小越靠前。
+        *   `dependencies` (字符串数组，可选) - 依赖的其他Provider名称。
+    *   **示例**:
+        ```javascript
+        registerProvider({
+          name: 'MyProvider',
+          component: MyProvider,
+          props: { initialValue: 'test' },
+          order: 10,
+          dependencies: ['AuthenticationProvider']
+        });
+        ```
+
+*   **`registerLogo(logoObject)`**
+    *   **功能**: 注册一个Logo组件，用于替换默认的应用Logo。
+    *   **参数**: `logoObject` (对象) - 包含Logo信息的对象
+        *   `component` (React组件，必需) - Logo组件，接收layout参数。
+    *   **示例**:
+        ```javascript
+        registerLogo({
+          component: MyLogoComponent,
+        });
+        ```
+
+*   **`registerLayout(layoutObject)`**
+    *   **功能**: 注册一个自定义布局组件，用于替换特定页面的默认布局。
+    *   **参数**:
+        *   `layoutObject` (对象) - 包含布局信息的对象。
+            *   `key` (字符串) - 布局的唯一标识。
+            *   `component` (React组件) - 布局组件。
+            *   `position` (字符串，可选) - 布局的注册位置，默认为 `'public'`。必须是以下值之一：
+                *   `'admin'`: 后台管理界面的布局。
+                *   `'public'`: 公共页面的布局。
+    *   **示例**: `registerLayout({ key: 'customAdminLayout', component: CustomAdminLayout, position: 'admin' });`

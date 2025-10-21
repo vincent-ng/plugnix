@@ -1,9 +1,5 @@
 {
   "common": {
-    "appPublicTitle": "Plugnix",
-    "appPublicSubtitle": "Plugin-Driven Web Framework",
-    "appAdminTitle": "Plugnix Admin",
-    "appAdminSubtitle": "Plugin Management Console",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
@@ -52,5 +48,18 @@
   "tabs": {
     "welcome": "Welcome to the admin panel. Please select a menu item to get started.",
     "noTabsOpen": "No tabs are currently open"
+  },
+  "errors": {
+    "menuItemPositionRequired": "Menu item must have a position property",
+    "invalidMenuItemPosition": "Invalid menu item position: {position}. Must be 'admin', 'public', or 'user'",
+    "navbarItemPositionRequired": "Navbar item must have a position property",
+    "invalidNavbarItemPosition": "Invalid navbar position: {position}. Must be 'admin' or 'public'",
+    "layoutComponentRequired": "Layout must have a component",
+    "layoutPositionRequired": "Layout must have a position property",
+    "invalidLayoutPosition": "Invalid layout position: {position}. Must be 'admin' or 'public'",
+    "logoComponentRequired": "Logo must have a component",
+    "pluginNameAndTranslationsRequired": "Plugin name and translations are required",
+    "permissionNameRequired": "Permission must have a name",
+    "providerNameAndComponentRequired": "Provider must have a name and component"
   }
 }

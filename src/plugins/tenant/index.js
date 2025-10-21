@@ -70,12 +70,14 @@ export default function registerTenantPlugin({
         order: 36,
       },
     ],
-  }, 'admin');
+    position: 'admin'
+  });
 
   registerRoute({
     path: '/admin/tenant-roles',
     component: TenantRolesPage,
     permissions: ['db.roles.select'],
+    layout: 'admin'
   });
 
   // 注册组织Provider - 提供多组织支持（通过事件总线与认证解耦）
@@ -92,14 +94,15 @@ export default function registerTenantPlugin({
     key: 'tenant-switcher',
     component: TenantSwitcher,
     order: 20,
-  }, 'public');
+    position: 'public'
+  });
 
   // 将 TenantSwitcher 注册到后台导航栏右侧插槽
   registerNavbarItem({
     key: 'tenant-switcher',
     component: TenantSwitcher,
     order: 20,
-  }, 'admin');
+    position: 'admin'
+  });
 
-  console.log('Tenant plugin registered successfully');
 }

@@ -6,8 +6,6 @@ import NotificationTestPage from './NotificationTestPage.jsx';
 
 // 注册test插件的函数
 const registerTestPlugin = ({ registerMenuItem, registerRoute, registerI18nNamespace }) => {
-  console.log('Registering test plugin...');
-
   // 注册翻译
   registerI18nNamespace('test', translations);
 
@@ -46,10 +44,10 @@ const registerTestPlugin = ({ registerMenuItem, registerRoute, registerI18nNames
       name: 'Notification Test Page',
       icon: '🔔',
       order: 80
-    }]
-  }, 'public');
+    }],
+    position: 'public'
+  });
 
-  console.log('Test plugin registered successfully');
 };
 
 export default registerTestPlugin;

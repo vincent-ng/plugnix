@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from '@/framework/contexts/AuthenticationContext.jsx';
-import { registry } from '@/framework/api';
+import { registryApi } from '@/framework/api';
 import { Button } from '@components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import {
@@ -13,18 +13,28 @@ import {
   DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
 import { RecursiveDropdownMenuItem } from '@/framework/components/RecursiveDropdownMenuItem.jsx';
+import { Loader2 } from 'lucide-react';
 
 export const UserNav = () => {
-  const { t } = useTranslation('common');
-  const { user } = useAuthentication();
+  const { t } = useTranslation('auth');
+  const { user, loading } = useAuthentication();
   const navigate = useNavigate();
 
-  const userMenuItems = registry.getUserMenuItems();
+  const userMenuItems = registryApi.getUserMenuItems();
 
   const handleLoginClick = () => navigate('/login');
 
+  // 显示加载状态
+  if (loading) {
+    return (
+      <Button variant="ghost" className="relative h-8 w-8 rounded-full" disabled>
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </Button>
+    );
+  }
+
   if (!user) {
-    return <Button onClick={handleLoginClick}>{t('auth:signIn', '登录')}</Button>;
+    return <Button onClick={handleLoginClick}>{t('common.signIn')}</Button>;
   }
 
   const Trigger = React.forwardRef((props, ref) => {

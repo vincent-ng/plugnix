@@ -12,12 +12,19 @@ class Registry {
     this.providers = [];
     this.adminNavbarItems = [];
     this.publicNavbarItems = [];
+    this.logoComponent = null;
+    this.adminLayout = null;
+    this.publicLayout = null;
   }
 
   // 统一的菜单项注册方法
-  registerMenuItem(menuItem, position) {
+  registerMenuItem(menuItem) {
+    if (!menuItem.position) {
+      throw new Error('errors.menuItemPositionRequired');
+    }
+    
     let targetArray;
-    switch (position) {
+    switch (menuItem.position) {
       case 'admin':
         targetArray = this.adminMenuItems;
         break;
@@ -28,14 +35,18 @@ class Registry {
         targetArray = this.userMenuItems;
         break;
       default:
-        throw new Error(`Invalid menu item position: ${position}`);
+        throw new Error('errors.invalidMenuItemPosition', { position: menuItem.position });
     }
     insertSorted(targetArray, menuItem);
   }
 
   // 注册导航栏插槽项（按 order 排序）
-  registerNavbarItem(navbarItem, position) {
-    switch (position) {
+  registerNavbarItem(navbarItem) {
+    if (!navbarItem.position) {
+      throw new Error('errors.navbarItemPositionRequired');
+    }
+    
+    switch (navbarItem.position) {
       case 'admin':
         insertSorted(this.adminNavbarItems, navbarItem);
         break;
@@ -43,46 +54,96 @@ class Registry {
         insertSorted(this.publicNavbarItems, navbarItem);
         break;
       default:
-        throw new Error(`Invalid navbar position: ${position}`);
+        throw new Error('errors.invalidNavbarItemPosition', { position: navbarItem.position });
     }
+  }
+
+  // 注册Logo组件
+  registerLogo(logoObject) {
+    if (!logoObject.component) {
+      throw new Error('errors.logoComponentRequired');
+    }
+
+    this.logoComponent = {
+      component: logoObject.component,
+      props: logoObject.props || {}
+    };
+
+    // console.log('Logo component registered');
+    return this.logoComponent;
+  }
+
+  // 注册Layout组件
+  registerLayout(layoutObject) {
+    if (!layoutObject.component) {
+      throw new Error('errors.layoutComponentRequired');
+    }
+    
+    if (!layoutObject.position) {
+      throw new Error('errors.layoutPositionRequired');
+    }
+
+    const layout = {
+      component: layoutObject.component,
+      props: layoutObject.props || {}
+    };
+
+    switch (layoutObject.position) {
+      case 'admin':
+        this.adminLayout = layout;
+        // console.log('Admin layout component registered');
+        break;
+      case 'public':
+        this.publicLayout = layout;
+        // console.log('Public layout component registered');
+        break;
+      default:
+        throw new Error('errors.invalidLayoutPosition', { position: layoutObject.position });
+    }
+
+    return layout;
   }
 
   // 注册路由
   registerRoute(route) {
+    // 如果没有指定layout，默认为'public'
+    if (!route.layout) {
+      route.layout = 'public';
+    }
     this.routes.push(route);
   }
 
   // 注册国际化命名空间
   registerI18nNamespace(pluginName, translations) {
     if (!pluginName || !translations) {
-      throw new Error('Plugin name and translations are required');
+      throw new Error('errors.pluginNameAndTranslationsRequired');
     }
     this.i18nNamespaces.set(pluginName, translations);
-    console.log(`I18n namespace registered: ${pluginName}`);
+    // console.log(`I18n namespace registered: ${pluginName}`);
   }
 
   // 注册权限
   registerPermission(permissionObject) {
     if (!permissionObject.name) {
-      throw new Error('Permission must have a name');
+      throw new Error('errors.permissionNameRequired');
     }
-    
+
     const permission = {
       name: permissionObject.name,
       description: permissionObject.description || '',
       ...permissionObject
     };
-    
+
     this.permissions.set(permission.name, permission);
-    console.log(`Permission registered: ${permission.name}`);
+    // console.log(`Permission registered: ${permission.name}`);
   }
 
   // 注册Provider
   registerProvider(providerObject) {
     if (!providerObject.name || !providerObject.component) {
-      throw new Error('Provider must have a name and component');
+      throw new Error('errors.providerNameAndComponentRequired');
     }
-    
+
     const provider = {
       name: providerObject.name,
       component: providerObject.component,
@@ -90,19 +151,19 @@ class Registry {
       order: providerObject.order || 999,
       dependencies: providerObject.dependencies || []
     };
-    
+
     // 检查是否已存在同名Provider
     const existingIndex = this.providers.findIndex(p => p.name === provider.name);
     if (existingIndex !== -1) {
       // 替换现有Provider
       this.providers[existingIndex] = provider;
-      console.log(`Provider replaced: ${provider.name}`);
+      // console.log(`Provider replaced: ${provider.name}`);
     } else {
       // 按order排序插入
       insertSorted(this.providers, provider);
-      console.log(`Provider registered: ${provider.name}`);
+      // console.log(`Provider registered: ${provider.name}`);
     }
-    
+
     return provider;
   }
 
@@ -145,6 +206,23 @@ class Registry {
 
   getPublicNavbarItems() {
     return this.publicNavbarItems;
+  }
+
+  // 获取Logo组件
+  getLogo() {
+    return this.logoComponent;
+  }
+
+  // 获取Layout组件
+  getLayout(position) {
+    switch (position) {
+      case 'admin':
+        return this.adminLayout;
+      case 'public':
+        return this.publicLayout;
+      default:
+        throw new Error(`Invalid layout position: ${position}`);
+    }
   }
 
   // 获取所有国际化命名空间
@@ -191,7 +269,4 @@ function insertSorted(array, item) {
   }
 }
 
-// 创建全局注册中心实例
-const registry = new Registry();
-
-export default registry;
+export default Registry;

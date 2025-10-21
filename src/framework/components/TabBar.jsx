@@ -27,7 +27,7 @@ const TabBar = () => {
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <SortableContext items={tabs.map(t => t.path)} strategy={horizontalListSortingStrategy}>
-        <div className="flex h-12 border-b bg-background">
+        <div className="flex h-16 border-b bg-background">
           {tabs.map(tab => (
             <TabItem key={tab.path} tab={tab} />
           ))}

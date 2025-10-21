@@ -3,8 +3,6 @@ import LandingPage from './LandingPage.jsx';
 
 // 注册landing插件的函数
 const registerPluginLanding = ({ registerMenuItem, registerI18nNamespace }) => {
-  console.log('Registering landing plugin...');
-
   // 注册翻译
   registerI18nNamespace('landing', translations);
 
@@ -14,10 +12,10 @@ const registerPluginLanding = ({ registerMenuItem, registerI18nNamespace }) => {
     path: '/',
     component: LandingPage,
     order: 0,
-    name: 'Landing Page'
-  }, 'public');
+    name: 'Landing Page',
+    position: 'public'
+  });
 
-  console.log('Landing plugin registered successfully');
 };
 
 export default registerPluginLanding;

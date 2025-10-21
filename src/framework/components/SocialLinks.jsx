@@ -16,12 +16,12 @@ const SocialLinks = ({
       href: 'https://github.com/vincent-ng/plugnix', // 这里可以配置实际的链接
       label: 'GitHub'
     },
-    {
-      name: 'Twitter',
-      icon: Twitter,
-      href: '#', // 这里可以配置实际的链接
-      label: 'Twitter'
-    }
+    // {
+    //   name: 'Twitter',
+    //   icon: Twitter,
+    //   href: '#', // 这里可以配置实际的链接
+    //   label: 'Twitter'
+    // }
   ];
 
   return (

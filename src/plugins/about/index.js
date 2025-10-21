@@ -22,6 +22,8 @@ export default function registerPlugin({ registerMenuItem, registerI18nNamespace
     key: 'about',
     label: 'about:title',
     path: '/about',
-    component: AboutPage
-  }, 'public');
+    component: AboutPage,
+    order: 10,
+    position: 'public'
+  });
 }

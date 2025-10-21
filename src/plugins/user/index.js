@@ -82,8 +82,9 @@ export default function registerUserPlugin({ registerMenuItem, registerRoute, re
     path: '/admin/users',
     component: UserListPage,
     icon: '👥',
-    order: 2
-  }, 'admin');
+    order: 2,
+    position: 'admin'
+  });
 
   registerRoute({
     path: '/admin/users/create',
@@ -95,5 +96,4 @@ export default function registerUserPlugin({ registerMenuItem, registerRoute, re
     component: UserDetailPage,
   });
 
-  console.log('User management plugin registered successfully');
 }

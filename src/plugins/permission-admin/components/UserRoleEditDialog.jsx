@@ -22,20 +22,6 @@ const UserRoleEditDialog = ({ user, open, onOpenChange, onSave }) => {
   const [availableRoles, setAvailableRoles] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // 加载可用角色
-  useEffect(() => {
-    if (open) {
-      loadAvailableRoles();
-    }
-  }, [open, loadAvailableRoles]);
-
-  // 初始化选中的角色
-  useEffect(() => {
-    if (user) {
-      setSelectedRoles(user.roles || []);
-    }
-  }, [user]);
-
   const loadAvailableRoles = useCallback(async () => {
     try {
       const roles = await permissionAdminAPI.getRoles();
@@ -67,7 +53,21 @@ const UserRoleEditDialog = ({ user, open, onOpenChange, onSave }) => {
     }
   }, [t]);
 
-  const handleRoleToggle = (roleName) => {
+  // 加载可用角色
+  useEffect(() => {
+    if (open) {
+      loadAvailableRoles();
+    }
+  }, [open, loadAvailableRoles]);
+
+  // 初始化选中的角色
+  useEffect(() => {
+    if (user) {
+      setSelectedRoles(user.roles || []);
+    }
+  }, [user, setSelectedRoles]);
+
+  const handleRoleToggle = useCallback((roleName) => {
     setSelectedRoles(prev => {
       if (prev.includes(roleName)) {
         return prev.filter(r => r !== roleName);
@@ -75,7 +75,7 @@ const UserRoleEditDialog = ({ user, open, onOpenChange, onSave }) => {
         return [...prev, roleName];
       }
     });
-  };
+  }, [setSelectedRoles]);
 
   const handleSave = async () => {
     if (!user) return;

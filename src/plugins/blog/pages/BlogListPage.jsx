@@ -8,10 +8,6 @@ const BlogListPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchBlogs();
-  }, [fetchBlogs]);
-
   const fetchBlogs = useCallback(async () => {
     try {
       setLoading(true);
@@ -54,6 +50,10 @@ const BlogListPage = () => {
       setLoading(false);
     }
   }, [t]);
+
+  useEffect(() => {
+    fetchBlogs();
+  }, [fetchBlogs]);
 
   const handleDelete = async (id) => {
     if (window.confirm(t('confirmDelete'))) {

@@ -23,11 +23,6 @@ const PermissionManagementTab = () => {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
-  // 加载权限数据
-  useEffect(() => {
-    loadPermissions();
-  }, [loadPermissions]);
-
   const loadPermissions = useCallback(async () => {
     setLoading(true);
     try {
@@ -129,6 +124,11 @@ const PermissionManagementTab = () => {
       setLoading(false);
     }
   }, [t]);
+
+  // 加载权限数据
+  useEffect(() => {
+    loadPermissions();
+  }, [loadPermissions]);
 
   // 搜索过滤
   useEffect(() => {

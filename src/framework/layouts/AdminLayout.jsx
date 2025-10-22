@@ -1,4 +1,5 @@
-import { useNavigate, useMatch } from 'react-router-dom';
+import { useNavigate, useMatch, useLocation, matchPath } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';
 import { registryApi } from '@/framework/api';
@@ -34,12 +35,48 @@ const NavbarItemsRenderer = ({ items }) => {
   });
 };
 
+// 根据路径查找menuItem的辅助函数 - 使用matchPath实现专业路径匹配
+const findMenuItemByPath = (items, targetPath) => {
+  for (const item of items) {
+    // 使用matchPath进行路径匹配，支持路径参数和通配符
+    // 例如：menuItem.path='/admin/blog/:id' 可以匹配 '/admin/blog/1'
+    if (item.path) {
+      if (matchPath(item.path, targetPath)) {
+        return item;
+      }
+    }
+
+    if (item.children) {
+      const found = findMenuItemByPath(item.children, targetPath);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 const AdminLayoutContent = ({ children }) => {
-  const { tabs, isTabActive } = useTabs();
+  const { tabs, isTabActive, openTab, activeTab } = useTabs();
   const { toggleTheme } = useTheme();
+  const location = useLocation();
 
   const menuItems = registryApi.getAdminMenuItems();
   const navbarItems = registryApi.getAdminNavbarItems();
+
+  // 初始化tab状态 - 根据当前路径找到对应的menuItem并打开tab
+  useEffect(() => {
+    const currentPath = location.pathname;
+
+    // 只在有路径且tabs为空时初始化
+    if (currentPath && currentPath !== '/admin' && currentPath !== '/admin/' && tabs.length === 0) {
+      const menuItem = findMenuItemByPath(menuItems, currentPath);
+      if (menuItem) {
+        openTab({
+          path: currentPath,
+          label: menuItem.label
+        });
+      }
+    }
+  }, [location.pathname, tabs.length, menuItems, openTab]);
 
   const renderMenuItem = (item) => <MenuItem item={item} />;
 
@@ -73,7 +110,7 @@ const AdminLayoutContent = ({ children }) => {
                 </div>
               );
             })}
-            {tabs.length === 0 && children}
+            {(tabs.length === 0 || !activeTab) && children}
           </main>
         </div>
       </div>

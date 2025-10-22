@@ -23,11 +23,6 @@ export default function TenantRolesPage() {
   const [editingRole, setEditingRole] = useState(null);
   const [dialogMode, setDialogMode] = useState('edit');
 
-  useEffect(() => {
-    if (!currentTenant) return;
-    loadRoles();
-  }, [currentTenant, loadRoles]);
-
   const loadRoles = useCallback(async () => {
     setLoading(true);
     try {
@@ -39,6 +34,11 @@ export default function TenantRolesPage() {
       setLoading(false);
     }
   }, [currentTenant, t]);
+
+  useEffect(() => {
+    if (!currentTenant) return;
+    loadRoles();
+  }, [currentTenant, loadRoles]);
 
   const handleCreateClick = () => {
     setEditingRole(null);

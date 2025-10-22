@@ -1,5 +1,4 @@
 import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { useTabs } from '@/framework/contexts/TabContext.jsx';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@components/ui/button';
@@ -11,7 +10,7 @@ const TabItem = ({ tab }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: tab.path });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
   };
 

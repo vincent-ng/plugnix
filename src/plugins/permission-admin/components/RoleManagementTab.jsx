@@ -25,11 +25,6 @@ const RoleManagementTab = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 加载角色数据
-  useEffect(() => {
-    loadRoles();
-  }, [loadRoles]);
-
   const loadRoles = useCallback(async () => {
     setLoading(true);
     try {
@@ -78,6 +73,11 @@ const RoleManagementTab = () => {
       setLoading(false);
     }
   }, [t]);
+
+  // 加载角色数据
+  useEffect(() => {
+    loadRoles();
+  }, [loadRoles]);
 
   // 搜索过滤
   useEffect(() => {

@@ -11,10 +11,6 @@ const UserListPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('');
 
-  useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
-
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
@@ -42,6 +38,10 @@ const UserListPage = () => {
       setLoading(false);
     }
   }, [t]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleStatusToggle = async (userId, currentStatus) => {
     try {

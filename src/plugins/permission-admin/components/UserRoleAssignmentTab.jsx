@@ -32,11 +32,6 @@ const UserRoleAssignmentTab = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // 加载用户数据
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
   // 搜索过滤
   useEffect(() => {
     if (!searchTerm) {
@@ -115,6 +110,11 @@ const UserRoleAssignmentTab = () => {
       setLoading(false);
     }
   };
+
+  // 加载用户数据
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const handleEditUser = (user) => {
     setEditingUser(user);

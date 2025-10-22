@@ -10,10 +10,6 @@ const BlogDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchBlog();
-  }, [id, fetchBlog]);
-
   const fetchBlog = useCallback(async () => {
     try {
       setLoading(true);
@@ -40,6 +36,10 @@ const BlogDetailPage = () => {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    fetchBlog();
+  }, [id, fetchBlog]);
 
   const handleDelete = async () => {
     if (window.confirm('确定要删除这篇博客吗？')) {

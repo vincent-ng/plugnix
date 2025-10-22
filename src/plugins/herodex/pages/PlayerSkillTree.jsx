@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactFlow, {
   Controls,
@@ -56,11 +56,8 @@ const getLayoutedElements = (nodes, edges, direction = 'TB') => {
 
 const PlayerSkillTree = () => {
   const { t } = useTranslation('herodex');
-  const [player, setPlayer] = useState(null);
   const [allSkills, setAllSkills] = useState([]);
-  const [playerSkills, setPlayerSkills] = useState([]);
   const [subjects, setSubjects] = useState([]);
-  const [dependencies, setDependencies] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // React Flow 状态
@@ -73,19 +70,60 @@ const PlayerSkillTree = () => {
   }), []);
 
   // 生成React Flow的节点和边数据
-  const generateFlowData = (skills, playerSkillsData, dependenciesData) => {
+  const generateFlowData = useCallback((skills, playerSkillsData, dependenciesData) => {
     const flowNodes = skills.map(skill => {
-      const skillStatus = getSkillStatus(skill, {
-        playerSkillsData,
-        dependenciesData,
-        skillsData: skills
-      });
+      // 直接在这里计算技能状态，避免函数间的循环依赖
+      const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
+      const playerSkillData = playerSkillsMap.get(skill.skill_id);
+      
+      let skillStatus;
+      if (playerSkillData) {
+        skillStatus = {
+          status: playerSkillData.status,
+          level: playerSkillData.current_level || 0,
+          proficiency: playerSkillData.current_proficiency || 0,
+          maxProficiency: getMaxProficiencyForLevel(skill, playerSkillData.current_level || 1)
+        };
+      } else {
+        // 计算前置条件
+        const prerequisites = dependenciesData
+          .filter(dep => dep.skill_id === skill.skill_id)
+          .map(dep => {
+            const prerequisiteSkill = skills.find(s => s.skill_id === dep.prerequisite_skill_id);
+            const prerequisitePlayerSkill = playerSkillsMap.get(dep.prerequisite_skill_id);
+            const isMet = prerequisitePlayerSkill ? prerequisitePlayerSkill.current_level >= dep.unlock_level : false;
+            
+            return {
+              ...dep,
+              skill: prerequisiteSkill,
+              isMet
+            };
+          });
+          
+        const isUnlockable = prerequisites.length === 0 || prerequisites.every(prereq => prereq.isMet);
+        
+        skillStatus = {
+          status: isUnlockable ? 'UNLOCKED' : 'LOCKED',
+          level: 0,
+          proficiency: 0,
+          maxProficiency: getMaxProficiencyForLevel(skill, 1)
+        };
+      }
 
-      const prerequisites = getPrerequisites(skill.skill_id, {
-        dependenciesData,
-        skillsData: skills,
-        playerSkillsData
-      });
+      // 计算前置条件（用于显示）
+      const prerequisites = dependenciesData
+        .filter(dep => dep.skill_id === skill.skill_id)
+        .map(dep => {
+          const prerequisiteSkill = skills.find(s => s.skill_id === dep.prerequisite_skill_id);
+          const prerequisitePlayerSkill = playerSkillsMap.get(dep.prerequisite_skill_id);
+          const isMet = prerequisitePlayerSkill ? prerequisitePlayerSkill.current_level >= dep.unlock_level : false;
+
+          return {
+            ...dep,
+            skill: prerequisiteSkill,
+            isMet
+          };
+        });
 
       return {
         id: skill.skill_id,
@@ -116,7 +154,7 @@ const PlayerSkillTree = () => {
 
     setNodes(layoutedNodes);
     setEdges(layoutedEdges);
-  };
+  }, [handleSkillClick, setNodes, setEdges, getMaxProficiencyForLevel]);
 
   // 处理技能点击 - 现在由SkillNode内部处理
   const handleSkillClick = useCallback((skill) => {
@@ -129,9 +167,9 @@ const PlayerSkillTree = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -141,8 +179,6 @@ const PlayerSkillTree = () => {
         return;
       }
 
-      setPlayer(currentPlayer);
-
       const [allSkillsData, playerSkillsData, subjectsData, dependenciesData] = await Promise.all([
         skillService.getAllSkills(),
         skillService.getPlayerSkills(currentPlayer.player_id),
@@ -151,9 +187,7 @@ const PlayerSkillTree = () => {
       ]);
 
       setAllSkills(allSkillsData);
-      setPlayerSkills(playerSkillsData);
       setSubjects(subjectsData);
-      setDependencies(dependenciesData);
 
       // 生成React Flow的节点和边
       generateFlowData(allSkillsData, playerSkillsData, dependenciesData);
@@ -163,93 +197,14 @@ const PlayerSkillTree = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [generateFlowData]);
 
-  // 统一的技能状态计算函数
-  const getSkillStatus = (skill, options = {}) => {
-    const {
-      playerSkillsData = playerSkills,
-      dependenciesData = dependencies,
-      skillsData = allSkills
-    } = options;
-
-    // 创建玩家技能映射表
-    const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
-    const playerSkillData = playerSkillsMap.get(skill.skill_id);
-
-    // 如果玩家有这个技能的记录，直接使用数据库中的状态
-    if (playerSkillData) {
-      return {
-        status: playerSkillData.status,
-        level: playerSkillData.current_level || 0,
-        proficiency: playerSkillData.current_proficiency || 0,
-        maxProficiency: getMaxProficiencyForLevel(skill, playerSkillData.current_level || 1)
-      };
-    }
-
-    // 如果玩家没有这个技能的记录，需要根据前置条件判断状态
-    const isUnlockable = isSkillUnlockable(skill, { playerSkillsData, dependenciesData, skillsData });
-
-    return {
-      status: isUnlockable ? 'UNLOCKED' : 'LOCKED',
-      level: 0,
-      proficiency: 0,
-      maxProficiency: getMaxProficiencyForLevel(skill, 1)
-    };
-  };
-
-  const getMaxProficiencyForLevel = (skill, level) => {
+  const getMaxProficiencyForLevel = useCallback((skill, level) => {
     if (!skill.thresholds_json || !skill.thresholds_json[level]) {
       return 100; // 默认值
     }
     return skill.thresholds_json[level];
-  };
-
-  // 统一的前置条件获取函数
-  const getPrerequisites = (skillId, options = {}) => {
-    const {
-      dependenciesData = dependencies,
-      skillsData = allSkills,
-      playerSkillsData = playerSkills
-    } = options;
-
-    const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
-
-    return dependenciesData
-      .filter(dep => dep.skill_id === skillId)
-      .map(dep => {
-        const skill = skillsData.find(s => s.skill_id === dep.prerequisite_skill_id);
-        const playerSkill = playerSkillsMap.get(dep.prerequisite_skill_id);
-        const isMet = playerSkill ? playerSkill.current_level >= dep.unlock_level : false;
-
-        return {
-          ...dep,
-          skill,
-          isMet
-        };
-      });
-  };
-
-  // 统一的技能解锁判断函数
-  const isSkillUnlockable = (skill, options = {}) => {
-    const {
-      playerSkillsData = playerSkills,
-      dependenciesData = dependencies,
-      skillsData = allSkills
-    } = options;
-
-    const prerequisites = getPrerequisites(skill.skill_id, { dependenciesData, skillsData, playerSkillsData });
-    if (prerequisites.length === 0) return true;
-
-    const playerSkillsMap = new Map(playerSkillsData.map(ps => [ps.skill_id, ps]));
-
-    return prerequisites.every(prereq => {
-      const playerSkill = playerSkillsMap.get(prereq.prerequisite_skill_id);
-      // 如果没有找到玩家技能记录，说明该前置技能还没有解锁，返回false
-      if (!playerSkill) return false;
-      return playerSkill.current_level >= prereq.unlock_level;
-    });
-  };
+  }, []);
 
   if (loading) {
     return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { userAdminApi } from '../api/adminApi';
@@ -13,9 +13,9 @@ const UserListPage = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const { data: fetchedUsers, error } = await userAdminApi.listUsers();
@@ -41,12 +41,12 @@ const UserListPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   const handleStatusToggle = async (userId, currentStatus) => {
     try {
       const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-      const { data, error } = await userAdminApi.updateUserMetadata(
+      const { error } = await userAdminApi.updateUserMetadata(
         userId,
         { status: newStatus }
       );

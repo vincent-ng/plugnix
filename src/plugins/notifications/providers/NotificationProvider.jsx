@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import eventBus from '@/framework/lib/eventBus';
 
 // 创建通知上下文
-const NotificationContext = createContext();
+export const NotificationContext = createContext();
 
 // 通知提供者组件
 export const NotificationProvider = ({ children }) => {
@@ -91,15 +91,6 @@ export const NotificationProvider = ({ children }) => {
       {children}
     </NotificationContext.Provider>
   );
-};
-
-// 自定义Hook，用于使用通知上下文
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
-  }
-  return context;
 };
 
 export default NotificationProvider;

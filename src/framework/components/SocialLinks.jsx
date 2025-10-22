@@ -1,6 +1,5 @@
-import React from 'react';
 import { Button } from '@components/ui/button';
-import { Github, Twitter } from 'lucide-react';
+import { Github } from 'lucide-react';
 
 const SocialLinks = ({ 
   className = '',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/framework/lib/supabase';
 import eventBus from '@/framework/lib/eventBus';
 import { AUTH_STATE_CHANGED } from '@/framework/contexts/AuthenticationContext.jsx';
@@ -37,17 +37,17 @@ export const useTenantProvider = () => {
     };
   }, []);
 
-  const resetTenant = () => {
+  const resetTenant = useCallback(() => {
     setCurrentTenant(null);
     setUserRole(null);
     setUserPermissions([]);
     if (user?.id) {
       localStorage.removeItem(`currentTenant_${user.id}`);
     }
-  };
+  }, [user]);
 
   // 切换当前组织
-  const switchTenant = (tenant) => {
+  const switchTenant = useCallback((tenant) => {
     setCurrentTenant(tenant);
     setUserRole(tenant.role);
     setUserPermissions(tenant.permissions || []);
@@ -56,10 +56,10 @@ export const useTenantProvider = () => {
     if (user?.id) {
       localStorage.setItem(`currentTenant_${user.id}`, tenant.id);
     }
-  };
+  }, [user]);
 
   // 获取用户的组织列表
-  const refreshUserTenants = async () => {
+  const refreshUserTenants = useCallback(async () => {
     console.log('Refreshing user tenants for user:', user);
     if (!user) {
       setLoading(false);
@@ -133,11 +133,11 @@ export const useTenantProvider = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, resetTenant, switchTenant]); // 添加依赖数组
 
   useEffect(() => {
     refreshUserTenants();
-  }, [user]);
+  }, [user, refreshUserTenants]);
 
   // 获取用户在当前组织中的角色
   const getCurrentUserRole = () => {

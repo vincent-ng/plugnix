@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/framework/components/ui/tabs';
 import RoleManagementTab from '../components/RoleManagementTab';

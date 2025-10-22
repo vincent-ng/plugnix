@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate, useMatch } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { TabProvider, useTabs } from '@/framework/contexts/TabContext.jsx';

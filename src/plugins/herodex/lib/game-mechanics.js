@@ -128,12 +128,12 @@ export async function applyRewards(playerId, rewards, { playerService, skillServ
       
       if (!playerSkill) {
         // 如果玩家还没有这个技能记录，创建一个
-        playerSkill = await createPlayerSkill(playerId, skill_id, { skillService });
+        playerSkill = await createPlayerSkill(playerId, skill_id);
       }
       
       // 计算新的熟练度和等级
       const newProficiency = playerSkill.current_proficiency + points;
-      const skill = await getSkillById(skill_id, { skillService });
+      const skill = await getSkillById(skill_id);
       const newSkillLevel = calculateSkillLevel(newProficiency, skill.thresholds_json);
       
       // 更新玩家技能
@@ -141,7 +141,7 @@ export async function applyRewards(playerId, rewards, { playerService, skillServ
         current_proficiency: newProficiency,
         current_level: newSkillLevel.level,
         status: newSkillLevel.level >= 5 ? 'MASTERED' : 'UNLOCKED'
-      }, { skillService });
+      });
     }
     
     // 3. 记录活动日志
@@ -168,7 +168,7 @@ export async function applyRewards(playerId, rewards, { playerService, skillServ
 /**
  * 创建玩家技能记录
  */
-async function createPlayerSkill(playerId, skillId, { skillService }) {
+async function createPlayerSkill(playerId, skillId) {
   // 这里需要直接操作数据库，因为skillService可能没有这个方法
   // 实际实现时需要添加到skillService中
   const { supabase } = await import('./supabase');
@@ -193,7 +193,7 @@ async function createPlayerSkill(playerId, skillId, { skillService }) {
 /**
  * 更新玩家技能
  */
-async function updatePlayerSkill(playerSkillId, updates, { skillService }) {
+async function updatePlayerSkill(playerSkillId, updates) {
   const { supabase } = await import('./supabase');
   
   const { data, error } = await supabase
@@ -210,7 +210,7 @@ async function updatePlayerSkill(playerSkillId, updates, { skillService }) {
 /**
  * 根据ID获取技能信息
  */
-async function getSkillById(skillId, { skillService }) {
+async function getSkillById(skillId) {
   const { supabase } = await import('./supabase');
   
   const { data, error } = await supabase

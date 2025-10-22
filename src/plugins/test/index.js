@@ -5,7 +5,7 @@ import UrlNavigationPage from './UrlNavigationPage.jsx';
 import NotificationTestPage from './NotificationTestPage.jsx';
 
 // 注册test插件的函数
-const registerTestPlugin = ({ registerMenuItem, registerRoute, registerI18nNamespace }) => {
+const registerTestPlugin = ({ registerMenuItem, registerI18nNamespace }) => {
   // 注册翻译
   registerI18nNamespace('test', translations);
 

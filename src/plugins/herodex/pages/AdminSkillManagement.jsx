@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Badge } from '@/framework/components/ui/badge';
@@ -7,7 +7,7 @@ import { Input } from '@/framework/components/ui/input';
 import { Label } from '@/framework/components/ui/label';
 import { Textarea } from '@/framework/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/framework/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/framework/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/framework/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/framework/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/framework/components/ui/tabs';
 import { skillService, subjectService } from '../lib/supabase';
@@ -126,10 +126,6 @@ const AdminSkillManagement = () => {
       grouped[subjectName].push(skill);
     });
     return grouped;
-  };
-
-  const getSkillDependencies = (skillId) => {
-    return dependencies.filter(dep => dep.skill_id === skillId);
   };
 
   if (loading) {

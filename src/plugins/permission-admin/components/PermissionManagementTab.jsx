@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/framework/components/ui/button';
 import { Input } from '@/framework/components/ui/input';
@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/framework/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/framework/components/ui/card';
-import { RefreshCw, Search, Database, Layers } from 'lucide-react';
+import { RefreshCw, Search, Database, Code, AlertTriangle } from 'lucide-react';
 import { permissionAdminAPI } from '../services/api';
 
 const PermissionManagementTab = () => {
@@ -26,9 +26,9 @@ const PermissionManagementTab = () => {
   // 加载权限数据
   useEffect(() => {
     loadPermissions();
-  }, []);
+  }, [loadPermissions]);
 
-  const loadPermissions = async () => {
+  const loadPermissions = useCallback(async () => {
     setLoading(true);
     try {
       const permissionsData = await permissionAdminAPI.getPermissions();
@@ -128,7 +128,7 @@ const PermissionManagementTab = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   // 搜索过滤
   useEffect(() => {

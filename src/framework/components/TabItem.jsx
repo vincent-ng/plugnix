@@ -1,9 +1,7 @@
-import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTabs } from '@/framework/contexts/TabContext.jsx';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@components/ui/button';
 import { X } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -57,7 +57,7 @@ const CreateUserPage = () => {
         throw new Error('请输入有效的邮箱地址');
       }
 
-      const { data: newUser, error } = await userAdminApi.createUser({
+      const { error } = await userAdminApi.createUser({
         email: formData.email,
         password: formData.password,
         email_confirm: true, // 自动确认邮箱

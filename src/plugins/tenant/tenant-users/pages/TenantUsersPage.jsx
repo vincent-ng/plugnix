@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/framework/contexts/TenantContext'; // 引入 useTenant
 import { Button } from '@/framework/components/ui/button';

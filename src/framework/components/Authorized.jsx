@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTenant } from '../contexts/TenantContext.jsx';
 
 /**

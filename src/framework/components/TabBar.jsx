@@ -1,4 +1,3 @@
-import React from 'react';
 import { DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTabs } from '@/framework/contexts/TabContext.jsx';

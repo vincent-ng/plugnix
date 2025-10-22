@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -45,7 +45,7 @@ const RoleEditDialog = ({ open, onOpenChange, role, onSave }) => {
       { name: 'ui.permission.manage', description: t('mockData.permissions.ui.permission.manage') }
     ];
     setAvailablePermissions(mockPermissions);
-  }, []);
+  }, [t]);
 
   // 当角色数据变化时更新表单
   useEffect(() => {

@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ProfilePage = () => (
   <div>
     <h1 className="text-2xl font-bold">User Profile</h1>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -71,7 +71,7 @@ export default function RoleEditDialog({ open, onOpenChange, role = null, onSave
     };
 
     loadData();
-  }, [open, role, isEdit, mode]);
+  }, [open, role, isEdit, mode, t]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

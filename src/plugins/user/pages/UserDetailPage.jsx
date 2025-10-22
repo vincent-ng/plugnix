@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { userAdminApi } from '../api/adminApi';
@@ -115,7 +115,7 @@ const UserDetailPage = () => {
       const newStatus = user.status === 'active' ? 'inactive' : 'active';
       // This is a simplified example. In a real app, you might need to
       // call a server-side function to handle user status updates.
-      const { data, error } = await userAdminApi.updateUserMetadata(
+      const { error } = await userAdminApi.updateUserMetadata(
         id,
         { status: newStatus }
       );

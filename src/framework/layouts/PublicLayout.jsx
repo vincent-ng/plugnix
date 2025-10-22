@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
@@ -56,7 +56,6 @@ const PublicLayout = ({ children }) => {
 
 
 function DesktopNav({ menuItems }) {
-  const { t } = useTranslation('common');
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const navbarItems = registryApi.getPublicNavbarItems();

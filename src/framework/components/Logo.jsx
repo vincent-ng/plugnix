@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -21,10 +20,10 @@ const DefaultLogo = ({ layout, ...props }) => {
       </div>
       <div className="flex flex-col">
         <span className="text-lg font-bold text-foreground">
-          {t(title)}
+          {t('plugnix.title', 'Plugnix')}
         </span>
         <span className="text-xs text-muted-foreground -mt-1">
-          {t(subtitle)}
+          {t('plugnix.subtitle', 'Plugin Framework')}
         </span>
       </div>
     </div>

@@ -1,6 +1,4 @@
-import React from 'react';
 import { NodeToolbar, Position } from 'reactflow';
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Badge } from '@/framework/components/ui/badge';
 import { Progress } from '@/framework/components/ui/progress';
@@ -15,8 +13,6 @@ const SkillNodeToolbar = ({
   onClose,
   position = Position.Top
 }) => {
-  const { t } = useTranslation('herodex');
-
   if (!skill || !isVisible) return null;
 
   const getStatusIcon = (status) => {

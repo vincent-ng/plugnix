@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { registryApi } from '@/framework/api';
 import { addPluginTranslations } from '@/framework/i18n';

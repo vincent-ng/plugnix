@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/framework/components/ui/button';
 import { Input } from '@/framework/components/ui/input';
@@ -28,9 +28,9 @@ const RoleManagementTab = () => {
   // 加载角色数据
   useEffect(() => {
     loadRoles();
-  }, []);
+  }, [loadRoles]);
 
-  const loadRoles = async () => {
+  const loadRoles = useCallback(async () => {
     setLoading(true);
     try {
       const rolesData = await permissionAdminAPI.getRoles();
@@ -77,7 +77,7 @@ const RoleManagementTab = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   // 搜索过滤
   useEffect(() => {

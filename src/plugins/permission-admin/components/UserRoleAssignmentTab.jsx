@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/framework/components/ui/button';
 import {
@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/framework/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/framework/components/ui/avatar';
-import { Search, MoreHorizontal, UserPlus, UserMinus } from 'lucide-react';
+import { Search, MoreHorizontal, UserPlus } from 'lucide-react';
 import UserRoleEditDialog from './UserRoleEditDialog';
 import { permissionAdminAPI } from '../services/api';
 

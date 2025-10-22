@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Badge } from '@/framework/components/ui/badge';
 import { Button } from '@/framework/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/framework/components/ui/tabs';
-import { submissionService, playerService, skillService, activityService } from '../lib/supabase';
+import { submissionService, skillService } from '../lib/supabase';
 
 const AdminDashboard = () => {
   const { t } = useTranslation('herodex');
@@ -14,7 +14,6 @@ const AdminDashboard = () => {
     pendingSubmissions: 0
   });
   const [pendingSubmissions, setPendingSubmissions] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +40,6 @@ const AdminDashboard = () => {
       
       // 获取最近活动（这里需要修改为获取所有玩家的活动）
       // 暂时留空，后续实现
-      setRecentActivity([]);
       
     } catch (error) {
       console.error('Failed to load dashboard data:', error);

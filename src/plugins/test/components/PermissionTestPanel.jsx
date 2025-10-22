@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { useTenant } from '@/framework/contexts/TenantContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/framework/components/ui/card';
 import { Badge } from '@/framework/components/ui/badge';
@@ -10,7 +9,6 @@ import { Authorized } from '@/framework/components/Authorized';
 import { Shield, Info, CheckCircle, XCircle, Search } from 'lucide-react';
 
 export default function PermissionTestPanel() {
-  const { t } = useTranslation('test');
   const {
     hasPermission,
     userPermissions,
@@ -159,9 +157,9 @@ export default function PermissionTestPanel() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <p className="text-sm font-medium mb-2">
+            <div className="text-sm font-medium mb-2">
               测试权限: <Badge variant="outline">{permissionToCheck || '无'}</Badge>
-            </p>
+            </div>
             <div className="p-4 border-2 border-dashed rounded-lg">
               <Authorized
                 permissions={permissionToCheck.trim()}

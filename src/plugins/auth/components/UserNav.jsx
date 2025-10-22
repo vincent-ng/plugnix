@@ -1,4 +1,4 @@
-import React from 'react';
+import { forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from '@/framework/contexts/AuthenticationContext.jsx';
@@ -37,7 +37,7 @@ export const UserNav = () => {
     return <Button onClick={handleLoginClick}>{t('common.signIn')}</Button>;
   }
 
-  const Trigger = React.forwardRef((props, ref) => {
+  const Trigger = forwardRef((props, ref) => {
     return (
       <Button
         ref={ref}

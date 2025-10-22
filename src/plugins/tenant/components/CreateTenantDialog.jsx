@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/framework/components/ui/button';
 import {
@@ -11,7 +11,7 @@ import {
 } from '@/framework/components/ui/dialog';
 import { Input } from '@/framework/components/ui/input';
 import { Label } from '@/framework/components/ui/label';
-import { createTenant } from '@/framework/api/tenants';
+import { createTenant } from '../api/tenants';
 import { toast } from 'sonner';
 
 export const CreateTenantDialog = ({ isOpen, onClose, onTenantCreated }) => {

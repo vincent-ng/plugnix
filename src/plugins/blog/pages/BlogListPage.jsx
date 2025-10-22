@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -10,9 +10,9 @@ const BlogListPage = () => {
 
   useEffect(() => {
     fetchBlogs();
-  }, []);
+  }, [fetchBlogs]);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       setLoading(true);
       // 这里使用模拟数据，实际项目中应该从 Supabase 获取
@@ -53,7 +53,7 @@ const BlogListPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   const handleDelete = async (id) => {
     if (window.confirm(t('confirmDelete'))) {

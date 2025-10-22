@@ -1,4 +1,3 @@
-import React from 'react';
 import * as lucideIcons from 'lucide-react';
 
 const IconRenderer = ({ icon, className = 'h-4 w-4' }) => {

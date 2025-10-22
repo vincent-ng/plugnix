@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -27,7 +27,7 @@ const UserRoleEditDialog = ({ user, open, onOpenChange, onSave }) => {
     if (open) {
       loadAvailableRoles();
     }
-  }, [open]);
+  }, [open, loadAvailableRoles]);
 
   // 初始化选中的角色
   useEffect(() => {
@@ -36,7 +36,7 @@ const UserRoleEditDialog = ({ user, open, onOpenChange, onSave }) => {
     }
   }, [user]);
 
-  const loadAvailableRoles = async () => {
+  const loadAvailableRoles = useCallback(async () => {
     try {
       const roles = await permissionAdminAPI.getRoles();
       setAvailableRoles(roles);
@@ -65,7 +65,7 @@ const UserRoleEditDialog = ({ user, open, onOpenChange, onSave }) => {
       ];
       setAvailableRoles(mockRoles);
     }
-  };
+  }, [t]);
 
   const handleRoleToggle = (roleName) => {
     setSelectedRoles(prev => {

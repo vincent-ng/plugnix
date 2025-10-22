@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Bell, BellRing, Check, CheckCheck, Trash2, X } from 'lucide-react';
 import { Button } from '@components/ui/button';
@@ -10,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator
 } from '@components/ui/dropdown-menu';
-import { useNotifications } from '../providers/NotificationProvider';
+import { useNotifications } from '../providers/useNotifications';
 
 // 通知级别对应的样式
 const getLevelStyles = (level) => {

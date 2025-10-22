@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/framework/lib/supabase.js';
 import eventBus from '@/framework/lib/eventBus';
 import AuthenticationContext, { AUTH_STATE_CHANGED, AUTH_LOGOUT } from '@/framework/contexts/AuthenticationContext.jsx';

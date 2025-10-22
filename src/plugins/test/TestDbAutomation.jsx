@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from '@/framework/contexts/AuthenticationContext';
 import { useTenant } from '@/framework/contexts/TenantContext';
@@ -10,7 +10,6 @@ import {
   test_is_tenant_member_unauthorized,
   test_is_tenant_member,
   test_get_tenant_members,
-  test_add_member_to_tenant_by_email,
   test_add_owner_to_tenant_by_email,
   test_add_member_to_tenant_by_email_non_existing_user,
   test_create_role_with_permissions_empty_role_name,

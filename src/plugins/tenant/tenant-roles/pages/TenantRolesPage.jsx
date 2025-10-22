@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '@/framework/contexts/TenantContext';
 import Authorized from '@/framework/components/Authorized';
@@ -26,9 +26,9 @@ export default function TenantRolesPage() {
   useEffect(() => {
     if (!currentTenant) return;
     loadRoles();
-  }, [currentTenant]);
+  }, [currentTenant, loadRoles]);
 
-  const loadRoles = async () => {
+  const loadRoles = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getTenantRoles(currentTenant.id);
@@ -38,7 +38,7 @@ export default function TenantRolesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentTenant, t]);
 
   const handleCreateClick = () => {
     setEditingRole(null);

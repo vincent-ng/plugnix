@@ -2,50 +2,28 @@ import { supabase } from '@/framework/lib/supabase';
 
 /**
  * 权限管理API服务层
- * 通过edge function调用Supabase数据库，确保权限控制
+ * 通过 Supabase 边缘函数调用数据库，确保权限控制
+ * 使用官方的 supabase.functions.invoke() 方法，简化调用流程
  */
 class PermissionAdminAPI {
-  constructor() {
-    this.edgeFunctionUrl = `${process.env.REACT_APP_SUPABASE_URL}/functions/v1/admin-api-proxy`;
-  }
-
   /**
-   * 获取当前用户的访问令牌
-   */
-  async getAuthToken() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      throw new Error('User not authenticated');
-    }
-    return session.access_token;
-  }
-
-  /**
-   * 通用API调用方法
+   * 通用API调用方法 - 使用 Supabase 官方边缘函数调用
    */
   async callEdgeFunction(operation, table, options = {}) {
     try {
-      const token = await this.getAuthToken();
-      
-      const response = await fetch(this.edgeFunctionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('admin-api-proxy', {
+        body: {
           operation,
           table,
           ...options
-        })
+        }
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `HTTP ${response.status}`);
+      if (error) {
+        throw new Error(error.message || `Operation failed: ${operation} ${table}`);
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
       console.error(`API call failed: ${operation} ${table}`, error);
       throw error;

@@ -22,6 +22,7 @@ export default function registerPermissionAdminPlugin({
 
   // 3. 注册Admin菜单项，并用UI权限保护
   registerMenuItem({
+    key: 'permission-admin',
     label: 'permissionAdmin.menuLabel', // i18n key
     path: '/admin/permissions',
     component: PermissionAdminPage,

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';

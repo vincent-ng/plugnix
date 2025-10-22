@@ -15,7 +15,6 @@ import PlayerSkillTree from './pages/PlayerSkillTree';
 export default function registerHerodexPlugin({
   registerI18nNamespace,
   registerMenuItem,
-  registerRoute,
   registerPermission
 }) {
   // 注册国际化资源

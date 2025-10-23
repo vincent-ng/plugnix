@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { Button } from '@components/ui/button';
+import { Sun, Moon } from 'lucide-react';
 
 const ThemeContext = createContext({});
 
@@ -19,7 +21,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     // 保存主题到 localStorage
     localStorage.setItem('theme', theme);
-    
+
     // 更新 document 的 class
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
@@ -46,6 +48,21 @@ export const ThemeProvider = ({ children }) => {
     <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
+  );
+};
+
+export const ThemeToggleButton = ({ className, size = "icon", variant = "ghost" }) => {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <Button
+      variant={variant}
+      size={size}
+      onClick={toggleTheme}
+      className={className}
+    >
+      {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+    </Button>
   );
 };
 

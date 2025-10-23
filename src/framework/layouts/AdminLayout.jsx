@@ -7,10 +7,10 @@ import { Authorized } from '@/framework/components/Authorized';
 import { SidebarProvider } from '@components/ui/sidebar';
 import { Sheet, SheetContent, SheetTrigger } from '@components/ui/sheet';
 import { Button } from '@components/ui/button';
-import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
+import { ThemeToggleButton } from '@/framework/contexts/ThemeContext.jsx';
 import { LanguageSwitcher } from '@/framework/components/LanguageSwitcher.jsx';
 import { Separator } from '@components/ui/separator';
-import { Sun, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { RecursiveAccordionMenu } from '@/framework/components/RecursiveAccordionMenu.jsx';
 import IconRenderer from '@/framework/components/IconRenderer.jsx';
 import TabBar from "@/framework/components/TabBar.jsx";
@@ -56,7 +56,6 @@ const findMenuItemByPath = (items, targetPath) => {
 
 const AdminLayoutContent = ({ children }) => {
   const { tabs, isTabActive, openTab, activeTab } = useTabs();
-  const { toggleTheme } = useTheme();
   const location = useLocation();
 
   const menuItems = registryApi.getAdminMenuItems();
@@ -91,9 +90,7 @@ const AdminLayoutContent = ({ children }) => {
               {tabs.length > 0 && <TabBar />}
             </div>
             <LanguageSwitcher />
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-8 h-8">
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            </Button>
+            <ThemeToggleButton className="w-8 h-8" />
             <Separator orientation="vertical" className="h-6" />
             <NavbarItemsRenderer items={navbarItems} />
           </header>

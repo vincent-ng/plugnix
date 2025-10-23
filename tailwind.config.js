@@ -95,22 +95,22 @@ export default {
 				sans: [
 					'-apple-system',
 					'BlinkMacSystemFont',
-					'Segoe UI"',
+					'Segoe UI',
 					'Roboto',
-					'Helvetica Neue"',
+					'Helvetica Neue',
 					'Arial',
 					'sans-serif',
-					'Apple Color Emoji"',
-					'Segoe UI Emoji"',
-					'Segoe UI Symbol"'
+					'Apple Color Emoji',
+					'Segoe UI Emoji',
+					'Segoe UI Symbol'
 				],
 				mono: [
 					'SFMono-Regular',
 					'Menlo',
 					'Monaco',
 					'Consolas',
-					'Liberation Mono"',
-					'Courier New"',
+					'Liberation Mono',
+					'Courier New',
 					'monospace'
 				]
 			},

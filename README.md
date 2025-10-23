@@ -21,7 +21,51 @@
 - Node.js >= 16.0.0
 - npm >= 8.0.0
 
-### 安装依赖
+### 使用 CLI 工具创建新项目
+
+推荐使用 Plugnix CLI 工具快速创建新项目：
+
+#### 安装 CLI
+
+```bash
+# 全局安装
+npm i -g plugnix-cli
+
+# 或使用 npx（无需全局安装）
+npx plugnix-cli <command>
+```
+
+#### 创建项目
+
+```bash
+# 使用官方模板创建新项目
+plugnix-cli init my-admin
+
+# 或使用别名
+plugnix-cli create my-admin
+plugnix-cli new my-admin
+
+# 或使用 npx
+npx plugnix-cli init my-admin
+```
+
+#### 添加插件
+
+```bash
+# 添加官方插件
+plugnix-cli add dashboard
+
+# 一次添加多个插件
+plugnix-cli add auth tenant
+
+# 使用自定义插件仓库
+plugnix-cli add community-calendar --registry=github:some-community/plugnix-extras
+
+# 使用本地目录作为插件源
+plugnix-cli add about-us --registry="C:\\workspace\\plugnix\\src\\plugins"
+```
+
+### 手动安装依赖
 
 ```bash
 npm install
@@ -65,23 +109,23 @@ npm run preview
 ```
 plugnix/
 ├── src/
-│   ├── framework/           # 框架核心
-│   │   ├── api/            # API 接口
-│   │   ├── contexts/       # React 上下文
+│   ├── framework/         # 框架核心
+│   │   ├── api/           # API 接口
+│   │   ├── contexts/      # React 上下文
 │   │   ├── i18n/          # 国际化配置
 │   │   ├── layouts/       # 布局组件
+│   │   ├── lib/           # 工具库
 │   │   └── registry/      # 插件注册中心
-│   ├── plugins/            # 插件目录
+│   ├── plugins/           # 插件目录
 │   │   ├── plugin-blog/   # 博客插件
 │   │   ├── plugin-user/   # 用户管理插件
 │   │   └── index.js       # 插件集成入口
-│   ├── pages/             # 页面组件
-│   ├── lib/               # 工具库
 │   ├── App.jsx            # 主应用组件
 │   ├── main.jsx           # 应用入口
 │   └── index.css          # 全局样式
-├── public/                # 静态资源
 ├── docs/                  # 文档
+├── public/                # 静态资源
+├── supabase/              # Supabase 迁移脚本
 └── package.json
 ```
 
@@ -129,17 +173,6 @@ const registerMyPlugin = ({ registerRoute, registerMenuItem, registerI18nNamespa
 export default registerMyPlugin;
 ```
 
-3. 在 `src/plugins/index.js` 中注册插件：
-
-```javascript
-import registerMyPlugin from './my-plugin';
-
-const plugins = [
-  // ... 其他插件
-  registerMyPlugin,
-];
-```
-
 ### 插件 API
 
 框架提供以下 API 供插件使用：
@@ -155,9 +188,6 @@ const plugins = [
 
 - 明亮主题
 - 暗黑主题
-- 系统主题（跟随系统设置）
-
-主题状态会自动保存到 localStorage。
 
 ## 🌍 国际化
 
@@ -236,16 +266,16 @@ function MyComponent() {
 - **认证**: Supabase
 - **权限管理**: 基于 RBAC 的权限系统
 - **代码规范**: ESLint
-- **类型检查**: TypeScript
 
 ## 📖 文档
 
 更多详细文档请查看 `docs/` 目录：
 
-- [架构设计](docs/design/frontend-infrastructure.md)
-- [权限系统设计](docs/design/permission-system-design.md)
-- [插件开发指南](docs/plugin-development.md)
-- [API 参考](docs/api-reference.md)
+- [项目介绍](docs/README.md)
+- [数据库规范](docs/design/database-conventions.md)
+- [权限模型设计](docs/design/feature-permission-model.md)
+- [插件开发指南](docs/design/guide-plugin-development.md)
+- [API 参考](docs/design/api-reference.md)
 
 ## 🤝 贡献
 

@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '@/framework/contexts/ThemeContext.jsx';
+import { ThemeToggleButton } from '@/framework/contexts/ThemeContext.jsx';
 import { registryApi } from '@/framework/api';
 import { Authorized } from '@/framework/components/Authorized';
 import { Button } from '@components/ui/button';
 import { Badge } from '@components/ui/badge';
-import { Card, CardContent } from '@components/ui/card';
 import { Separator } from '@components/ui/separator';
 import { Sheet, SheetContent, SheetTrigger } from '@/framework/components/ui/sheet';
 import { RecursiveAccordionMenu } from '@/framework/components/RecursiveAccordionMenu';
@@ -20,8 +19,6 @@ import SocialLinks from '../components/SocialLinks.jsx';
 import { LanguageSwitcher } from '@/framework/components/LanguageSwitcher.jsx';
 import {
   Menu,
-  Moon,
-  Sun,
 } from 'lucide-react';
 import { DefaultLogo } from '@/framework/components/Logo.jsx';
 
@@ -43,13 +40,10 @@ const PublicLayout = ({ children }) => {
     <div className="min-h-screen bg-background flex flex-col relative">
       <DesktopNav menuItems={menuItems} />
       <main className="flex-1 relative">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="relative z-10">
-            {children}
-          </div>
+        <div className="relative z-10">
+          {children}
         </div>
       </main>
-      <Footer menuItems={menuItems} />
     </div>
   );
 };
@@ -57,7 +51,6 @@ const PublicLayout = ({ children }) => {
 
 function DesktopNav({ menuItems }) {
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const navbarItems = registryApi.getPublicNavbarItems();
 
   const isActiveRoute = (path) => location.pathname === path;
@@ -66,8 +59,8 @@ function DesktopNav({ menuItems }) {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="mx-auto">
+        <div className="flex justify-between items-center h-16 px-4 sm:px-6 lg:px-8">
           <DefaultLogo layout="public" />
 
           <NavigationMenu className="hidden md:flex">
@@ -84,9 +77,7 @@ function DesktopNav({ menuItems }) {
             <SocialLinks className="hidden sm:flex" />
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
             <LanguageSwitcher />
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="w-8 h-8">
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </Button>
+            <ThemeToggleButton className="w-8 h-8" />
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
             <NavbarItemsRenderer items={navbarItems} />
             <MobileNav menuItems={menuItems} />
@@ -147,54 +138,6 @@ function MobileNav({ menuItems }) {
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function Footer({ menuItems }) {
-  const { t } = useTranslation('common');
-  return (
-    <footer className="bg-card border-t border-border mt-auto relative z-10">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <Card className="col-span-1 md:col-span-2 border-0 shadow-none bg-transparent">
-            <CardContent className="p-0">
-              <div className="mb-4">
-                <DefaultLogo layout="public" />
-              </div>
-              <p className="text-sm text-muted-foreground max-w-md">{t('appDescription')}</p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-none bg-transparent">
-            <CardContent className="p-0">
-              <h3 className="text-sm font-semibold text-foreground mb-4">{t('quickLinks')}</h3>
-              <ul className="space-y-2">
-                {menuItems.slice(0, 4).map((item) => (
-                  <li key={item.key}>
-                    <Link to={item.path} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      {t(item.label)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-none bg-transparent">
-            <CardContent className="p-0">
-              <h3 className="text-sm font-semibold text-foreground mb-4">{t('connect')}</h3>
-              <SocialLinks className="justify-start" />
-            </CardContent>
-          </Card>
-        </div>
-        <Separator className="my-8" />
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-muted-foreground">{t('copyright')}</p>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
-            <Link to="/privacy" className="hover:text-foreground transition-colors">{t('privacyPolicy')}</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">{t('termsOfService')}</Link>
-          </div>
-        </div>
-      </div>
-    </footer>
   );
 }
 

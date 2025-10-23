@@ -2,7 +2,7 @@ import ReactDOM from 'react-dom/client';
 import { registryApi } from '@/framework/api';
 import { addPluginTranslations } from '@/framework/i18n';
 import { registerCoreProviders } from '@/framework/core-providers';
-import importAllPlugins from '@/plugins';
+import importAllPlugins from '@/plugins-loader.js';
 import '@/index.css';
 import App from './App.jsx';
 

@@ -111,6 +111,11 @@ export const AUTH_LOGOUT = 'auth:logout';
  *
  * 本文件仅提供认证契约（Context + Hook），具体 Provider 由插件实现并通过注册系统注入。
  *
+ * Fallback机制：
+ * 如果没有插件注册AuthenticationProvider，框架会自动使用FallbackAuthenticationProvider，
+ * 提供一个基本的实现，使应用可以在没有认证功能的情况下运行。这对于简单的landing page或
+ * 不需要用户认证的应用非常有用。
+ *
  * 开发步骤：
  * 1) 在你的插件目录下实现 Provider，并使用框架的 AuthenticationContext 契约：
  *    
@@ -152,6 +157,7 @@ export const AUTH_LOGOUT = 'auth:logout';
  * - 如你的 Provider 依赖其他 Provider，可在注册时通过 dependencies 指定：
  *   dependencies: ['SomeOtherProvider']。
  * - 请避免在框架内直接实现具体 Provider，以保持插件可插拔和依赖倒置。
+ * - Fallback实现始终返回user为null，适用于不需要认证的场景。
  */
 
 // 认证上下文契约：仅定义 Context 与 Hook，具体实现由插件提供

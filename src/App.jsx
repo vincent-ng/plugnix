@@ -65,10 +65,8 @@ const DynamicRoutes = () => {
 
 // 动态Provider组件 - 用于渲染所有注册的Provider
 const DynamicProviders = ({ children }) => {
-  const providers = registryApi.getProviders();
-  if (providers.length === 0) return <>{children}</>;
-
-  return providers.reduce((acc, provider) => {
+  // 渲染所有Provider
+  return registryApi.getProviders().reduce((acc, provider) => {
     const ProviderComponent = provider.component;
     return (
       <ProviderComponent {...(provider.props || {})}>

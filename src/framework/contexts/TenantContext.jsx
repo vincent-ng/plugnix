@@ -5,6 +5,11 @@ import { createContext, useContext } from 'react';
  *
  * 本文件仅提供组织契约（Context + Hook），具体 Provider 由插件实现并通过注册系统注入。
  *
+ * Fallback机制：
+ * 如果没有插件注册TenantProvider，框架会自动使用FallbackTenantProvider，
+ * 提供一个基本的实现，使应用可以在没有多租户功能的情况下运行。这对于简单的单租户应用或
+ * 不需要组织管理功能的应用非常有用。
+ *
  * 开发步骤：
  * 1) 在你的插件目录下实现 Provider，并使用框架的 TenantContext 契约：
  *    
@@ -49,6 +54,7 @@ import { createContext, useContext } from 'react';
  * - 框架内通用组件（如 TenantSwitcher）使用 useTenant()，请提供至少 currentTenant、tenants、loading、switchTenant。
  * - 如你的组织模型包含权限与角色，可在 value 中扩展字段，并在相关插件中消费。
  * - 通过 dependencies 声明与认证的依赖关系，确保渲染顺序正确。
+ * - Fallback实现始终返回currentTenant为null，权限检查方法始终返回false，适用于不需要多租户的场景。
  */
 
 // 组织上下文契约：仅定义 Context 与 Hook，具体实现由插件提供

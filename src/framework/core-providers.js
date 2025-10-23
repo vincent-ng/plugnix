@@ -4,6 +4,7 @@ import i18n from '@/framework/i18n';
 
 import { ErrorBoundaryProvider } from './contexts/ErrorBoundaryContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { FallbackAuthenticationProvider, FallbackTenantProvider } from './contexts/FallbackProviders.jsx';
 
 export function registerCoreProviders({ registerProvider }) {
 
@@ -11,7 +12,7 @@ export function registerCoreProviders({ registerProvider }) {
   registerProvider({
     name: 'ErrorBoundaryProvider',
     component: ErrorBoundaryProvider,
-    order: 20,
+    order: 10,
     description: '用于包装特定组件，捕获其渲染错误'
   });
 
@@ -19,7 +20,7 @@ export function registerCoreProviders({ registerProvider }) {
   registerProvider({
     name: 'I18nextProvider',
     component: I18nextProvider,
-    order: 30,
+    order: 20,
     props: { i18n },
     description: '提供多语言支持，基于react-i18next'
   });
@@ -28,8 +29,25 @@ export function registerCoreProviders({ registerProvider }) {
   registerProvider({
     name: 'ThemeProvider',
     component: ThemeProvider,
-    order: 40,
+    order: 30,
     description: '提供主题切换功能，支持明暗主题切换'
+  });
+
+  // 注册Fallback AuthenticationProvider - 提供默认认证状态
+  registerProvider({
+    name: 'AuthenticationProvider',
+    component: FallbackAuthenticationProvider,
+    order: 40,
+    description: 'Fallback authentication provider - provides minimal authentication state when no authentication plugin is loaded'
+  });
+
+  // 注册Fallback TenantProvider - 提供默认租户状态
+  registerProvider({
+    name: 'TenantProvider',
+    component: FallbackTenantProvider,
+    order: 50,
+    dependencies: ['AuthenticationProvider'],
+    description: 'Fallback tenant provider - provides minimal tenant state when no tenant plugin is loaded'
   });
 
 }

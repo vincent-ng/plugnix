@@ -1,5 +1,6 @@
 // 框架API层 - 为插件提供统一的注册接口
 import Registry from './registry.js';
+import { Validator } from '../lib/validator.js';
 
 // 创建全局注册中心实例（完全内部，不对外暴露）
 const registry = new Registry();
@@ -15,8 +16,8 @@ export const createPluginAPI = () => {
      * @description 路由配置对象。
      * @property {string} path - 路由路径。
      * @property {React.Component} component - 路由对应的React组件。
+     * @property {'admin' | 'public'} layout - 路由使用的布局类型。
      * @property {string|Array<string>} [permissions] - 访问该路由所需的权限。
-     * @property {'admin' | 'public'} [layout] - 路由使用的布局类型，默认为'public'。
      */
     /**
      * 注册一个路由。
@@ -26,11 +27,26 @@ export const createPluginAPI = () => {
      * registerRoute({
      *   path: '/admin/users/:id/edit',
      *   component: UserEditPage,
+     *   layout: 'admin',
      *   permissions: ['db.user.edit'],
-     *   layout: 'admin'
      * });
      */
     registerRoute: (routeObject) => {
+      // 使用验证器验证参数
+      new Validator(routeObject, 'Route')
+        .isObject()
+        .required('path')
+        .isString('path')
+        .required('component')
+        .required('layout')
+        .isEnum('layout', ['admin', 'public']);
+
+      // permissions 是可选的，但如果提供了必须是字符串或字符串数组
+      if (routeObject.permissions) {
+        new Validator(routeObject, 'Route')
+          .isStringOrStringArray('permissions');
+      }
+
       return registry.registerRoute(routeObject);
     },
 
@@ -107,6 +123,29 @@ export const createPluginAPI = () => {
      * });
      */
     registerMenuItem: (menuItemObject) => {
+      // 使用验证器验证参数
+      new Validator(menuItemObject, 'Menu item')
+        .isObject()
+        .required('key')
+        .isString('key')
+        .required('label')
+        .isString('label')
+        .ifExists('position', v => v.isEnum('position', ['admin', 'public', 'user']))
+        .ifExists('order', v => v.isNumber('order'))
+        .ifExists('permissions', v => v.isStringOrStringArray('permissions'));
+
+      // 如果有children，递归验证每个子菜单项
+      if (menuItemObject.children && Array.isArray(menuItemObject.children)) {
+        menuItemObject.children.forEach(child => {
+          new Validator(child, 'Menu item')
+            .isObject()
+            .required('key')
+            .isString('key')
+            .required('label')
+            .isString('label');
+        });
+      }
+
       // 根据position推断layout
       const inferLayoutFromPosition = (pos) => {
         switch (pos) {
@@ -172,6 +211,15 @@ export const createPluginAPI = () => {
      * });
      */
     registerNavbarItem: (navbarItemObject) => {
+      // 使用验证器验证参数
+      new Validator(navbarItemObject, 'Navbar item')
+        .isObject()
+        .required('key')
+        .isString('key')
+        .ifExists('position', v => v.isEnum('position', ['admin', 'public']))
+        .ifExists('order', v => v.isNumber('order'))
+        .ifExists('permissions', v => v.isStringOrStringArray('permissions'));
+
       return registry.registerNavbarItem(navbarItemObject);
     },
 
@@ -184,7 +232,13 @@ export const createPluginAPI = () => {
      * @example registerI18nNamespace('myPlugin', { en: { title: 'Hello' }, zh: { title: '你好' } });
      */
     registerI18nNamespace: (pluginName, translations) => {
-      // 可以在这里添加翻译资源验证逻辑
+      new Validator({ pluginName, translations }, 'I18n translations')
+        .isObject()
+        .required('pluginName')
+        .isString('pluginName')
+        .required('translations')
+        .isObject('translations')
+
       return registry.registerI18nNamespace(pluginName, translations);
     },
 
@@ -196,7 +250,14 @@ export const createPluginAPI = () => {
      * @example registerPermission({ name: 'ui.blog.create', description: '创建博客文章' });
      */
     registerPermission: (permissionObject) => {
-      // 可以在这里添加权限验证逻辑
+      // 使用验证器验证参数
+      new Validator(permissionObject, 'Permission')
+        .isObject()
+        .required('name')
+        .isString('name')
+        .required('description')
+        .isString('description');
+
       return registry.registerPermission(permissionObject);
     },
 
@@ -217,7 +278,15 @@ export const createPluginAPI = () => {
      * });
      */
     registerProvider: (providerObject) => {
-      // 可以在这里添加Provider验证逻辑
+      // 使用验证器验证参数
+      new Validator(providerObject, 'Provider')
+        .isObject()
+        .required('name')
+        .isString('name')
+        .required('component')
+        .isFunction('component')
+        .ifExists('dependencies', v => v.isArray('dependencies'));
+
       return registry.registerProvider(providerObject);
     },
 
@@ -234,6 +303,12 @@ export const createPluginAPI = () => {
      * });
      */
     registerLogo: (logoObject) => {
+      // 使用验证器验证参数
+      new Validator(logoObject, 'Logo')
+        .isObject()
+        .required('component')
+        .isFunction('component');
+
       return registry.registerLogo(logoObject);
     },
 
@@ -254,6 +329,13 @@ export const createPluginAPI = () => {
      * });
      */
     registerLayout: (layoutObject) => {
+      // 使用验证器验证参数
+      new Validator(layoutObject, 'Layout')
+        .isObject()
+        .required('component')
+        .isFunction('component')
+        .ifExists('position', v => v.isEnum('position', ['admin', 'public']));
+
       return registry.registerLayout(layoutObject);
     },
 
@@ -264,7 +346,7 @@ export const createPluginAPI = () => {
 export const registryApi = {
   // 插件注册API
   ...createPluginAPI(),
-  
+
   // 内部访问方法 - 供框架内部使用
   getRoutes: () => registry.getRoutes(),
   findRoute: (path) => registry.findRoute(path),

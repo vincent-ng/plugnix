@@ -2,11 +2,18 @@
 import { I18nextProvider } from 'react-i18next';
 import i18n from '@/framework/i18n';
 
+import { NavigationProvider } from "@/framework/lib/NavigationProvider.jsx";
 import { ErrorBoundaryProvider } from './contexts/ErrorBoundaryContext.jsx';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { FallbackAuthenticationProvider, FallbackTenantProvider } from './contexts/FallbackProviders.jsx';
 
 export function registerCoreProviders({ registerProvider }) {
+  // 注册导航提供者
+  registerProvider({
+    name: 'NavigationProvider',
+    component: NavigationProvider,
+    order: 0, // 设置为高优先级，确保在其他提供者之前初始化
+  });
 
   // 注册错误边界Provider - 用于包装特定组件，捕获其渲染错误
   registerProvider({

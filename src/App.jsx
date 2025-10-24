@@ -79,12 +79,12 @@ const DynamicProviders = ({ children }) => {
 // 主应用组件
 function App() {
   return (
-    <DynamicProviders>
-      <Router>
+    <Router>
+      <DynamicProviders>
         <DynamicRoutes />
         <Toaster />
-      </Router>
-    </DynamicProviders>
+      </DynamicProviders>
+    </Router>
   );
 }
 

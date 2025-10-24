@@ -50,16 +50,15 @@
     "noTabsOpen": "No tabs are currently open"
   },
   "errors": {
-    "menuItemPositionRequired": "Menu item must have a position property",
-    "invalidMenuItemPosition": "Invalid menu item position: {position}. Must be 'admin', 'public', or 'user'",
-    "navbarItemPositionRequired": "Navbar item must have a position property",
-    "invalidNavbarItemPosition": "Invalid navbar position: {position}. Must be 'admin' or 'public'",
-    "layoutComponentRequired": "Layout must have a component",
-    "layoutPositionRequired": "Layout must have a position property",
-    "invalidLayoutPosition": "Invalid layout position: {position}. Must be 'admin' or 'public'",
-    "logoComponentRequired": "Logo must have a component",
-    "pluginNameAndTranslationsRequired": "Plugin name and translations are required",
-    "permissionNameRequired": "Permission must have a name",
-    "providerNameAndComponentRequired": "Provider must have a name and component"
+    "objectRequired": "{{objectType}} object is required",
+    "propertyRequired": "{{objectType}} must have a {{propertyName}} property",
+    "propertyMustBeString": "{{objectType}} {{propertyName}} must be a string",
+    "propertyMustBeNumber": "{{objectType}} {{propertyName}} must be a number",
+    "propertyMustBeFunction": "{{objectType}} {{propertyName}} must be a function",
+    "propertyMustBeStringOrArray": "{{objectType}} {{propertyName}} must be a string or an array of strings",
+    "propertyMustBeStringArray": "{{objectType}} {{propertyName}} must be an array of strings",
+    "invalidEnumValue": "Invalid {{objectType}} {{propertyName}}: {{value}}. Must be one of: {{allowedValues}}",
+    "invalidMenuItemPosition": "Invalid menu item position: {{position}}. Must be 'admin', 'public', or 'user'",
+    "pluginNameAndTranslationsRequired": "Plugin name and translations are required"
   }
 }

@@ -50,16 +50,15 @@
     "noTabsOpen": "当前没有打开的标签页"
   },
   "errors": {
-    "menuItemPositionRequired": "菜单项必须具有position属性",
-    "invalidMenuItemPosition": "无效的菜单项位置：{position}。必须是'admin'、'public'或'user'",
-    "navbarItemPositionRequired": "导航栏项必须具有position属性",
-    "invalidNavbarItemPosition": "无效的导航栏位置：{position}。必须是'admin'或'public'",
-    "layoutComponentRequired": "布局必须具有组件",
-    "layoutPositionRequired": "布局必须具有position属性",
-    "invalidLayoutPosition": "无效的布局位置：{position}。必须是'admin'或'public'",
-    "logoComponentRequired": "Logo必须具有组件",
-    "pluginNameAndTranslationsRequired": "需要插件名称和翻译",
-    "permissionNameRequired": "权限必须具有名称",
-    "providerNameAndComponentRequired": "提供者必须具有名称和组件"
+    "objectRequired": "{{objectType}} 对象是必需的",
+    "propertyRequired": "{{objectType}} 必须具有 {{propertyName}} 属性",
+    "propertyMustBeString": "{{objectType}} {{propertyName}} 必须是字符串",
+    "propertyMustBeNumber": "{{objectType}} {{propertyName}} 必须是数字",
+    "propertyMustBeFunction": "{{objectType}} {{propertyName}} 必须是函数",
+    "propertyMustBeStringOrArray": "{{objectType}} {{propertyName}} 必须是字符串或字符串数组",
+    "propertyMustBeStringArray": "{{objectType}} {{propertyName}} 必须是字符串数组",
+    "invalidEnumValue": "无效的 {{objectType}} {{propertyName}}: {{value}}。必须是以下值之一: {{allowedValues}}",
+    "invalidMenuItemPosition": "无效的菜单项位置: {{position}}。必须是 'admin'、'public' 或 'user'",
+    "pluginNameAndTranslationsRequired": "插件名称和翻译资源是必需的"
   }
 }

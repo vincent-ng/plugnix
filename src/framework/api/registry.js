@@ -19,10 +19,6 @@ class Registry {
 
   // 统一的菜单项注册方法
   registerMenuItem(menuItem) {
-    if (!menuItem.position) {
-      throw new Error('errors.menuItemPositionRequired');
-    }
-    
     let targetArray;
     switch (menuItem.position) {
       case 'admin':
@@ -42,10 +38,6 @@ class Registry {
 
   // 注册导航栏插槽项（按 order 排序）
   registerNavbarItem(navbarItem) {
-    if (!navbarItem.position) {
-      throw new Error('errors.navbarItemPositionRequired');
-    }
-    
     switch (navbarItem.position) {
       case 'admin':
         insertSorted(this.adminNavbarItems, navbarItem);
@@ -60,10 +52,6 @@ class Registry {
 
   // 注册Logo组件
   registerLogo(logoObject) {
-    if (!logoObject.component) {
-      throw new Error('errors.logoComponentRequired');
-    }
-
     this.logoComponent = {
       component: logoObject.component,
       props: logoObject.props || {}
@@ -75,14 +63,6 @@ class Registry {
 
   // 注册Layout组件
   registerLayout(layoutObject) {
-    if (!layoutObject.component) {
-      throw new Error('errors.layoutComponentRequired');
-    }
-    
-    if (!layoutObject.position) {
-      throw new Error('errors.layoutPositionRequired');
-    }
-
     const layout = {
       component: layoutObject.component,
       props: layoutObject.props || {}
@@ -91,43 +71,29 @@ class Registry {
     switch (layoutObject.position) {
       case 'admin':
         this.adminLayout = layout;
-        // console.log('Admin layout component registered');
         break;
       case 'public':
         this.publicLayout = layout;
-        // console.log('Public layout component registered');
         break;
       default:
         throw new Error('errors.invalidLayoutPosition', { position: layoutObject.position });
     }
 
-    return layout;
   }
 
   // 注册路由
   registerRoute(route) {
-    // 如果没有指定layout，默认为'public'
-    if (!route.layout) {
-      route.layout = 'public';
-    }
     this.routes.push(route);
   }
 
   // 注册国际化命名空间
   registerI18nNamespace(pluginName, translations) {
-    if (!pluginName || !translations) {
-      throw new Error('errors.pluginNameAndTranslationsRequired');
-    }
     this.i18nNamespaces.set(pluginName, translations);
     // console.log(`I18n namespace registered: ${pluginName}`);
   }
 
   // 注册权限
   registerPermission(permissionObject) {
-    if (!permissionObject.name) {
-      throw new Error('errors.permissionNameRequired');
-    }
-
     const permission = {
       name: permissionObject.name,
       description: permissionObject.description || '',
@@ -140,10 +106,6 @@ class Registry {
 
   // 注册Provider
   registerProvider(providerObject) {
-    if (!providerObject.name || !providerObject.component) {
-      throw new Error('errors.providerNameAndComponentRequired');
-    }
-
     const provider = {
       name: providerObject.name,
       component: providerObject.component,
@@ -164,7 +126,6 @@ class Registry {
       // console.log(`Provider registered: ${provider.name}`);
     }
 
-    return provider;
   }
 
   // 获取所有注册的路由

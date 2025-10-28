@@ -60,5 +60,19 @@
     "invalidEnumValue": "无效的 {{objectType}} {{propertyName}}: {{value}}。必须是以下值之一: {{allowedValues}}",
     "invalidMenuItemPosition": "无效的菜单项位置: {{position}}。必须是 'admin'、'public' 或 'user'",
     "pluginNameAndTranslationsRequired": "插件名称和翻译资源是必需的"
+  },
+  "db": {
+    "authenticationRequired": "需要身份验证。",
+    "invalidTokenOrUser": "无效的令牌或用户未找到。",
+    "systemPermissionCheckFailed": "验证系统权限失败。",
+    "insufficientSystemPermissions": "系统权限不足。",
+    "systemRpcInvokeRequired": "权限被拒绝：需要 system.rpc.invoke 权限",
+    "tablePermissionCheckFailed": "验证表权限失败。",
+    "permissionDenied": "权限被拒绝：需要 {{permission}} 权限",
+    "internalDatabaseError": "发生内部数据库错误：{{message}}",
+    "invalidOperation": "指定的操作无效。",
+    "insertRequiresData": "插入操作需要 \"data\" 参数。",
+    "updateRequiresDataAndMatch": "更新操作需要 \"data\" 和 \"match\" 参数。",
+    "deleteRequiresMatch": "删除操作需要 \"match\" 条件。"
   }
 }

@@ -28,23 +28,24 @@ class ErrorBoundary extends React.Component {
       toastOnce(err?.message || String(message));
     };
     
-    // const handleRejection = (event) => {
-    //   toastOnce(event.reason?.message || event.reason);
-    // };
+    const handleRejection = (event) => {
+      console.log('Unhandled Promise Rejection:', event);
+      toastOnce(event.reason?.message || event.reason);
+    };
     
     // 保存之前的错误处理器
     this.prevOnError = window.onerror;
-    // this.prevOnRejection = window.onunhandledrejection;
+    this.prevOnRejection = window.onunhandledrejection;
     
     // 设置新的错误处理器
     window.onerror = handleWindowError;
-    // window.onunhandledrejection = handleRejection;
+    window.onunhandledrejection = handleRejection;
   }
 
   componentWillUnmount() {
     // 恢复之前的错误处理器
     window.onerror = this.prevOnError;
-    // window.onunhandledrejection = this.prevOnRejection;
+    window.onunhandledrejection = this.prevOnRejection;
   }
 
   componentDidCatch(error, errorInfo) {

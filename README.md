@@ -11,8 +11,93 @@
 - 🛡️ **权限控制**: 基于 RBAC 的统一权限管理系统
 - 📱 **响应式设计**: 基于 Tailwind CSS 的现代化 UI
 - ⚡ **高性能**: Vite 构建工具，快速开发和构建
-- 🛠️ **TypeScript**: 完整的类型支持
 - 📦 **模块化**: 清晰的架构设计，易于扩展
+
+## 页面插槽概念
+
+页面插槽 (Page Slot) 是指在页面布局中预留的位置，用于动态加载和渲染内容。插件可以通过注册到对应的插槽来显示自己的内容。
+
+### 公共页布局 (publiclayout)
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│  [Logo]                     [NavigationMenu]                     [SideCtrls]  │
+├───────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│                                                                               │
+│                               Main Content                                    │
+│                                                                               │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+徽标区 (Logo)：
+- 显示系统标识，通过registerLogo注册。
+- 点击可返回首页。
+
+导航菜单区 (PublicMenu)：
+- 显示用registerMenuItem注册到position是'public'的导航菜单，可以显示多层级菜单。
+- 点击不同菜单项可切换到不同的插件内容区域。
+
+边控件 (SideCtrls) 包含：
+- 社交链接 (SocialLinks)
+- 语言切换 (LanguageSwitcher)
+- 主题切换 (ThemeToggleButton)
+- 插件注册的导航项 (Public Navbar Items)，如用户头像按钮、通知小铃铛、组织切换控件等，通过registerNavbarItem注册并把position设置为'public'，就会显示在这个位置。
+- 手机导航按钮 (MobileNav), 小屏幕时会出现，点击打开右侧抽屉。
+- 分隔线 (Separator)，用于视觉分组
+
+主内容区域 (Main Content)：
+- 显示当前选中的插件内容区域。
+- 点击导航菜单项可切换不同的插件内容区域。
+
+移动端 (md 以下)：
+- 顶部右侧汉堡按钮打开右侧抽屉：包含 Logo 与 Public Menu（手风琴），底部为 SocialLinks。
+- Header 中间的 NavigationMenu 在小屏隐藏，仅抽屉内展示菜单。
+- Header 右侧保留 LanguageSwitcher、ThemeToggleButton、Public Navbar Items。
+- 主内容区域不变：在 Header 下渲染路由页面。
+
+
+### 管理页布局 (adminlayout)
+
+```
+┌───────────────────────┬───────────────────────────────────────────────────────┐
+│  [logo]               │ Tab1 | Tab2 | Tab3                       [SideCtrls]  │
+├───────────────────────┼───────────────────────────────────────────────────────┤
+│  Admin Menu 1         │                                                       │
+│    - Children Menu 1  │                                                       │
+│    - Children Menu 2  │                    Main Content                       │
+│  Admin Menu 2         │                                                       │
+│                       │                                                       │
+└───────────────────────┴───────────────────────────────────────────────────────┘
+```
+徽标区 (Logo)：
+- 显示系统标识，通过registerLogo注册。
+- 点击可返回首页。
+
+菜单区 (AdminMenu)：
+- 显示用registerMenuItem注册到position是'admin'的导航菜单，可以显示多层级菜单。
+- 点击不同菜单项可切换到不同的插件内容区域，并更新Tab区。
+
+标签区 (TabBar)：
+- 显示被打开的菜单，由layout控制。
+- 点击切换不同的插件内容区域（状态保留）。
+
+边控件 (SideCtrls) 包含：
+- 语言切换 (LanguageSwitcher)
+- 主题切换 (ThemeToggleButton)
+- 插件注册的导航项 (Admin Navbar Items)，如用户头像菜单 UserNav、通知小铃铛、组织切换控件等，通过registerNavbarItem注册并把position设置为'admin'，就会显示在这个位置。
+- 分隔线 (Separator)，用于视觉分组
+
+主内容区域 (Main Content)：
+- 显示当前选中的插件内容区域。
+- 点击导航菜单项或Tab可切换不同的插件内容区域。
+
+移动端 (md 以下)：
+- 左侧栏折叠为抽屉（从左侧弹出）：包含 Logo 与 Admin Menu（手风琴）。
+- Header 中部显示 TabBar（若存在标签），用于多标签切换。
+- Header 右侧保留 LanguageSwitcher、ThemeToggleButton、Admin Navbar Items。
+- 主内容区域不变：按活动标签渲染路由组件，受权限控制。
+
 
 ## 🚀 快速开始
 

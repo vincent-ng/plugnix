@@ -60,5 +60,19 @@
     "invalidEnumValue": "Invalid {{objectType}} {{propertyName}}: {{value}}. Must be one of: {{allowedValues}}",
     "invalidMenuItemPosition": "Invalid menu item position: {{position}}. Must be 'admin', 'public', or 'user'",
     "pluginNameAndTranslationsRequired": "Plugin name and translations are required"
+  },
+  "db": {
+    "authenticationRequired": "Authentication required.",
+    "invalidTokenOrUser": "Invalid token or user not found.",
+    "systemPermissionCheckFailed": "Failed to verify system permissions.",
+    "insufficientSystemPermissions": "Insufficient system permissions.",
+    "systemRpcInvokeRequired": "Permission denied: system.rpc.invoke required",
+    "tablePermissionCheckFailed": "Failed to verify table permissions.",
+    "permissionDenied": "Permission denied: {{permission}} required",
+    "internalDatabaseError": "An internal database error occurred: {{message}}",
+    "invalidOperation": "Invalid operation specified.",
+    "insertRequiresData": "Insert operation requires \"data\".",
+    "updateRequiresDataAndMatch": "Update requires \"data\" and \"match\".",
+    "deleteRequiresMatch": "Delete requires a \"match\" condition."
   }
 }

@@ -10,6 +10,7 @@ const importAllPlugins = async () => {
   
   for (const path in allPluginModules) {
     try {
+      // console.log(`Loading plugin from ${path}`);
       // 从路径中提取插件名称
       const pluginName = path.match(/\.\/plugins\/([^/]+)\/index\.(js|jsx)$/)[1];
       
